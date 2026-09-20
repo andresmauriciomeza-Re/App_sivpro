@@ -3,6 +3,8 @@
 //Mis importaciones
 import 'bottom_nav.dart';
 import 'menu_screen.dart';
+import 'category_products_screen.dart';
+import 'menu_item.dart';
 
 // ============================================================
 // PALETA Y CONSTANTES DE DISEÃ‘O
@@ -50,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
   // (el Ã­ndice de la barra de navegaciÃ³n ahora lo maneja AppBottomNav)
 
-  final List<String> _categories = const ['Pizzas', 'Lasañas', 'Bebidas'];
+  final List<String> _categories = const ['Pizzas', 'Lasañas', 'Favoritas'];
 
   final List<FeaturedItem> _featuredItems = const [
     FeaturedItem(
@@ -308,7 +310,19 @@ class _HomeScreenState extends State<HomeScreen> {
         itemBuilder: (context, index) {
           final bool isSelected = index == _selectedCategoryIndex;
           return GestureDetector(
-            onTap: () => setState(() => _selectedCategoryIndex = index),
+            onTap: () {
+              setState(() => _selectedCategoryIndex = index);
+              final categoria = _categories[index];
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CategoryProductsScreen(
+                    categoryName: categoria,
+                    items: categoriasMenu[categoria] ?? [],
+                  ),
+                ),
+              );
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 20),

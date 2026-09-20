@@ -16,7 +16,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const Color fondoClaro = Color(0xFFFCF7F5);
 
   // Datos de ejemplo, mientras no hay backend/autenticación conectados.
-  final String _nombre = 'Sebastián';
+  final _nombreController = TextEditingController(text: 'Sebastián');
   final _correoController = TextEditingController(text: 'sebas@gmail.com');
   final _telefonoController = TextEditingController(text: '3109876543');
 
@@ -24,6 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
+    _nombreController.dispose();
     _correoController.dispose();
     _telefonoController.dispose();
     super.dispose();
@@ -80,7 +81,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       radius: 24,
                       backgroundColor: splashRojo,
                       child: Text(
-                        _nombre.isNotEmpty ? _nombre[0].toUpperCase() : '?',
+                        _nombreController.text.isNotEmpty
+                            ? _nombreController.text[0].toUpperCase()
+                            : '?',
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -94,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _nombre,
+                            _nombreController.text,
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -108,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: splashRojo.withValues(alpha: 0.12),
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -127,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () => setState(() => _editando = !_editando),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        side: const BorderSide(color: splashRojo),
+                        side: const BorderSide(color: Colors.white),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -161,7 +164,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     _campoLabel(Icons.person_outline, 'Nombre'),
                     const SizedBox(height: 6),
-                    _campoTexto(_nombre, habilitado: false),
+                    _campoEditable(_nombreController),
+                    const SizedBox(height: 16),
+
+                    _campoLabel(Icons.email_outlined, 'Correo electrónico'),
+                    const SizedBox(height: 6),
+                    _campoTexto(_correoController.text, habilitado: false),
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
@@ -172,11 +180,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-
-                    _campoLabel(Icons.email_outlined, 'Correo electrónico'),
-                    const SizedBox(height: 6),
-                    _campoEditable(_correoController),
                     const SizedBox(height: 16),
 
                     _campoLabel(Icons.phone_outlined, 'Teléfono'),
@@ -221,7 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: _cerrarSesion,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        side: const BorderSide(color: splashRojo),
+                        side: const BorderSide(color: Colors.white),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -250,7 +253,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _campoLabel(IconData icon, String texto) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: splashRojo),
+        Icon(icon, size: 14, color: Colors.black),
         const SizedBox(width: 6),
         Text(
           texto,
