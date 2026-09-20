@@ -73,11 +73,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                       color: Colors.black87,
                     ),
                   ),
-                  const Spacer(),
-                  const Icon(
-                    Icons.shopping_cart_outlined,
-                    color: Colors.black87,
-                  ),
                 ],
               ),
             ),

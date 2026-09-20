@@ -307,7 +307,7 @@ class _OrderCard extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w800,
                           fontSize: 17,
-                          color: splashRojo,
+                          color: Colors.black87,
                         ),
                       ),
                     ],
@@ -316,7 +316,7 @@ class _OrderCard extends StatelessWidget {
                     onPressed: onTap,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: splashRojo,
-                      side: const BorderSide(color: splashRojo),
+                      side: const BorderSide(color: Colors.white),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
