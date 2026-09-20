@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 //Mis Importaciones
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'auth_service.dart';
 import 'page_transitions.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 import 'home_screen.dart';
+import 'admin_dashboard_screen.dart';
+import 'employee_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -102,9 +105,28 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _onLogin() {
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+    final role = AuthService.instance.roleFor(
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    switch (role) {
+      case UserRole.admin:
+        Navigator.of(
+          context,
+        ).pushReplacement(heroFadeRoute(const AdminDashboardScreen()));
+        break;
+      case UserRole.empleado:
+        Navigator.of(
+          context,
+        ).pushReplacement(heroFadeRoute(const EmployeeDashboardScreen()));
+        break;
+      case UserRole.cliente:
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+        break;
+    }
   }
 
   void _mostrarTerminosYContinuar() {
