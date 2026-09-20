@@ -342,14 +342,15 @@ Text(
                           width: 32,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: splashRojo.withValues(alpha: 0.12),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white),
                           ),
                           alignment: Alignment.center,
                           child: Icon(
                             _iconoMetodoPago,
                             size: 18,
-                            color: splashRojo,
+                            color: Colors.black87,
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -358,7 +359,7 @@ Text(
                           style: GoogleFonts.poppins(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
-                            color: splashRojo,
+                            color: Colors.black87,
                           ),
                         ),
                       ],

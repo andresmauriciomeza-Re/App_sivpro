@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'menu_item.dart';
 import 'cart_service.dart';
-import 'cart_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, required this.item});
@@ -83,17 +82,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                         ),
                       ],
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const CartScreen()),
-                      ),
-                      icon: const Icon(
-                        Icons.shopping_cart_outlined,
-                        color: Colors.black87,
-                      ),
                     ),
                   ],
                 ),
