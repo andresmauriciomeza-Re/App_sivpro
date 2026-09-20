@@ -1,5 +1,43 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'employee_more_screen.dart';
+
+/// Nombre de ruta de la pantalla de módulos de Ventas (rol Empleado).
+/// Permite volver a ella desde las pantallas internas de Devoluciones,
+/// Clientes y Ventas usando [handleEmployeeBottomNav].
+const String kVentasModulesRoute = '/ventas-empleado';
+
+/// Comportamiento de la barra inferior en las pantallas internas del rol
+/// Empleado (Devoluciones, Clientes, Ventas y detalle de venta).
+/// - Inicio: lleva al dashboard (raíz del stack).
+/// - Ventas: vuelve a la pantalla de módulos de Ventas.
+/// - Más: abre la pantalla "Más".
+/// - Compras / Producción: aviso de "próximamente".
+void handleEmployeeBottomNav(BuildContext context, int index) {
+  final navigator = Navigator.of(context);
+  switch (index) {
+    case 0:
+      navigator.popUntil((route) => route.isFirst);
+      break;
+    case 3:
+      navigator.popUntil(
+        (route) =>
+            route.settings.name == kVentasModulesRoute || route.isFirst,
+      );
+      break;
+    case 4:
+      navigator.push(
+        MaterialPageRoute(builder: (_) => const EmployeeMoreScreen()),
+      );
+      break;
+    default:
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Esta sección estará disponible próximamente.'),
+        ),
+      );
+  }
+}
 
 Route<T> heroFadeRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
