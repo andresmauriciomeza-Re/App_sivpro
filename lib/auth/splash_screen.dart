@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -158,11 +159,18 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _logoSpringController;
   Animation<Offset>? _logoSpringAnim;
 
-  // Idea 4 y 8: parallax + sombra según inclinación del celular
+  // Idea 4 y 8: parallax + sombra según inclinación del celular.
+  // Se usa un ValueNotifier para que solo la capa del logo se repinte.
   StreamSubscription<AccelerometerEvent>? _accelSub;
-  double _tiltX = 0;
-  double _tiltY = 0;
+  final ValueNotifier<Offset> _tiltNotifier = ValueNotifier<Offset>(Offset.zero);
   bool _imagenesPrecargadas = false;
+
+  // Modo ligero (solo release): si varios frames seguidos superan los 40 ms
+  // en la fase de revelado, se apagan la textura de puntos, las ondas y el
+  // polvo, y se cancela el acelerómetro para cuidar el 60 fps en gama baja.
+  final Stopwatch _frameTimer = Stopwatch();
+  int _framesPesadosConsecutivos = 0;
+  bool _modoLigero = false;
 
   @override
   void initState() {
@@ -252,7 +260,8 @@ class _SplashScreenState extends State<SplashScreen>
           }
         });
 
-    // Acelerómetro para parallax + sombra (ideas 4 y 8)
+    // Acelerómetro para parallax + sombra (ideas 4 y 8). Escribe en un
+    // ValueNotifier para no disparar rebuilds de todo el árbol.
     _accelSub = accelerometerEventStream(
       samplingPeriod: SensorInterval.uiInterval,
     ).listen(
@@ -260,20 +269,23 @@ class _SplashScreenState extends State<SplashScreen>
         if (!mounted) return;
         final tiltX = (event.x / 9.8).clamp(-1.0, 1.0);
         final tiltY = (event.y / 9.8).clamp(-1.0, 1.0);
-        if ((tiltX - _tiltX).abs() > 0.03 || (tiltY - _tiltY).abs() > 0.03) {
-          setState(() {
-            _tiltX = tiltX;
-            _tiltY = tiltY;
-          });
+        final tilt = _tiltNotifier.value;
+        if ((tiltX - tilt.dx).abs() > 0.03 || (tiltY - tilt.dy).abs() > 0.03) {
+          _tiltNotifier.value = Offset(tiltX, tiltY);
         }
       },
       onError: (_) {},
     );
+
+    // Mide la duración de cada frame durante el revelado para poder activar
+    // el modo ligero si el dispositivo no da a basto.
+    _controller.addListener(_monitorearFluidez);
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _frameTimer.stop();
     _pulseController.dispose();
     _dustController.dispose();
     _logoSpringController.dispose();
@@ -282,6 +294,7 @@ class _SplashScreenState extends State<SplashScreen>
       r.controller.dispose();
     }
     _rippleTick.dispose();
+    _tiltNotifier.dispose();
     super.dispose();
   }
 
@@ -295,17 +308,17 @@ class _SplashScreenState extends State<SplashScreen>
     final size = media.size;
     final dpr = media.devicePixelRatio;
 
+    // Precache con tope de 1440 px de ancho: suficiente para pantallas muy
+    // grandes (p. ej. 1440 píxeles lógicos × 3x = 4320 reales), y evita
+    // descodificar imágenes gigantes en tabletas o PC.
+    final layoutR = _calcularLayout(size, media.padding);
     final providerFondo = ResizeImage(
       AssetImage('assets/img/fondo_splash_blanc4.png'),
-      width: (size.width * dpr).round(),
+      width: min(size.width * dpr, 1440.0).round(),
     );
-    final logoSizePrecarga = min(
-      size.width * 0.44,
-      size.height * 0.24,
-    ).clamp(110.0, 190.0).toDouble();
     final providerLogo = ResizeImage(
       AssetImage('assets/img/logo_blanc7.png'),
-      width: (logoSizePrecarga * dpr).round(),
+      width: (layoutR.logoSize * dpr).round(),
     );
 
     Future<void> precargarImagenes() async {
@@ -367,6 +380,45 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Modo ligero: mide cuánto tarda cada frame del controlador. Si se acumulan
+  /// 3 frames seguidos de más de 40 ms durante el revelado (entre _tRightEnd y
+  /// _tLogoInEnd), se apagan las capas decorativas para recuperar el 60 fps.
+  /// No hace nada en modo debug (kDebugMode) para no interferir con el
+  /// desarrollo ni con los tests.
+  void _monitorearFluidez() {
+    if (_modoLigero || kDebugMode) return;
+    final elapsed = _frameTimer.elapsedMilliseconds;
+    if (_frameTimer.isRunning) {
+      if (elapsed > 40) {
+        _framesPesadosConsecutivos++;
+        if (_framesPesadosConsecutivos >= 3 &&
+            _controller.value >= _tRightEnd &&
+            _controller.value <= _tLogoInEnd) {
+          _activarModoLigero();
+          return;
+        }
+      } else {
+        _framesPesadosConsecutivos = 0;
+      }
+    }
+    _frameTimer
+      ..reset()
+      ..start();
+  }
+
+  void _activarModoLigero() {
+    _modoLigero = true;
+    _frameTimer.stop();
+    _tiltNotifier.value = Offset.zero;
+    _accelSub?.cancel();
+    _accelSub = null;
+    _controller.animateTo(
+      1.0,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+    );
+  }
+
   void _goToLogin() {
     HapticFeedback.lightImpact();
     Navigator.of(
@@ -398,6 +450,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   // Idea 2: agrega una nueva onda en el punto tocado
   void _addRipple(Offset position) {
+    if (_modoLigero) return;
     final controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -511,44 +564,54 @@ class _SplashScreenState extends State<SplashScreen>
                 // (blanco + ingredientes en una sola imagen)
                 if (t >= _tRightEnd)
                   Positioned.fill(
-                    child: ClipPath(
-                      clipper: _CircleRevealClipper(_expandProgress.value),
-                      child: Image(
-                        image: ResizeImage(
-                          AssetImage('assets/img/fondo_splash_blanc4.png'),
-                          width: (size.width * dpr).round(),
+                    child: RepaintBoundary(
+                      child: ClipPath(
+                        clipper: _CircleRevealClipper(_expandProgress.value),
+                        child: Image(
+                          image: ResizeImage(
+                            AssetImage('assets/img/fondo_splash_blanc4.png'),
+                            width: min(size.width * dpr, 1440.0).round(),
+                          ),
+                          fit: BoxFit.cover,
                         ),
-                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
 
-                // Textura sutil de puntitos
-                if (t >= _tRightEnd)
+                // Textura sutil de puntitos (se apaga en modo ligero). El
+                // RepaintBoundary aísla su capa para no repintarla cada frame.
+                if (t >= _tRightEnd && !_modoLigero)
                   Positioned.fill(
                     child: IgnorePointer(
-                      child: CustomPaint(painter: const _DotTexturePainter()),
+                      child: RepaintBoundary(
+                        child: CustomPaint(painter: const _DotTexturePainter()),
+                      ),
                     ),
                   ),
 
-                // Idea 2: ondas al tocar la pantalla
-                if (t >= _tRightEnd)
+                // Idea 2: ondas al tocar la pantalla (se apagan en modo
+                // ligero). El RepaintBoundary evita repintar toda la escena
+                // cuando solo cambia una onda.
+                if (t >= _tRightEnd && !_modoLigero)
                   Positioned.fill(
                     child: IgnorePointer(
-                      child: ValueListenableBuilder<int>(
-                        valueListenable: _rippleTick,
-                        builder: (context, _, _) {
-                          return CustomPaint(
-                            painter: _RipplePainter(List.of(_ripples)),
-                          );
-                        },
+                      child: RepaintBoundary(
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: _rippleTick,
+                          builder: (context, _, _) {
+                            return CustomPaint(
+                              painter: _RipplePainter(List.of(_ripples)),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
 
                 // Logo: cae con rebote (idea 6), sube arriba, y reacciona
                 // al arrastre con tilt 3D + jelly (ideas 3+7) y al
-                // acelerómetro (ideas 4 y 8)
+                // acelerómetro (ideas 4 y 8). El RepaintBoundary + el
+                // ValueNotifier evitan repintar toda la escena al inclinar.
                 Positioned(
                   top:
                       logoCenteredTop +
@@ -556,83 +619,91 @@ class _SplashScreenState extends State<SplashScreen>
                       logoDropY,
                   left: 0,
                   right: 0,
-                  child: Center(
-                    child: Opacity(
-                      opacity: _logoOpacity.value,
-                      child: GestureDetector(
-                        onPanUpdate: (details) {
-                          setState(() {
-                            _logoDrag = Offset(
-                              (_logoDrag.dx + details.delta.dx / 40).clamp(
-                                -1.0,
-                                1.0,
-                              ),
-                              (_logoDrag.dy + details.delta.dy / 40).clamp(
-                                -1.0,
-                                1.0,
-                              ),
-                            );
-                          });
-                        },
-                        onPanEnd: (details) {
-                          _logoSpringAnim =
-                              Tween<Offset>(begin: _logoDrag, end: Offset.zero)
-                                  .chain(CurveTween(curve: Curves.elasticOut))
-                                  .animate(_logoSpringController);
-                          _logoSpringController.forward(from: 0);
-                        },
-                        child: Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.0015)
-                            ..rotateX(-_logoDrag.dy * 0.4 - _tiltY * 0.15)
-                            ..rotateY(_logoDrag.dx * 0.4 + _tiltX * 0.15)
-                            ..rotateZ(_logoDrag.dx * 0.05)
-                            ..scaleByDouble(
-                              _logoScale.value,
-                              _logoScale.value,
-                              _logoScale.value,
-                              1.0,
-                            ),
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: logoSize,
-                                height: logoSize,
-                                decoration: const BoxDecoration(
-                                  color: Colors.transparent,
-                                ),
-                                child: Image(
-                                  image: ResizeImage(
-                                    AssetImage('assets/img/logo_blanc7.png'),
-                                    width: (logoSize * dpr).round(),
-                                  ),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                              // Idea 6: polvo al aterrizar
-                              AnimatedBuilder(
-                                animation: _dustController,
-                                builder: (context, _) {
-                                  return CustomPaint(
-                                    size: Size(logoSize, logoSize),
-                                    painter: _DustPainter(
-                                      progress: _dustController.value,
-                                      center: Offset(
-                                        logoSize / 2,
-                                        logoSize / 2,
-                                      ),
-                                      directions: _dustDirections,
-                                    ),
+                  child: RepaintBoundary(
+                    child: ValueListenableBuilder<Offset>(
+                      valueListenable: _tiltNotifier,
+                      builder: (context, tilt, _) {
+                        return Center(
+                          child: Opacity(
+                            opacity: _logoOpacity.value,
+                            child: GestureDetector(
+                              onPanUpdate: (details) {
+                                setState(() {
+                                  _logoDrag = Offset(
+                                    (_logoDrag.dx + details.delta.dx / 40)
+                                        .clamp(-1.0, 1.0),
+                                    (_logoDrag.dy + details.delta.dy / 40)
+                                        .clamp(-1.0, 1.0),
                                   );
-                                },
+                                });
+                              },
+                              onPanEnd: (details) {
+                                _logoSpringAnim =
+                                    Tween<Offset>(
+                                        begin: _logoDrag, end: Offset.zero)
+                                    .chain(CurveTween(curve: Curves.elasticOut))
+                                    .animate(_logoSpringController);
+                                _logoSpringController.forward(from: 0);
+                              },
+                              child: Transform(
+                                alignment: Alignment.center,
+                                transform: Matrix4.identity()
+                                  ..setEntry(3, 2, 0.0015)
+                                  ..rotateX(-_logoDrag.dy * 0.4 - tilt.dy * 0.15)
+                                  ..rotateY(_logoDrag.dx * 0.4 + tilt.dx * 0.15)
+                                  ..rotateZ(_logoDrag.dx * 0.05)
+                                  ..scaleByDouble(
+                                    _logoScale.value,
+                                    _logoScale.value,
+                                    _logoScale.value,
+                                    1.0,
+                                  ),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      width: logoSize,
+                                      height: logoSize,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.transparent,
+                                      ),
+                                      child: Image(
+                                        image: ResizeImage(
+                                          AssetImage(
+                                            'assets/img/logo_blanc7.png',
+                                          ),
+                                          width: (logoSize * dpr).round(),
+                                        ),
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                    // Idea 6: polvo al aterrizar
+                                    // (desactivado en modo ligero)
+                                    if (!_modoLigero)
+                                      AnimatedBuilder(
+                                        animation: _dustController,
+                                        builder: (context, _) {
+                                          return CustomPaint(
+                                            size: Size(logoSize, logoSize),
+                                            painter: _DustPainter(
+                                              progress: _dustController.value,
+                                              center: Offset(
+                                                logoSize / 2,
+                                                logoSize / 2,
+                                              ),
+                                              directions: _dustDirections,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ),
