@@ -113,7 +113,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.arrow_back, color: splashRojo),
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
                   ),
                   Expanded(
                     child: Text(
@@ -344,7 +344,7 @@ Text(
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.white),
+                            border: Border.all(color: Colors.black12),
                           ),
                           alignment: Alignment.center,
                           child: Icon(
