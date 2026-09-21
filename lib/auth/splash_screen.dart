@@ -124,15 +124,12 @@ class _SplashScreenState extends State<SplashScreen>
   static const double _tLogoInEnd = 0.85;
   static const double _tLogoUpEnd = 0.93;
 
-  static const double _logoSize = 165;
-  static const double _logoTopFinal = 68;
-
   late final AnimationController _controller;
   late final Animation<double> _dotOpacity;
   late final Animation<double> _expandProgress;
   late final Animation<double> _logoOpacity;
   late final Animation<double> _logoScale; // ahora con rebote (idea 6)
-  late final Animation<double> _logoDropY; // idea 6: cae desde arriba
+  late final Animation<double> _logoDropProgress; // idea 6: cae desde arriba
   late final Animation<double> _logoPosition;
   late final Animation<double> _bottomOpacity;
 
@@ -165,6 +162,7 @@ class _SplashScreenState extends State<SplashScreen>
   StreamSubscription<AccelerometerEvent>? _accelSub;
   double _tiltX = 0;
   double _tiltY = 0;
+  bool _imagenesPrecargadas = false;
 
   @override
   void initState() {
@@ -201,14 +199,12 @@ class _SplashScreenState extends State<SplashScreen>
         ),
       ),
     );
-    _logoDropY = Tween<double>(begin: -220, end: 0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(
-          _tExpandEnd,
-          _tLogoInEnd,
-          curve: Curves.bounceOut,
-        ),
+    _logoDropProgress = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(
+        _tExpandEnd,
+        _tLogoInEnd,
+        curve: Curves.bounceOut,
       ),
     );
 
@@ -227,13 +223,6 @@ class _SplashScreenState extends State<SplashScreen>
       if (!_dustPlayed && _controller.value >= _tLogoInEnd) {
         _dustPlayed = true;
         _dustController.forward(from: 0);
-      }
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FlutterNativeSplash.remove();
-      if (mounted) {
-        _controller.forward();
       }
     });
 
@@ -264,13 +253,22 @@ class _SplashScreenState extends State<SplashScreen>
         });
 
     // Acelerómetro para parallax + sombra (ideas 4 y 8)
-    _accelSub = accelerometerEventStream().listen((event) {
-      if (!mounted) return;
-      setState(() {
-        _tiltX = (event.x / 9.8).clamp(-1.0, 1.0);
-        _tiltY = (event.y / 9.8).clamp(-1.0, 1.0);
-      });
-    });
+    _accelSub = accelerometerEventStream(
+      samplingPeriod: SensorInterval.uiInterval,
+    ).listen(
+      (event) {
+        if (!mounted) return;
+        final tiltX = (event.x / 9.8).clamp(-1.0, 1.0);
+        final tiltY = (event.y / 9.8).clamp(-1.0, 1.0);
+        if ((tiltX - _tiltX).abs() > 0.03 || (tiltY - _tiltY).abs() > 0.03) {
+          setState(() {
+            _tiltX = tiltX;
+            _tiltY = tiltY;
+          });
+        }
+      },
+      onError: (_) {},
+    );
   }
 
   @override
@@ -285,6 +283,88 @@ class _SplashScreenState extends State<SplashScreen>
     }
     _rippleTick.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_imagenesPrecargadas) return;
+    _imagenesPrecargadas = true;
+
+    final media = MediaQuery.of(context);
+    final size = media.size;
+    final dpr = media.devicePixelRatio;
+
+    final providerFondo = ResizeImage(
+      AssetImage('assets/img/fondo_splash_blanc4.png'),
+      width: (size.width * dpr).round(),
+    );
+    final logoSizePrecarga = min(
+      size.width * 0.44,
+      size.height * 0.24,
+    ).clamp(110.0, 190.0).toDouble();
+    final providerLogo = ResizeImage(
+      AssetImage('assets/img/logo_blanc7.png'),
+      width: (logoSizePrecarga * dpr).round(),
+    );
+
+    Future<void> precargarImagenes() async {
+      try {
+        await Future.wait([
+          precacheImage(providerFondo, context),
+          precacheImage(providerLogo, context),
+        ]).timeout(const Duration(seconds: 3));
+      } catch (_) {
+        // Si la precarga falla o excede el timeout, el splash se muestra
+        // igualmente (las imágenes se cargan luego bajo demanda).
+      }
+      if (!mounted) return;
+      FlutterNativeSplash.remove();
+      _controller.forward();
+    }
+
+    precargarImagenes();
+  }
+
+  /// Calcula el layout para que el logo, el texto y el botón quepan sin
+  /// solaparse: si el espacio vertical no alcanza, reduce el logo (mínimo
+  /// 96) y los espacios entre bloques hasta que todo quepa.
+  ({double logoSize, double logoTopFinal, double textTop, double buttonBottom, double buttonWidth})
+      _calcularLayout(Size size, EdgeInsets padding) {
+    final ancho = size.width;
+    final alto = size.height;
+    const buttonHeight = 58.0;
+    final altoTexto = 30 * 1.15 * 1.15 + 14 + 14 * 1.15;
+
+    final buttonBottom = padding.bottom + max(24.0, alto * 0.05);
+    final logoTopFinal = padding.top + alto * 0.06;
+    final buttonWidth = min(230.0, ancho - 64.0);
+
+    double logoSize = min(
+      ancho * 0.44,
+      alto * 0.24,
+    ).clamp(110.0, 190.0).toDouble();
+    double textGap = 32.0;
+
+    double espacioLibre() =>
+        (alto - buttonBottom - buttonHeight) -
+        (logoTopFinal + logoSize + textGap + altoTexto);
+
+    while (espacioLibre() < 12.0 && (logoSize > 96 || textGap > 20)) {
+      if (logoSize > 96) {
+        logoSize = max(96.0, logoSize - 4);
+      } else if (textGap > 20) {
+        textGap = max(20.0, textGap - 2);
+      }
+    }
+
+    return (
+      logoSize: logoSize,
+      logoTopFinal: logoTopFinal,
+      textTop: logoTopFinal + logoSize + textGap,
+      buttonBottom: buttonBottom,
+      buttonWidth: buttonWidth,
+    );
   }
 
   void _goToLogin() {
@@ -353,8 +433,26 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final logoCenteredTop = (size.height - _logoSize) / 2;
+    final media = MediaQuery.of(context);
+    final size = media.size;
+    final dpr = media.devicePixelRatio;
+    final textScaler = media.textScaler.clamp(maxScaleFactor: 1.15);
+
+    return MediaQuery(
+      data: media.copyWith(textScaler: textScaler),
+      child: _buildSplash(size, media.padding, dpr),
+    );
+  }
+
+  Widget _buildSplash(Size size, EdgeInsets padding, double dpr) {
+    final layout = _calcularLayout(size, padding);
+    final logoSize = layout.logoSize;
+    final logoTopFinal = layout.logoTopFinal;
+    final textTop = layout.textTop;
+    final buttonBottom = layout.buttonBottom;
+    final buttonWidth = layout.buttonWidth;
+    final logoCenteredTop = (size.height - logoSize) / 2;
+    final logoDropY = (-size.height * 0.25) * (1 - _logoDropProgress.value);
     final textRepel = _computeTextRepel();
 
     return Scaffold(
@@ -415,8 +513,11 @@ class _SplashScreenState extends State<SplashScreen>
                   Positioned.fill(
                     child: ClipPath(
                       clipper: _CircleRevealClipper(_expandProgress.value),
-                      child: Image.asset(
-                        'assets/img/fondo_splash_blanc4.png',
+                      child: Image(
+                        image: ResizeImage(
+                          AssetImage('assets/img/fondo_splash_blanc4.png'),
+                          width: (size.width * dpr).round(),
+                        ),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -451,8 +552,8 @@ class _SplashScreenState extends State<SplashScreen>
                 Positioned(
                   top:
                       logoCenteredTop +
-                      (_logoTopFinal - logoCenteredTop) * _logoPosition.value +
-                      _logoDropY.value,
+                      (logoTopFinal - logoCenteredTop) * _logoPosition.value +
+                      logoDropY,
                   left: 0,
                   right: 0,
                   child: Center(
@@ -498,13 +599,16 @@ class _SplashScreenState extends State<SplashScreen>
                             alignment: Alignment.center,
                             children: [
                               Container(
-                                width: _logoSize,
-                                height: _logoSize,
+                                width: logoSize,
+                                height: logoSize,
                                 decoration: const BoxDecoration(
                                   color: Colors.transparent,
                                 ),
-                                child: Image.asset(
-                                  'assets/img/logo_blanc7.png',
+                                child: Image(
+                                  image: ResizeImage(
+                                    AssetImage('assets/img/logo_blanc7.png'),
+                                    width: (logoSize * dpr).round(),
+                                  ),
                                   fit: BoxFit.contain,
                                 ),
                               ),
@@ -513,12 +617,12 @@ class _SplashScreenState extends State<SplashScreen>
                                 animation: _dustController,
                                 builder: (context, _) {
                                   return CustomPaint(
-                                    size: Size(_logoSize, _logoSize),
+                                    size: Size(logoSize, logoSize),
                                     painter: _DustPainter(
                                       progress: _dustController.value,
                                       center: Offset(
-                                        _logoSize / 2,
-                                        _logoSize / 2,
+                                        logoSize / 2,
+                                        logoSize / 2,
                                       ),
                                       directions: _dustDirections,
                                     ),
@@ -535,51 +639,54 @@ class _SplashScreenState extends State<SplashScreen>
 
                 // Texto + botón, pegados justo debajo del logo
                 Positioned(
-                  top: _logoTopFinal + _logoSize + 32,
+                  top: textTop,
                   left: 32,
                   right: 32,
                   child: Opacity(
                     opacity: _bottomOpacity.value,
                     child: IgnorePointer(
                       ignoring: t < 0.98,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Idea 1: el bloque de texto se aleja del dedo
-                          AnimatedContainer(
-                            key: _textBlockKey,
-                            duration: const Duration(milliseconds: 260),
-                            curve: Curves.easeOut,
-                            transform: Matrix4.translationValues(
-                              textRepel.dx,
-                              textRepel.dy,
-                              0,
-                            ),
-                            child: Text(
-                              textAlign: TextAlign.center,
-                              'Sabores que enamoran\ndesde 1994',
-                              style: GoogleFonts.montserrat(
-                                color: const Color(0xFF1A1A1A),
-                                fontSize: 30,
-                                fontWeight: FontWeight.w400,
-                                height: 1.15,
-                                letterSpacing: 0.2,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Idea 1: el bloque de texto se aleja del dedo
+                            AnimatedContainer(
+                              key: _textBlockKey,
+                              duration: const Duration(milliseconds: 260),
+                              curve: Curves.easeOut,
+                              transform: Matrix4.translationValues(
+                                textRepel.dx,
+                                textRepel.dy,
+                                0,
+                              ),
+                              child: Text(
+                                textAlign: TextAlign.center,
+                                'Sabores que enamoran\ndesde 1994',
+                                style: GoogleFonts.montserrat(
+                                  color: const Color(0xFF1A1A1A),
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.15,
+                                  letterSpacing: 0.2,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 14),
+                            const SizedBox(height: 14),
 
-                          Text(
-                            'Tradición  ·  Calidad  ·  Pasión',
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFF1A1A1A),
-                              fontSize: 14,
-                              letterSpacing: 1.8,
-                              fontWeight: FontWeight.w500,
+                            Text(
+                              'Tradición  ·  Calidad  ·  Pasión',
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFF1A1A1A),
+                                fontSize: 14,
+                                letterSpacing: 1.8,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -587,7 +694,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                 // Botón "Comenzar" en la parte inferior
                 Positioned(
-                  bottom: 56,
+                  bottom: buttonBottom,
                   left: 32,
                   right: 32,
                   child: Opacity(
@@ -606,7 +713,7 @@ class _SplashScreenState extends State<SplashScreen>
                               );
                             },
                             child: Container(
-                              width: 230,
+                              width: buttonWidth,
                               height: 58,
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF5EDE4),
