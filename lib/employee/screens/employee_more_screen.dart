@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'employee_profile_service.dart';
-import '../services/employee_profile_screen.dart';
+import '../services/employee_profile_service.dart';
+import 'employee_profile_screen.dart';
 import '../../shared/page_transitions.dart';
 
 /// Pantalla "Más" del rol Empleado (réplica de la del Administrador, sin

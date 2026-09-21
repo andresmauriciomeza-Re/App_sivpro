@@ -130,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () => setState(() => _editando = !_editando),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        side: const BorderSide(color: Colors.white),
+                        side: const BorderSide(color: Colors.black12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -224,7 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: _cerrarSesion,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        side: const BorderSide(color: Colors.white),
+                        side: const BorderSide(color: Colors.black12),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../screens/employee_profile_service.dart';
+import '../services/employee_profile_service.dart';
 import '../../shared/page_transitions.dart';
 
 /// Perfil del Empleado (réplica del perfil del Administrador, con los campos

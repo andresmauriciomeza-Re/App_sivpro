@@ -316,7 +316,7 @@ class _OrderCard extends StatelessWidget {
                     onPressed: onTap,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: splashRojo,
-                      side: const BorderSide(color: Colors.white),
+                      side: const BorderSide(color: Colors.black12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
