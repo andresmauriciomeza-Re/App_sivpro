@@ -162,7 +162,9 @@ class _SplashScreenState extends State<SplashScreen>
   // Idea 4 y 8: parallax + sombra según inclinación del celular.
   // Se usa un ValueNotifier para que solo la capa del logo se repinte.
   StreamSubscription<AccelerometerEvent>? _accelSub;
-  final ValueNotifier<Offset> _tiltNotifier = ValueNotifier<Offset>(Offset.zero);
+  final ValueNotifier<Offset> _tiltNotifier = ValueNotifier<Offset>(
+    Offset.zero,
+  );
   bool _imagenesPrecargadas = false;
 
   // Modo ligero (solo release): si varios frames seguidos superan los 40 ms
@@ -209,11 +211,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _logoDropProgress = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(
-        _tExpandEnd,
-        _tLogoInEnd,
-        curve: Curves.bounceOut,
-      ),
+      curve: const Interval(_tExpandEnd, _tLogoInEnd, curve: Curves.bounceOut),
     );
 
     _logoPosition = CurvedAnimation(
@@ -262,20 +260,19 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Acelerómetro para parallax + sombra (ideas 4 y 8). Escribe en un
     // ValueNotifier para no disparar rebuilds de todo el árbol.
-    _accelSub = accelerometerEventStream(
-      samplingPeriod: SensorInterval.uiInterval,
-    ).listen(
-      (event) {
-        if (!mounted) return;
-        final tiltX = (event.x / 9.8).clamp(-1.0, 1.0);
-        final tiltY = (event.y / 9.8).clamp(-1.0, 1.0);
-        final tilt = _tiltNotifier.value;
-        if ((tiltX - tilt.dx).abs() > 0.03 || (tiltY - tilt.dy).abs() > 0.03) {
-          _tiltNotifier.value = Offset(tiltX, tiltY);
-        }
-      },
-      onError: (_) {},
-    );
+    _accelSub =
+        accelerometerEventStream(
+          samplingPeriod: SensorInterval.uiInterval,
+        ).listen((event) {
+          if (!mounted) return;
+          final tiltX = (event.x / 9.8).clamp(-1.0, 1.0);
+          final tiltY = (event.y / 9.8).clamp(-1.0, 1.0);
+          final tilt = _tiltNotifier.value;
+          if ((tiltX - tilt.dx).abs() > 0.03 ||
+              (tiltY - tilt.dy).abs() > 0.03) {
+            _tiltNotifier.value = Offset(tiltX, tiltY);
+          }
+        }, onError: (_) {});
 
     // Mide la duración de cada frame durante el revelado para poder activar
     // el modo ligero si el dispositivo no da a basto.
@@ -309,15 +306,14 @@ class _SplashScreenState extends State<SplashScreen>
     final dpr = media.devicePixelRatio;
 
     // Precache con tope de 1440 px de ancho: suficiente para pantallas muy
-    // grandes (p. ej. 1440 píxeles lógicos × 3x = 4320 reales), y evita
-    // descodificar imágenes gigantes en tabletas o PC.
+    // grandes y evita descodificar imágenes gigantes en tabletas o PC.
     final layoutR = _calcularLayout(size, media.padding);
     final providerFondo = ResizeImage(
-      AssetImage('assets/img/fondo_splash_blanc4.png'),
+      const AssetImage('assets/img/fondo_splash_blanc4.png'),
       width: min(size.width * dpr, 1440.0).round(),
     );
     final providerLogo = ResizeImage(
-      AssetImage('assets/img/logo_blanc7.png'),
+      const AssetImage('assets/img/logo_blanc7.png'),
       width: (layoutR.logoSize * dpr).round(),
     );
 
@@ -342,12 +338,20 @@ class _SplashScreenState extends State<SplashScreen>
   /// Calcula el layout para que el logo, el texto y el botón quepan sin
   /// solaparse: si el espacio vertical no alcanza, reduce el logo (mínimo
   /// 96) y los espacios entre bloques hasta que todo quepa.
-  ({double logoSize, double logoTopFinal, double textTop, double buttonBottom, double buttonWidth})
-      _calcularLayout(Size size, EdgeInsets padding) {
+  ({
+    double logoSize,
+    double logoTopFinal,
+    double textTop,
+    double buttonBottom,
+    double buttonWidth,
+  })
+  _calcularLayout(Size size, EdgeInsets padding) {
     final ancho = size.width;
     final alto = size.height;
     const buttonHeight = 58.0;
-    final altoTexto = 30 * 1.15 * 1.15 + 14 + 14 * 1.15;
+    // Alto estimado del bloque de texto: 2 líneas del título (30 px, altura
+    // 1.15) + espacio + subtítulo, con la fuente del sistema limitada a 1.15x.
+    final altoTexto = 2 * 30 * 1.15 * 1.15 + 14 + 14 * 1.5 * 1.15;
 
     final buttonBottom = padding.bottom + max(24.0, alto * 0.05);
     final logoTopFinal = padding.top + alto * 0.06;
@@ -505,7 +509,6 @@ class _SplashScreenState extends State<SplashScreen>
     final buttonBottom = layout.buttonBottom;
     final buttonWidth = layout.buttonWidth;
     final logoCenteredTop = (size.height - logoSize) / 2;
-    final logoDropY = (-size.height * 0.25) * (1 - _logoDropProgress.value);
     final textRepel = _computeTextRepel();
 
     return Scaffold(
@@ -531,6 +534,10 @@ class _SplashScreenState extends State<SplashScreen>
           animation: _controller,
           builder: (context, child) {
             final t = _controller.value;
+            // Se calcula aquí, dentro del builder, para que se actualice en
+            // cada frame; fuera del builder queda congelada.
+            final logoDropY =
+                (-size.height * 0.25) * (1 - _logoDropProgress.value);
 
             return Stack(
               children: [
@@ -569,7 +576,9 @@ class _SplashScreenState extends State<SplashScreen>
                         clipper: _CircleRevealClipper(_expandProgress.value),
                         child: Image(
                           image: ResizeImage(
-                            AssetImage('assets/img/fondo_splash_blanc4.png'),
+                            const AssetImage(
+                              'assets/img/fondo_splash_blanc4.png',
+                            ),
                             width: min(size.width * dpr, 1440.0).round(),
                           ),
                           fit: BoxFit.cover,
@@ -640,16 +649,22 @@ class _SplashScreenState extends State<SplashScreen>
                               onPanEnd: (details) {
                                 _logoSpringAnim =
                                     Tween<Offset>(
-                                        begin: _logoDrag, end: Offset.zero)
-                                    .chain(CurveTween(curve: Curves.elasticOut))
-                                    .animate(_logoSpringController);
+                                          begin: _logoDrag,
+                                          end: Offset.zero,
+                                        )
+                                        .chain(
+                                          CurveTween(curve: Curves.elasticOut),
+                                        )
+                                        .animate(_logoSpringController);
                                 _logoSpringController.forward(from: 0);
                               },
                               child: Transform(
                                 alignment: Alignment.center,
                                 transform: Matrix4.identity()
                                   ..setEntry(3, 2, 0.0015)
-                                  ..rotateX(-_logoDrag.dy * 0.4 - tilt.dy * 0.15)
+                                  ..rotateX(
+                                    -_logoDrag.dy * 0.4 - tilt.dy * 0.15,
+                                  )
                                   ..rotateY(_logoDrag.dx * 0.4 + tilt.dx * 0.15)
                                   ..rotateZ(_logoDrag.dx * 0.05)
                                   ..scaleByDouble(
@@ -670,7 +685,7 @@ class _SplashScreenState extends State<SplashScreen>
                                       ),
                                       child: Image(
                                         image: ResizeImage(
-                                          AssetImage(
+                                          const AssetImage(
                                             'assets/img/logo_blanc7.png',
                                           ),
                                           width: (logoSize * dpr).round(),
