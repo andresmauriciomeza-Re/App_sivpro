@@ -398,26 +398,26 @@ Text(
                         child: Stack(
                           children: [
                             Positioned.fill(
-                              child: _lat == null
-                                  ? (_cargando
-                                      ? const Center(
-                                          child: CircularProgressIndicator(
-                                            color: splashRojo,
-                                          ),
-                                        )
-                                      : Container(
-                                          color: Colors.grey.shade200,
-                                          alignment: Alignment.center,
-                                          child: const Icon(
-                                            Icons.map_outlined,
-                                            color: splashRojo,
-                                            size: 40,
-                                          ),
-                                        ))
-                                  : GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: _abrirMapa,
-                                      child: FlutterMap(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: _elegirMapa,
+                                child: _lat == null
+                                    ? (_cargando
+                                        ? const Center(
+                                            child: CircularProgressIndicator(
+                                              color: splashRojo,
+                                            ),
+                                          )
+                                        : Container(
+                                            color: Colors.grey.shade200,
+                                            alignment: Alignment.center,
+                                            child: const Icon(
+                                              Icons.map_outlined,
+                                              color: splashRojo,
+                                              size: 40,
+                                            ),
+                                          ))
+                                    : FlutterMap(
                                         options: MapOptions(
                                           initialCenter:
                                               LatLng(_lat!, _lng!),
@@ -449,7 +449,7 @@ Text(
                                           ),
                                         ],
                                       ),
-                                    ),
+                              ),
                             ),
                             if (_lat != null)
                               Positioned(
@@ -504,19 +504,123 @@ Text(
     );
   }
 
-  Future<void> _abrirMapa() async {
-    if (_lat == null || _lng == null) return;
-    final geoUri = Uri.parse('geo:0,0?q=$_lat,$_lng(La Sirena Pizza)');
-    if (await canLaunchUrl(geoUri)) {
-      await launchUrl(geoUri, mode: LaunchMode.externalApplication);
-      return;
+  /// Abre el bottom sheet para elegir con qué app abrir la ubicación.
+  Future<void> _elegirMapa() async {
+    final app = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Abrir ubicación con',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _opcionMapa(
+                icono: Icons.map,
+                nombre: 'Google Maps',
+                onTap: () => Navigator.of(sheetContext).pop('google_maps'),
+              ),
+              _opcionMapa(
+                icono: Icons.navigation,
+                nombre: 'Waze',
+                onTap: () => Navigator.of(sheetContext).pop('waze'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (app == null || !mounted) return;
+    await _abrirMapa(app);
+  }
+
+  Widget _opcionMapa({
+    required IconData icono,
+    required String nombre,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        child: Row(
+          children: [
+            Icon(icono, color: splashRojo, size: 22),
+            const SizedBox(width: 14),
+            Text(
+              nombre,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Abre Google Maps o Waze con la ubicación. Si no hay coordenadas
+  /// geocodificadas, usa [direccionLocal] como destino.
+  Future<void> _abrirMapa(String app) async {
+    final Uri uri;
+    if (app == 'waze') {
+      if (_lat != null && _lng != null) {
+        uri = Uri.parse('https://waze.com/ul?ll=$_lat,$_lng&navigate=yes');
+      } else {
+        uri = Uri.parse(
+            'https://waze.com/ul?q=${Uri.encodeComponent(direccionLocal)}&navigate=yes');
+      }
+    } else {
+      final destino = (_lat != null && _lng != null)
+          ? '$_lat,$_lng'
+          : Uri.encodeComponent(direccionLocal);
+      uri = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&destination=$destino&travelmode=driving');
     }
-    // Fallback: si no hay app de mapas instalada, usar Google Maps web.
-    final webUri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=$_lat,$_lng');
-    if (await canLaunchUrl(webUri)) {
-      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+
+    try {
+      final abierta = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!abierta && mounted) {
+        _mostrarErrorMapa();
+      }
+    } catch (_) {
+      if (mounted) {
+        _mostrarErrorMapa();
+      }
     }
+  }
+
+  void _mostrarErrorMapa() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No se pudo abrir la app de mapas')),
+    );
   }
 
   Widget _buildPasoTimeline(int index, bool cancelado) {
