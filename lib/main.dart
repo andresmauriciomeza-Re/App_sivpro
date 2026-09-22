@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'splash_screen.dart';
+import 'auth/splash_screen.dart';
 
-void main() {
+Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const SivproApp());
 }
 
