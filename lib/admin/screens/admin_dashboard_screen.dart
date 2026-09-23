@@ -2,13 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'purchases_screen.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
   static const Color red = Color(0xFFC9151E);
   static const Color ink = Color(0xFF211616);
   static const Color muted = Color(0xFF6E5A58);
   static const Color page = Color(0xFFFFFBFA);
+
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  static const Map<String, List<int>> _salesValues = {
+    'Hoy': [40, 115, 350, 280, 145, 420, 175],
+    '7 días': [180, 260, 240, 340, 310, 430, 390],
+    '30 días': [350, 300, 410, 330],
+  };
+
+  static const Map<String, List<String>> _salesLabels = {
+    'Hoy': ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'],
+    '7 días': ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+    '30 días': ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+  };
+
+  String _selectedPeriod = 'Hoy';
+
+  Color get red => AdminDashboardScreen.red;
+  Color get ink => AdminDashboardScreen.ink;
+  Color get muted => AdminDashboardScreen.muted;
+  Color get page => AdminDashboardScreen.page;
 
   @override
   Widget build(BuildContext context) {
@@ -54,12 +78,19 @@ class AdminDashboardScreen extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        Text(
-                          'Ver todos  →',
-                          style: GoogleFonts.poppins(
-                            color: red,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SalesScreen(),
+                            ),
+                          ),
+                          child: Text(
+                            'Ver todos  →',
+                            style: GoogleFonts.poppins(
+                              color: red,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
@@ -87,7 +118,7 @@ class AdminDashboardScreen extends StatelessWidget {
           const SizedBox(width: 18),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.menu, color: red, size: 25),
+            icon: Icon(Icons.menu, color: red, size: 25),
           ),
           Expanded(
             child: Text(
@@ -104,7 +135,7 @@ class AdminDashboardScreen extends StatelessWidget {
             width: 36,
             height: 36,
             margin: const EdgeInsets.only(right: 18),
-            decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: red, shape: BoxShape.circle),
             alignment: Alignment.center,
             child: Text(
               'GV',
@@ -180,34 +211,59 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              _periodChip('Hoy', selected: true),
+              _periodChip(
+                'Hoy',
+                onTap: () => setState(() => _selectedPeriod = 'Hoy'),
+                selected: _selectedPeriod == 'Hoy',
+              ),
               const SizedBox(width: 8),
-              _periodChip('7 días'),
+              _periodChip(
+                '7 días',
+                onTap: () => setState(() => _selectedPeriod = '7 días'),
+                selected: _selectedPeriod == '7 días',
+              ),
               const SizedBox(width: 8),
-              _periodChip('30 días'),
+              _periodChip(
+                '30 días',
+                onTap: () => setState(() => _selectedPeriod = '30 días'),
+                selected: _selectedPeriod == '30 días',
+              ),
             ],
           ),
           const SizedBox(height: 22),
-          const SizedBox(height: 205, child: _SalesChart()),
+          SizedBox(
+            height: 205,
+            child: _SalesChart(
+              values: _salesValues[_selectedPeriod]!,
+              labels: _salesLabels[_selectedPeriod]!,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _periodChip(String label, {bool selected = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-      decoration: BoxDecoration(
-        color: selected ? red : const Color(0xFFFFF8F7),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: red.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          color: selected ? Colors.white : muted,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+  Widget _periodChip(
+    String label, {
+    required VoidCallback onTap,
+    bool selected = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? red : const Color(0xFFFFF8F7),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: red.withValues(alpha: 0.35)),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            color: selected ? Colors.white : muted,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -258,7 +314,7 @@ class AdminDashboardScreen extends StatelessWidget {
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: page,
         border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
       ),
@@ -403,18 +459,26 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _SalesChart extends StatelessWidget {
-  const _SalesChart();
+  const _SalesChart({required this.values, required this.labels});
+
+  final List<int> values;
+  final List<String> labels;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _SalesChartPainter(),
+      painter: _SalesChartPainter(values: values, labels: labels),
       child: const SizedBox.expand(),
     );
   }
 }
 
 class _SalesChartPainter extends CustomPainter {
+  const _SalesChartPainter({required this.values, required this.labels});
+
+  final List<int> values;
+  final List<String> labels;
+
   @override
   void paint(Canvas canvas, Size size) {
     const red = Color(0xFFB9000C);
@@ -422,16 +486,6 @@ class _SalesChartPainter extends CustomPainter {
       ..color = const Color(0xFFD8D0CE)
       ..strokeWidth = 1;
     final barPaint = Paint()..color = red;
-    const values = [40, 115, 350, 280, 145, 420, 175];
-    const labels = [
-      '08:00',
-      '10:00',
-      '12:00',
-      '14:00',
-      '16:00',
-      '18:00',
-      '20:00',
-    ];
 
     const left = 50.0;
     const bottom = 178.0;
@@ -480,7 +534,8 @@ class _SalesChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SalesChartPainter oldDelegate) =>
+      oldDelegate.values != values || oldDelegate.labels != labels;
 }
 
 class _RecentSale {
