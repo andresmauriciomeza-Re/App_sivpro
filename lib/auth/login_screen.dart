@@ -114,7 +114,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (role == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Correo o contraseña incorrectos')),
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: splashRojo,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Correo o contraseña incorrectos',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
       return;
     }
