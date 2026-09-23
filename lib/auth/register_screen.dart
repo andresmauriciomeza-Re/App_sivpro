@@ -19,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _telefonoController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   String _tipoDocumento = 'CC';
   bool _obscurePassword = true;
@@ -26,7 +27,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final List<Map<String, String>> _tiposDocumento = [
     {'code': 'CC', 'label': 'Cédula de Ciudadanía'},
-    {'code': 'TI', 'label': 'Tarjeta de Identidad'},
     {'code': 'CE', 'label': 'Cédula de Extranjería'},
     {'code': 'PPT', 'label': 'Permiso por Protección Temporal'},
     {'code': 'PEP', 'label': 'Permiso Especial de Permanencia'},
@@ -81,6 +81,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _onCrearCuenta() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     // TODO: conectar con el backend real.
     ScaffoldMessenger.of(
       context,
@@ -177,201 +180,268 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 28),
 
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 4,
-                    child: Column(
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _fieldLabel('Tipo doc.'),
-                        DropdownButtonFormField<String>(
-                          initialValue: _tipoDocumento,
-                          dropdownColor: Colors.white,
-                          icon: const Icon(
-                            Icons.arrow_drop_down,
-                            color: Colors.black54,
-                            size: 28,
-                          ),
-                          style: GoogleFonts.poppins(
-                            color: Colors.black87,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          isExpanded: true,
-                          decoration: _fieldDecoration(label: 'Tipo doc.'),
-                          selectedItemBuilder: (context) {
-                            return _tiposDocumento
-                                .map(
-                                  (tipo) => Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      tipo['code']!,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList();
-                          },
-                          items: _tiposDocumento
-                              .map(
-                                (tipo) => DropdownMenuItem(
-                                  value: tipo['code'],
-                                  child: Text(
-                                    '${tipo['code']} · ${tipo['label']}',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.black87,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                        Expanded(
+                          flex: 4,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _fieldLabel('Tipo doc.'),
+                              DropdownButtonFormField<String>(
+                                initialValue: _tipoDocumento,
+                                dropdownColor: Colors.white,
+                                icon: const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.black54,
+                                  size: 28,
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() => _tipoDocumento = value);
-                            }
-                          },
+                                style: GoogleFonts.poppins(
+                                  color: Colors.black87,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                isExpanded: true,
+                                itemHeight: null,
+                                decoration: _fieldDecoration(
+                                  label: 'Tipo doc.',
+                                ),
+                                selectedItemBuilder: (context) {
+                                  return _tiposDocumento
+                                      .map(
+                                        (tipo) => Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            tipo['code']!,
+                                            style: const TextStyle(
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList();
+                                },
+                                items: _tiposDocumento
+                                    .map(
+                                      (tipo) => DropdownMenuItem(
+                                        value: tipo['code'],
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 6,
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                tipo['code']!,
+                                                style: GoogleFonts.poppins(
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 12,
+                                                  color: splashRojo,
+                                                ),
+                                              ),
+                                              Text(
+                                                tipo['label']!,
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 12,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() => _tipoDocumento = value);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _fieldLabel('Número de documento'),
+                              TextFormField(
+                                controller: _documentoController,
+                                keyboardType: TextInputType.number,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.black87,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                decoration: _fieldDecoration(
+                                  label: 'Número de documento',
+                                  icon: Icons.badge_outlined,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Este campo es obligatorio';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _fieldLabel('Número de documento'),
-                        TextField(
-                          controller: _documentoController,
-                          keyboardType: TextInputType.number,
-                          style: GoogleFonts.poppins(
-                            color: Colors.black87,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          decoration: _fieldDecoration(
-                            label: 'Número de documento',
-                            icon: Icons.badge_outlined,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-              _fieldLabel('Nombre completo'),
-              TextField(
-                controller: _nombreController,
-                style: GoogleFonts.poppins(
-                  color: Colors.black87,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                decoration: _fieldDecoration(
-                  label: 'Nombre completo',
-                  icon: Icons.person_outline,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _fieldLabel('Correo electrónico'),
-              TextField(
-                controller: _correoController,
-                keyboardType: TextInputType.emailAddress,
-                style: GoogleFonts.poppins(
-                  color: Colors.black87,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                decoration: _fieldDecoration(
-                  label: 'Correo electrónico',
-                  icon: Icons.mail_outline,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _fieldLabel('Teléfono'),
-              TextField(
-                controller: _telefonoController,
-                keyboardType: TextInputType.phone,
-                style: GoogleFonts.poppins(
-                  color: Colors.black87,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                decoration: _fieldDecoration(
-                  label: 'Teléfono',
-                  icon: Icons.phone_outlined,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _fieldLabel('Contraseña'),
-              TextField(
-                controller: _passwordController,
-                obscureText: _obscurePassword,
-                style: GoogleFonts.poppins(
-                  color: Colors.black87,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                decoration:
-                    _fieldDecoration(
-                      label: 'Contraseña',
-                      icon: Icons.lock_outline,
-                    ).copyWith(
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.black38,
-                        ),
-                        onPressed: () {
-                          setState(() => _obscurePassword = !_obscurePassword);
-                        },
+                    _fieldLabel('Nombre completo'),
+                    TextFormField(
+                      controller: _nombreController,
+                      style: GoogleFonts.poppins(
+                        color: Colors.black87,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-              ),
-              const SizedBox(height: 16),
-
-              _fieldLabel('Confirmar contraseña'),
-              TextField(
-                controller: _confirmPasswordController,
-                obscureText: _obscureConfirmPassword,
-                style: GoogleFonts.poppins(
-                  color: Colors.black87,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                decoration:
-                    _fieldDecoration(
-                      label: 'Confirmar contraseña',
-                      icon: Icons.lock_outline,
-                    ).copyWith(
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.black38,
-                        ),
-                        onPressed: () {
-                          setState(
-                            () => _obscureConfirmPassword =
-                                !_obscureConfirmPassword,
-                          );
-                        },
+                      decoration: _fieldDecoration(
+                        label: 'Nombre completo',
+                        icon: Icons.person_outline,
                       ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Este campo es obligatorio';
+                        }
+                        return null;
+                      },
                     ),
+                    const SizedBox(height: 16),
+
+                    _fieldLabel('Correo electrónico'),
+                    TextFormField(
+                      controller: _correoController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: GoogleFonts.poppins(
+                        color: Colors.black87,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      decoration: _fieldDecoration(
+                        label: 'Correo electrónico',
+                        icon: Icons.mail_outline,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Este campo es obligatorio';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    _fieldLabel('Teléfono'),
+                    TextFormField(
+                      controller: _telefonoController,
+                      keyboardType: TextInputType.phone,
+                      style: GoogleFonts.poppins(
+                        color: Colors.black87,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      decoration: _fieldDecoration(
+                        label: 'Teléfono',
+                        icon: Icons.phone_outlined,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Este campo es obligatorio';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    _fieldLabel('Contraseña'),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      style: GoogleFonts.poppins(
+                        color: Colors.black87,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      decoration:
+                          _fieldDecoration(
+                            label: 'Contraseña',
+                            icon: Icons.lock_outline,
+                          ).copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.black38,
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
+                              },
+                            ),
+                          ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Este campo es obligatorio';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    _fieldLabel('Confirmar contraseña'),
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirmPassword,
+                      style: GoogleFonts.poppins(
+                        color: Colors.black87,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      decoration:
+                          _fieldDecoration(
+                            label: 'Confirmar contraseña',
+                            icon: Icons.lock_outline,
+                          ).copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.black38,
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscureConfirmPassword =
+                                      !_obscureConfirmPassword,
+                                );
+                              },
+                            ),
+                          ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Este campo es obligatorio';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 26),
 

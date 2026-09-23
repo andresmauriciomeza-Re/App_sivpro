@@ -69,7 +69,29 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
   void _enviarComprobante() {
     if (!_comprobanteAdjunto) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Adjunta tu comprobante de pago primero')),
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: splashRojo,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          content: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Adjunte su comprobante',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
       return;
     }

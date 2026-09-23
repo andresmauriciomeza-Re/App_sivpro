@@ -50,22 +50,22 @@ const List<ProductAddition> bebidasDefault = [
   ProductAddition(
     nombre: 'Coca Cola',
     imagen: 'assets/img/Coca-Cola.png',
-    precio: 3500,
+    precio: 8000,
   ),
   ProductAddition(
     nombre: 'Cuatro',
     imagen: 'assets/img/Quatro.png',
-    precio: 3500,
+    precio: 7000,
   ),
   ProductAddition(
     nombre: 'Premium',
     imagen: 'assets/img/Premio.png',
-    precio: 3500,
+    precio: 7500,
   ),
   ProductAddition(
     nombre: 'Pepsi',
     imagen: 'assets/img/Pepsi.png',
-    precio: 3500,
+    precio: 9400,
   ),
 ];
 
@@ -165,7 +165,7 @@ final Map<String, List<MenuItem>> categoriasMenu = {
       descripcion:
           'Nuestra lasaña artesanal preparada con capas de pasta fresca, carne de res seleccionada, salsa boloñesa de la casa y una mezcla secreta de quesos gratinados.',
       imagen: 'assets/img/lasaña_carne.png',
-      tamanos: [ProductSize(nombre: 'Porción', precio: 18000)],
+      tamanos: [ProductSize(nombre: 'Normal', precio: 20000)],
       adiciones: bebidasDefault,
     ),
     const MenuItem(
@@ -173,7 +173,7 @@ final Map<String, List<MenuItem>> categoriasMenu = {
       descripcion:
           'Capas de vegetales frescos de temporada, salsa blanca casera y quesos gratinados.',
       imagen: 'assets/img/lasaña_mixta.png',
-      tamanos: [ProductSize(nombre: 'Porción', precio: 16000)],
+      tamanos: [ProductSize(nombre: 'Normal', precio: 20000)],
       adiciones: bebidasDefault,
     ),
 
@@ -182,7 +182,7 @@ final Map<String, List<MenuItem>> categoriasMenu = {
       descripcion:
           'Capas de vegetales frescos de temporada, salsa blanca casera y quesos gratinados.',
       imagen: 'assets/img/lasaña_pollo.png',
-      tamanos: [ProductSize(nombre: 'Porción', precio: 16000)],
+      tamanos: [ProductSize(nombre: 'Normal', precio: 20000)],
       adiciones: bebidasDefault,
     ),
   ],
