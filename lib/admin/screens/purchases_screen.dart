@@ -62,6 +62,12 @@ void navigateToBottomModule(BuildContext context, int index) {
   );
 }
 
+void openSalesManagement(BuildContext context) {
+  Navigator.of(context).push(
+    MaterialPageRoute(builder: (_) => const _SalesManagementScreen()),
+  );
+}
+
 class PurchasesScreen extends StatelessWidget {
   const PurchasesScreen({super.key});
 

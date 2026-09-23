@@ -79,11 +79,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SalesScreen(),
-                            ),
-                          ),
+                          onTap: () => openSalesManagement(context),
                           child: Text(
                             'Ver todos  →',
                             style: GoogleFonts.poppins(
