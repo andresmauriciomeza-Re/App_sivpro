@@ -108,7 +108,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
     return TextField(
       controller: widget.controller,
       onChanged: widget.onChanged,
-      style: GoogleFonts.dmSerifDisplay(color: AppColors.ink, fontSize: 15),
+      style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search, color: AppColors.muted, size: 24),
         suffixIcon: _hasText
@@ -119,7 +119,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
               )
             : null,
         hintText: widget.hint,
-        hintStyle: GoogleFonts.dmSerifDisplay(
+        hintStyle: GoogleFonts.poppins(
           color: AppColors.muted,
           fontSize: 15,
         ),
