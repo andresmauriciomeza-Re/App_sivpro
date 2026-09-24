@@ -155,7 +155,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                     const SizedBox(height: 34),
                     Text(
                       'Mi Perfil',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 36,
                         fontWeight: FontWeight.w700,
@@ -163,7 +163,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                     ),
                     Text(
                       'Consulta y actualiza tu información de contacto',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFF776D6A),
                         fontSize: 17,
                       ),
@@ -181,7 +181,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
-  TextStyle _crumb(Color color) => GoogleFonts.dmSerifDisplay(
+  TextStyle _crumb(Color color) => GoogleFonts.poppins(
         color: color,
         fontSize: 16,
         fontWeight: color == const Color(0xFF211616)
@@ -206,7 +206,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('La Sirena Pizza',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.montserrat(
                         color: red,
                         fontSize: 23,
                         fontWeight: FontWeight.w700)),
@@ -221,7 +221,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 color: red, shape: BoxShape.circle),
             alignment: Alignment.center,
             child: Text(getInitials(profile.fullName),
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700)),
@@ -280,7 +280,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               profile.fullName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: ink,
                                 fontSize: 21,
                               ),
@@ -302,7 +302,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         ),
                         child: Text(
                           'Empleado',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: const Color(0xFFAD2525),
                             fontSize: 14,
                           ),
@@ -435,7 +435,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           const SizedBox(width: 12),
           Text(
             label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF5B514F),
               fontSize: 18,
             ),
@@ -446,7 +446,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           controller: controller,
           enabled: _editing,
           keyboardType: keyboardType,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: const Color(0xFF211616),
             fontSize: 18,
           ),
@@ -518,7 +518,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                             const SizedBox(height: 1),
                             Text(
                               items[index].$2,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: index == 4
                                     ? red
                                     : const Color(0xFF756D6A),

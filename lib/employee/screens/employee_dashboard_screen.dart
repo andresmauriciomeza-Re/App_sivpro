@@ -34,7 +34,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                   children: [
                     Text(
                       '¡Buenos días, María! 👋',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 28,
                       ),
@@ -42,14 +42,14 @@ class EmployeeDashboardScreen extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       'Viernes, 18 De Septiembre De 2026',
-                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 13),
+                      style: GoogleFonts.poppins(color: muted, fontSize: 13),
                     ),
                     const SizedBox(height: 24),
                     _buildSalesSummary(),
                     const SizedBox(height: 26),
                     Text(
                       'ACCESOS RÁPIDOS',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: muted,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -84,7 +84,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Últimas ventas',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: ink,
                             fontSize: 22,
                           ),
@@ -93,7 +93,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                           onPressed: () => _openSalesManagement(context),
                           child: Text(
                             'Ver todos  →',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: red,
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -130,11 +130,11 @@ class EmployeeDashboardScreen extends StatelessWidget {
             children: [
               Text(
                 'La Sirena',
-                style: GoogleFonts.dmSerifDisplay(color: red, fontSize: 19),
+                style: GoogleFonts.montserrat(color: red, fontSize: 19),
               ),
               Text(
                 'S.I.V.PRO',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: muted,
                   fontSize: 10,
                   letterSpacing: 1,
@@ -157,7 +157,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
             decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
             child: Text(
               getInitials('María González'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
@@ -203,15 +203,15 @@ class EmployeeDashboardScreen extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             '24',
-            style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 30),
+            style: GoogleFonts.poppins(color: ink, fontSize: 30),
           ),
           Text(
             'Ventas hoy',
-            style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 13),
+            style: GoogleFonts.poppins(color: muted, fontSize: 13),
           ),
           Text(
             '+3 en la última hora',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFFAAA09D),
               fontSize: 12,
             ),
@@ -230,7 +230,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: foreground,
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -284,7 +284,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                             const SizedBox(height: 1),
                             Text(
                               items[index].$3,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: index == 0
                                     ? red
                                     : const Color(0xFF756D6A),
@@ -380,14 +380,14 @@ class _QuickAccessCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
               ),
             ),
             Text(
               subtitle,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: EmployeeDashboardScreen.muted,
                 fontSize: 11,
               ),
@@ -487,7 +487,7 @@ class _SaleCard extends StatelessWidget {
             children: [
               Text(
                 sale.id,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: EmployeeDashboardScreen.muted,
                   fontSize: 12,
                 ),
@@ -495,7 +495,7 @@ class _SaleCard extends StatelessWidget {
               const Spacer(),
               Text(
                 sale.status,
-                style: GoogleFonts.dmSerifDisplay(color: statusColor, fontSize: 11),
+                style: GoogleFonts.poppins(color: statusColor, fontSize: 11),
               ),
             ],
           ),
@@ -504,7 +504,7 @@ class _SaleCard extends StatelessWidget {
             children: [
               Text(
                 sale.customer,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -512,7 +512,7 @@ class _SaleCard extends StatelessWidget {
               const Spacer(),
               Text(
                 sale.amount,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),
@@ -530,7 +530,7 @@ class _SaleCard extends StatelessWidget {
               const SizedBox(width: 5),
               Text(
                 sale.payment,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: EmployeeDashboardScreen.muted,
                   fontSize: 12,
                 ),
@@ -547,7 +547,7 @@ class _SaleCard extends StatelessWidget {
               const SizedBox(width: 5),
               Text(
                 sale.time,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: EmployeeDashboardScreen.muted,
                   fontSize: 12,
                 ),

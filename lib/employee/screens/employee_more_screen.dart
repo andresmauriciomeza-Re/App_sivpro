@@ -33,7 +33,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Más opciones',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 35,
                         fontWeight: FontWeight.w700,
@@ -45,14 +45,14 @@ class EmployeeMoreScreen extends StatelessWidget {
                     Center(
                       child: Text(
                         'La Sirena Pizza – S.I.V.PRO',
-                        style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
+                        style: GoogleFonts.poppins(color: muted, fontSize: 16),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Center(
                       child: Text(
                         'Versión 2.1.4',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: muted,
                           fontSize: 15,
                         ),
@@ -85,7 +85,7 @@ class EmployeeMoreScreen extends StatelessWidget {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -100,7 +100,7 @@ class EmployeeMoreScreen extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               profile.initials,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -135,7 +135,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     profile.initials,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
@@ -149,7 +149,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                     children: [
                       Text(
                         profile.fullName,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: ink,
                           fontSize: 23,
                           fontWeight: FontWeight.w700,
@@ -157,7 +157,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                       ),
                       Text(
                         'Empleado',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: muted,
                           fontSize: 17,
                         ),
@@ -174,7 +174,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'S.I.V.PRO',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: muted,
                             fontSize: 14,
                           ),
@@ -212,7 +212,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                   const SizedBox(width: 25),
                   Text(
                     'Cerrar sesión',
-                    style: GoogleFonts.dmSerifDisplay(color: red, fontSize: 22),
+                    style: GoogleFonts.poppins(color: red, fontSize: 22),
                   ),
                 ],
               ),
@@ -243,7 +243,7 @@ class EmployeeMoreScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 20),
+                style: GoogleFonts.montserrat(color: ink, fontSize: 20),
               ),
             ),
             const Icon(Icons.chevron_right, color: muted, size: 30),
@@ -295,7 +295,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                             const SizedBox(height: 1),
                             Text(
                               items[index].$2,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: index == 4 ? red : muted,
                                 fontSize: 10,
                                 height: 1,

@@ -44,7 +44,7 @@ class _EmployeeSubstitutionPickerScreenState
                     const SizedBox(height: 22),
                     Text(
                       'Producto de sustitución',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 34,
                       ),
@@ -52,7 +52,7 @@ class _EmployeeSubstitutionPickerScreenState
                     const SizedBox(height: 6),
                     Text(
                       'Elige el producto de reemplazo equivalente que recibirá el cliente.',
-                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
+                      style: GoogleFonts.poppins(color: muted, fontSize: 14),
                     ),
                     const SizedBox(height: 22),
                     GridView.builder(
@@ -104,7 +104,7 @@ class _EmployeeSubstitutionPickerScreenState
             children: [
               Text(
                 'LA SIRENA PIZZA',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.montserrat(
                   color: red,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -113,7 +113,7 @@ class _EmployeeSubstitutionPickerScreenState
               ),
               Text(
                 'S.I.V.PRO Mobile',
-                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
+                style: GoogleFonts.poppins(color: muted, fontSize: 14),
               ),
             ],
           ),
@@ -143,16 +143,16 @@ class _EmployeeSubstitutionPickerScreenState
   Widget _breadcrumb() {
     return Row(
       children: [
-        Text('Inicio', style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16)),
+        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 16)),
         const SizedBox(width: 36),
         Text(
           'devoluciones',
-          style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
+          style: GoogleFonts.poppins(color: muted, fontSize: 16),
         ),
         const SizedBox(width: 36),
         Text(
           'canje',
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: ink,
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -185,7 +185,7 @@ class _EmployeeSubstitutionPickerScreenState
           ),
           child: Text(
             'Confirmar sustitución',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -233,7 +233,7 @@ class _EmployeeSubstitutionPickerScreenState
                           ),
                           Text(
                             items[i].$2,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: i == 3 ? red : const Color(0xFFA4AAB5),
                               fontSize: 10,
                             ),
@@ -320,7 +320,7 @@ class _SubstitutionCard extends StatelessWidget {
                           item.nombre,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w700,
                             color: Colors.black87,
@@ -329,7 +329,7 @@ class _SubstitutionCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           item.precioTexto,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                             color: Colors.black87,

@@ -100,14 +100,14 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Clientes',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 30,
                       ),
                     ),
                     Text(
                       'Usuarios registrados con tipo cliente en La Sirena',
-                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
+                      style: GoogleFonts.poppins(color: muted, fontSize: 14),
                     ),
                     const SizedBox(height: 18),
                     Row(
@@ -178,7 +178,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                       children: [
                         Text(
                           'LISTADO DE CLIENTES',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: muted,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -186,7 +186,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                         ),
                         Text(
                           '${_visibleClients >= clients.length ? clients.length : _visibleClients} DE ${clients.length}',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: muted,
                             fontSize: 14,
                           ),
@@ -231,7 +231,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
           const SizedBox(width: 28),
           Text(
             'La Sirena Pizza',
-            style: GoogleFonts.dmSerifDisplay(color: red, fontSize: 24),
+            style: GoogleFonts.montserrat(color: red, fontSize: 24),
           ),
           const Spacer(),
           const Icon(Icons.nightlight_outlined, color: AppColors.red, size: 24),
@@ -243,7 +243,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
             decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
             child: Text(
               getInitials('María González'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
@@ -260,12 +260,12 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
       children: [
         const Icon(Icons.home_outlined, color: Color(0xFF91A0B8), size: 17),
         const SizedBox(width: 5),
-        Text('Inicio', style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14)),
+        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 14)),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 7),
           child: Icon(Icons.chevron_right, color: muted, size: 17),
         ),
-        Text('clientes', style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 14)),
+        Text('clientes', style: GoogleFonts.poppins(color: ink, fontSize: 14)),
       ],
     );
   }
@@ -285,7 +285,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
           const SizedBox(width: 14),
           Text(
             'Buscar por nombre, correo o estado...',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF91A3C0),
               fontSize: 13,
             ),
@@ -335,7 +335,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                             const SizedBox(height: 1),
                             Text(
                               items[index].$2,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: index == 1 ? red : muted,
                                 fontSize: 10,
                                 fontWeight: index == 1
@@ -394,7 +394,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                       children: [
                         Text(
                           'Crear Cliente',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.montserrat(
                             color: ink,
                             fontSize: 30,
                           ),
@@ -434,7 +434,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                     const SizedBox(height: 18),
                     Text(
                       'Estado',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFF454545),
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -456,7 +456,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                           children: [
                             Text(
                               active ? 'Activo' : 'Inactivo',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: const Color(0xFF353535),
                                 fontSize: 16,
                               ),
@@ -487,7 +487,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                             ),
                             child: Text(
                               'Cancelar',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: ink,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -528,7 +528,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                             ),
                             child: Text(
                               'Crear cliente',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -571,7 +571,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                   children: [
                     Text(
                       'Detalle Cliente',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 30,
                       ),
@@ -593,7 +593,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                       backgroundColor: client.color,
                       child: Text(
                         client.initials,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
@@ -607,7 +607,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                         children: [
                           Text(
                             client.name,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: ink,
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
@@ -616,7 +616,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                           const SizedBox(height: 4),
                           Text(
                             client.id,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: muted,
                               fontSize: 14,
                             ),
@@ -648,7 +648,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                     ),
                     child: Text(
                       'Cerrar',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -691,7 +691,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                       children: [
                         Text(
                           'Editar Cliente',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.montserrat(
                             color: ink,
                             fontSize: 30,
                           ),
@@ -713,7 +713,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                           backgroundColor: client.color,
                           child: Text(
                             client.initials,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 23,
                               fontWeight: FontWeight.w700,
@@ -727,7 +727,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                             children: [
                               Text(
                                 client.name,
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   color: ink,
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
@@ -735,7 +735,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                               ),
                               Text(
                                 client.id,
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   color: muted,
                                   fontSize: 14,
                                 ),
@@ -768,7 +768,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Estado',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFF454545),
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -790,7 +790,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                           children: [
                             Text(
                               active ? 'Activo' : 'Inactivo',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: const Color(0xFF353535),
                                 fontSize: 16,
                               ),
@@ -816,7 +816,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                             ),
                             child: Text(
                               'Cancelar',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: ink,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -857,7 +857,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                             child: Text(
                               'Guardar cambios',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -898,7 +898,7 @@ class _DetailRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: _EmployeeClientsScreenState.muted,
               fontSize: 16,
             ),
@@ -908,7 +908,7 @@ class _DetailRow extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: _EmployeeClientsScreenState.ink,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -946,7 +946,7 @@ class _DialogField extends StatelessWidget {
         RichText(
           text: TextSpan(
             text: label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF454545),
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -972,13 +972,13 @@ class _DialogField extends StatelessWidget {
         TextField(
           controller: controller,
           keyboardType: keyboardType,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: const Color(0xFF353535),
             fontSize: 16,
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.dmSerifDisplay(
+            hintStyle: GoogleFonts.poppins(
               color: const Color(0xFF353535),
               fontSize: 16,
             ),
@@ -1028,7 +1028,7 @@ class _ActionButton extends StatelessWidget {
         ),
         label: Text(
           label,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: filled ? Colors.white : _EmployeeClientsScreenState.ink,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -1075,7 +1075,7 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(
             value,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: active
                   ? const Color(0xFF009C68)
                   : _EmployeeClientsScreenState.ink,
@@ -1085,7 +1085,7 @@ class _StatCard extends StatelessWidget {
           ),
           Text(
             label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: active
                   ? const Color(0xFF167653)
                   : _EmployeeClientsScreenState.muted,
@@ -1120,7 +1120,7 @@ class _FilterButton extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: _EmployeeClientsScreenState.ink,
                 fontSize: 12,
               ),
@@ -1174,7 +1174,7 @@ class _ClientCard extends StatelessWidget {
                 backgroundColor: client.color,
                 child: Text(
                   client.initials,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
@@ -1191,7 +1191,7 @@ class _ClientCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             client.name,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: _EmployeeClientsScreenState.ink,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -1210,7 +1210,7 @@ class _ClientCard extends StatelessWidget {
                           ),
                           child: Text(
                             client.id,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: _EmployeeClientsScreenState.muted,
                               fontSize: 10,
                             ),
@@ -1220,7 +1220,7 @@ class _ClientCard extends StatelessWidget {
                     ),
                     Text(
                       client.email,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: _EmployeeClientsScreenState.muted,
                         fontSize: 13,
                       ),
@@ -1241,7 +1241,7 @@ class _ClientCard extends StatelessWidget {
                 ),
                 child: Text(
                   client.active ? 'Activo' : 'Inactivo',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: client.active
                         ? const Color(0xFF086E4C)
                         : _EmployeeClientsScreenState.muted,
@@ -1256,14 +1256,14 @@ class _ClientCard extends StatelessWidget {
             children: [
               Text(
                 'Pedidos: ',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: const Color(0xFF91A3C0),
                   fontSize: 14,
                 ),
               ),
               Text(
                 '${client.orders}',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: _EmployeeClientsScreenState.ink,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
