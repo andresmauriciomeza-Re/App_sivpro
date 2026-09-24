@@ -338,7 +338,7 @@ class _QuickAccessCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: EmployeeDashboardScreen.ink,
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -348,7 +348,7 @@ class _QuickAccessCard extends StatelessWidget {
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: EmployeeDashboardScreen.muted,
                 fontSize: 11,
               ),
@@ -423,7 +423,7 @@ class _CompactStatCard extends StatelessWidget {
                   ),
                   child: Text(
                     badge!,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: AppColors.badgeGreenFg,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -438,7 +438,7 @@ class _CompactStatCard extends StatelessWidget {
             child: Text(
               value,
               maxLines: 1,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: EmployeeDashboardScreen.ink,
                 fontSize: 26,
                 fontWeight: FontWeight.w600,
@@ -449,7 +449,7 @@ class _CompactStatCard extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: EmployeeDashboardScreen.muted,
               fontSize: 13,
             ),
@@ -460,7 +460,7 @@ class _CompactStatCard extends StatelessWidget {
               subtext!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: AppColors.cardSubtext,
                 fontSize: 11,
               ),
