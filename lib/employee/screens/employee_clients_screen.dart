@@ -157,7 +157,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                             children: [
                               Text(
                                 'Clientes',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.montserrat(
                                   color: ink,
                                   fontSize: 30,
                                 ),
@@ -166,7 +166,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                                 'Usuarios registrados con tipo cliente en La Sirena',
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   color: muted,
                                   fontSize: 14,
                                 ),
@@ -289,7 +289,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                         ),
                         Text(
                           '${_visibleClients >= _filteredClients().length ? _filteredClients().length : _visibleClients} DE ${_filteredClients().length}',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: muted,
                             fontSize: 14,
                           ),
@@ -303,7 +303,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                         child: Center(
                           child: Text(
                             'No se encontraron clientes',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: muted,
                               fontSize: 14,
                             ),
@@ -391,10 +391,10 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
     return TextField(
       controller: _searchController,
       onChanged: (_) => setState(() => _visibleClients = _pageSize),
-      style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 13),
+      style: GoogleFonts.poppins(color: ink, fontSize: 13),
       decoration: InputDecoration(
         hintText: 'Buscar por nombre, correo o estado...',
-        hintStyle: GoogleFonts.dmSerifDisplay(
+        hintStyle: GoogleFonts.poppins(
           color: const Color(0xFF91A3C0),
           fontSize: 13,
         ),
@@ -1109,7 +1109,7 @@ class _DialogField extends StatelessWidget {
           controller: controller,
           readOnly: readOnly,
           keyboardType: keyboardType,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: readOnly
                 ? const Color(0xFF9D9895)
                 : const Color(0xFF353535),
@@ -1117,7 +1117,7 @@ class _DialogField extends StatelessWidget {
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.dmSerifDisplay(
+            hintStyle: GoogleFonts.poppins(
               color: readOnly
                   ? const Color(0xFF9D9895)
                   : const Color(0xFF353535),
@@ -1145,7 +1145,7 @@ class _DialogField extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             'No se puede modificar',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF9D9895),
               fontSize: 11,
             ),
@@ -1202,7 +1202,7 @@ class _StatCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: active
                     ? AppColors.statGreenNumber
                     : _EmployeeClientsScreenState.ink,
@@ -1215,7 +1215,7 @@ class _StatCard extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: active
                   ? AppColors.statGreenLabel
                   : _EmployeeClientsScreenState.muted,
