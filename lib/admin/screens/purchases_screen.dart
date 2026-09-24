@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
 import '../../shared/initials.dart';
+import '../../shared/pending_sales_badge.dart';
+import '../../shared/pending_sales_service.dart';
+import '../../shared/orders_repository.dart';
+import '../../client/models/order_model.dart' as client_order;
+import '../../auth/auth_service.dart';
 import '../../theme/app_colors.dart';
 import '../widgets/production_summary_card.dart';
 

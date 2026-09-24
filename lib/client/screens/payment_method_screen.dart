@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/cart_service.dart';
 import '../models/order_model.dart';
+import '../../shared/orders_repository.dart';
 import 'receipt_sent_screen.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
@@ -395,7 +396,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
           )
           .toList(),
     );
-    mockOrders.insert(0, nuevoPedido);
+    OrdersRepository.instance.add(nuevoPedido);
     CartService.instance.clear();
     Navigator.of(context).pop(true);
   }

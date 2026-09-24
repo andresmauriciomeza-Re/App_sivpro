@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../models/order_model.dart';
 import '../services/cart_service.dart';
 import '../widgets/bottom_nav.dart';
+import '../../shared/orders_repository.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({super.key, required this.order});
@@ -22,6 +23,9 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   static const Color splashRojo = Color(0xE6C32828);
+
+  OrderModel get order =>
+      OrdersRepository.instance.byNumero(widget.order.numero) ?? widget.order;
 
   // Pasos del ciclo de vida de un pedido, en orden.
   static const List<_TimelineStep> _pasos = [
@@ -42,7 +46,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   void initState() {
     super.initState();
+    OrdersRepository.instance.addListener(_onOrdersChanged);
     _geocodificar();
+  }
+
+  void _onOrdersChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    OrdersRepository.instance.removeListener(_onOrdersChanged);
+    super.dispose();
   }
 
   /// Geocodifica [direccionLocal] vía Nominatim y guarda las coordenadas
@@ -79,7 +94,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   /// Cuántos pasos de la línea de tiempo ya se completaron,
   /// según el estado actual del pedido.
   int get _pasoActual {
-    switch (widget.order.estado) {
+    switch (order.estado) {
       case OrderStatus.pagoPendiente:
         return 1; // "Pedido realizado" completo, "Pago en aprobación" activo
       case OrderStatus.enPreparacion:
@@ -92,14 +107,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   IconData get _iconoMetodoPago {
-    return widget.order.metodoPago.toLowerCase() == 'bancolombia'
+    return order.metodoPago.toLowerCase() == 'bancolombia'
         ? Icons.account_balance
         : Icons.smartphone;
   }
 
   @override
   Widget build(BuildContext context) {
-    final cancelado = widget.order.estado == OrderStatus.cancelada;
+    final cancelado = order.estado == OrderStatus.cancelada;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF7F5),
@@ -117,7 +132,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      'Pedido ${widget.order.numero}',
+                      'Pedido ${order.numero}',
                       style: GoogleFonts.dmSerifDisplay(
                         fontSize: 20,
                         color: Colors.black87,
@@ -140,16 +155,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: widget.order.estado.color.withValues(alpha: 0.12),
+                      color: order.estado.color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          widget.order.estado.icono,
+                          order.estado.icono,
                           size: 14,
-                          color: widget.order.estado.color,
+                          color: order.estado.color,
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -157,7 +172,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           style: GoogleFonts.dmSerifDisplay(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: widget.order.estado.color,
+                            color: order.estado.color,
                           ),
                         ),
                       ],
@@ -167,14 +182,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        _fechaTexto(widget.order.fecha),
+                        _fechaTexto(order.fecha),
                         style: GoogleFonts.dmSerifDisplay(
                           fontSize: 11.5,
                           color: Colors.black45,
                         ),
                       ),
                       Text(
-                        _horaTexto(widget.order.fecha),
+                        _horaTexto(order.fecha),
                         style: GoogleFonts.dmSerifDisplay(
                           fontSize: 11.5,
                           color: Colors.black45,
@@ -228,7 +243,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    for (final producto in widget.order.productos)
+                    for (final producto in order.productos)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Row(
@@ -300,7 +315,7 @@ Text(
                           ),
                         ),
                         Text(
-                          '\$${formatoMiles(widget.order.total)}',
+                          '\$${formatoMiles(order.total)}',
                           style: GoogleFonts.dmSerifDisplay(
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
@@ -636,7 +651,7 @@ Text(
         : Colors.black26;
 
     final horaPaso = (completado || activo)
-        ? widget.order.fecha.add(Duration(minutes: index * 5))
+        ? order.fecha.add(Duration(minutes: index * 5))
         : null;
 
     return Padding(

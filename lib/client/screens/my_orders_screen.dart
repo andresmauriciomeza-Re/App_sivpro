@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/order_model.dart';
+import '../../shared/orders_repository.dart';
+import '../../shared/client_notification_service.dart';
 import 'order_detail_screen.dart';
 import '../widgets/bottom_nav.dart';
 import 'menu_screen.dart';
@@ -15,6 +17,12 @@ class MyOrdersScreen extends StatefulWidget {
 class _MyOrdersScreenState extends State<MyOrdersScreen> {
   static const Color splashRojo = Color(0xE6C32828);
   // (el índice de la barra de navegación ahora lo maneja AppBottomNav)
+
+  @override
+  void initState() {
+    super.initState();
+    ClientNotificationService.instance.markAllRead();
+  }
 
   void _abrirDetalle(OrderModel order) {
     Navigator.push(
@@ -117,23 +125,26 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: mockOrders.isEmpty
-                  ? _buildEmptyState(context)
-                  : ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
+              child: ListenableBuilder(
+                listenable: OrdersRepository.instance,
+                builder: (context, _) => mockOrders.isEmpty
+                    ? _buildEmptyState(context)
+                    : ListView.separated(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        itemCount: mockOrders.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final order = mockOrders[index];
+                          return _OrderCard(
+                            order: order,
+                            onTap: () => _abrirDetalle(order),
+                          );
+                        },
                       ),
-                      itemCount: mockOrders.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final order = mockOrders[index];
-                        return _OrderCard(
-                          order: order,
-                          onTap: () => _abrirDetalle(order),
-                        );
-                      },
-                    ),
+              ),
             ),
           ],
         ),

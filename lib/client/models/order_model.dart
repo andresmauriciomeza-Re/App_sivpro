@@ -81,6 +81,20 @@ class OrderModel {
     this.metodoPago = 'Nequi',
     this.productos = const [],
   });
+
+  OrderModel copyWith({OrderStatus? estado}) {
+    return OrderModel(
+      numero: numero,
+      fecha: fecha,
+      articulos: articulos,
+      total: total,
+      estado: estado ?? this.estado,
+      imagenes: imagenes,
+      nombresProductos: nombresProductos,
+      metodoPago: metodoPago,
+      productos: productos,
+    );
+  }
 }
 
 // Pedidos reales creados por el cliente desde el flujo de pago.
