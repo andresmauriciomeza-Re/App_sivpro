@@ -144,7 +144,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   children: [
                     Text(
                       'Mi Perfil',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: AppColors.ink,
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
@@ -152,7 +152,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                     ),
                     Text(
                       'Tu información de contacto',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: AppColors.muted,
                         fontSize: 13,
                       ),
@@ -198,7 +198,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             backgroundColor: AppColors.red,
             child: Text(
               getInitials(profile.fullName),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -214,7 +214,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   profile.fullName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: AppColors.ink,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -223,7 +223,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Empleado',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: AppColors.muted,
                     fontSize: 13,
                   ),
@@ -244,7 +244,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 14),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
-              textStyle: GoogleFonts.dmSerifDisplay(
+              textStyle: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -313,7 +313,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           const SizedBox(width: 8),
           Text(
             label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: AppColors.profileLabel,
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -325,7 +325,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           controller: controller,
           enabled: _editing,
           keyboardType: keyboardType,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: AppColors.ink,
             fontSize: 14.5,
           ),
@@ -367,7 +367,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             side: const BorderSide(color: AppColors.cardBorder),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             padding: const EdgeInsets.symmetric(vertical: 12),
-            textStyle: GoogleFonts.dmSerifDisplay(
+            textStyle: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -392,7 +392,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 borderRadius: BorderRadius.circular(14),
               ),
               padding: const EdgeInsets.symmetric(vertical: 12),
-              textStyle: GoogleFonts.dmSerifDisplay(
+              textStyle: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -413,7 +413,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 borderRadius: BorderRadius.circular(14),
               ),
               padding: const EdgeInsets.symmetric(vertical: 12),
-              textStyle: GoogleFonts.dmSerifDisplay(
+              textStyle: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -424,7 +424,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         Center(
           child: Text(
             'La Sirena Pizza – S.I.V.PRO',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: AppColors.muted,
               fontSize: 12,
             ),
@@ -434,7 +434,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         Center(
           child: Text(
             'Versión 2.1.4',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: AppColors.muted,
               fontSize: 11,
             ),

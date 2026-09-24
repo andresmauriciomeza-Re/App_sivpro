@@ -66,19 +66,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _header(context),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 28, 16, 26),
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Text('Inicio', style: _crumb(const Color(0xFF9A9290))),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context)
+                              .popUntil((route) => route.isFirst),
+                          child: Text(
+                            'Inicio',
+                            style: _crumb(const Color(0xFF9A9290)),
+                          ),
+                        ),
                         const Icon(Icons.chevron_right,
                             color: Color(0xFFB9B0AE)),
                         Text('Mi perfil', style: _crumb(const Color(0xFF211616))),
                       ],
                     ),
-                    const SizedBox(height: 34),
+                    const SizedBox(height: 24),
                     Text(
                       'Mi Perfil',
                       style: GoogleFonts.montserrat(
@@ -94,9 +101,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fontSize: 17,
                       ),
                     ),
-                    const SizedBox(height: 34),
+                    const SizedBox(height: 24),
                     _profileCard(context),
-                    const SizedBox(height: 56),
+                    const SizedBox(height: 40),
                     Center(
                       child: Text('La Sirena Pizza',
                           style: GoogleFonts.montserrat(
@@ -250,9 +257,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _field(Icons.person_outline, 'Nombre completo',
                     _nameController,
                     enabled: false),
-                const SizedBox(height: 25),
+                const SizedBox(height: 18),
                 _field(Icons.mail_outline, 'Correo electrónico', _emailController),
-                const SizedBox(height: 25),
+                const SizedBox(height: 18),
                 _field(Icons.phone_outlined, 'Número de teléfono', _phoneController),
               ],
             ),

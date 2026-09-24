@@ -127,7 +127,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                     children: [
                       Text(
                         purchase.id,
-                        style: GoogleFonts.dmSerifDisplay(fontSize: 18),
+                        style: GoogleFonts.poppins(fontSize: 18),
                       ),
                     ],
                   ),

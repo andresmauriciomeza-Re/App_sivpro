@@ -259,7 +259,7 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
           '$label $count',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: foreground,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -275,7 +275,7 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
       child: Center(
         child: Text(
           'No se encontraron devoluciones',
-          style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 15),
+          style: GoogleFonts.poppins(color: muted, fontSize: 15),
         ),
       ),
     );
