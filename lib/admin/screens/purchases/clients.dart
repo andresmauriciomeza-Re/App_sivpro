@@ -41,6 +41,7 @@ class _ClientManagementScreen extends StatefulWidget {
 
 class _ClientManagementScreenState extends State<_ClientManagementScreen> {
  final _searchController = TextEditingController();
+ String _query = '';
  String _statusFilter = 'Todos los estados';
  String _sortOrder = 'Ordenar por nombre';
  static const _pageSize = 5;
@@ -156,7 +157,7 @@ active: true,
 
 @override
   Widget build(BuildContext context) {
-    final query = _searchController.text;
+    final query = _query;
     final filteredClients = _clients
         .where(
           (client) =>
@@ -369,7 +370,10 @@ Widget _summaryCard(String value, String label) {
 Widget _searchField() {
     return TextField(
       controller: _searchController,
-      onChanged: (_) => setState(() => _visibleClients = _pageSize),
+      onChanged: (value) => setState(() {
+        _query = value;
+        _visibleClients = _pageSize;
+      }),
       style: GoogleFonts.poppins(fontSize: 15),
       decoration: InputDecoration(
         hintText: 'Buscar por nombre, correo o estado...',
@@ -379,7 +383,10 @@ Widget _searchField() {
             ? IconButton(
                 onPressed: () {
                   _searchController.clear();
-                  setState(() => _visibleClients = _pageSize);
+                  setState(() {
+                    _query = '';
+                    _visibleClients = _pageSize;
+                  });
                 },
                 icon: const Icon(
                   Icons.close,
@@ -1065,7 +1072,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
           TextField(
             controller: controller,
             enabled: false,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.muted,
               fontSize: 20,
             ),
@@ -1084,7 +1091,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
           const SizedBox(height: 6),
           Text(
             'No se puede modificar',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.muted,
               fontSize: 11,
             ),
