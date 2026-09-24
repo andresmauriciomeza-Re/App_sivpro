@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/app_header.dart';
 import '../../theme/app_colors.dart';
 import '../services/employee_profile_service.dart';
 import 'employee_profile_screen.dart';
@@ -10,16 +11,11 @@ import '../../shared/page_transitions.dart';
 class EmployeeMoreScreen extends StatelessWidget {
   const EmployeeMoreScreen({super.key});
 
-  static const Color red = Color(0xFFC9151E);
-  static const Color ink = Color(0xFF211616);
-  static const Color muted = Color(0xFF6E5A58);
-  static const Color page = Color(0xFFFFFBFA);
-
   @override
   Widget build(BuildContext context) {
     final profile = EmployeeProfileService.instance.profile;
     return Scaffold(
-      backgroundColor: page,
+      backgroundColor: AppColors.page,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -27,25 +23,19 @@ class EmployeeMoreScreen extends StatelessWidget {
             _header(context, profile),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 38, 24, 24),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Más opciones',
-                      style: GoogleFonts.dmSerifDisplay(
-                        color: ink,
-                        fontSize: 35,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 38),
                     _optionsCard(context, profile),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 20),
                     Center(
                       child: Text(
                         'La Sirena Pizza – S.I.V.PRO',
-                        style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
+                        style: GoogleFonts.dmSerifDisplay(
+                          color: AppColors.muted,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -53,8 +43,8 @@ class EmployeeMoreScreen extends StatelessWidget {
                       child: Text(
                         'Versión 2.1.4',
                         style: GoogleFonts.dmSerifDisplay(
-                          color: muted,
-                          fontSize: 15,
+                          color: AppColors.muted,
+                          fontSize: 11,
                         ),
                       ),
                     ),
@@ -70,66 +60,31 @@ class EmployeeMoreScreen extends StatelessWidget {
   }
 
   Widget _header(BuildContext context, EmployeeProfile profile) {
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 29),
-          ),
-          Expanded(
-            child: Text(
-              'La Sirena Pizza',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
-                color: red,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            width: 48,
-            height: 48,
-            margin: const EdgeInsets.only(right: 14),
-            decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child: Text(
-              profile.initials,
-              style: GoogleFonts.dmSerifDisplay(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: profile.initials,
     );
   }
 
   Widget _optionsCard(BuildContext context, EmployeeProfile profile) {
     return Container(
       decoration: BoxDecoration(
-        color: page,
-        border: Border.all(color: const Color(0xFFE5BDB9)),
+        color: AppColors.page,
+        border: Border.all(color: AppColors.cardBorder),
         borderRadius: BorderRadius.circular(17),
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(36, 38, 24, 34),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
-                  width: 96,
-                  height: 96,
+                  width: 56,
+                  height: 56,
                   decoration: const BoxDecoration(
-                    color: red,
+                    color: AppColors.red,
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
@@ -137,12 +92,12 @@ class EmployeeMoreScreen extends StatelessWidget {
                     profile.initials,
                     style: GoogleFonts.dmSerifDisplay(
                       color: Colors.white,
-                      fontSize: 32,
+                      fontSize: 20,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,33 +105,33 @@ class EmployeeMoreScreen extends StatelessWidget {
                       Text(
                         profile.fullName,
                         style: GoogleFonts.dmSerifDisplay(
-                          color: ink,
-                          fontSize: 23,
+                          color: AppColors.ink,
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(
                         'Empleado',
                         style: GoogleFonts.dmSerifDisplay(
-                          color: muted,
-                          fontSize: 17,
+                          color: AppColors.muted,
+                          fontSize: 13,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
+                          horizontal: 10,
+                          vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE6E2E1),
-                          borderRadius: BorderRadius.circular(15),
+                          color: AppColors.profileChipBg,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           'S.I.V.PRO',
                           style: GoogleFonts.dmSerifDisplay(
-                            color: muted,
-                            fontSize: 14,
+                            color: AppColors.muted,
+                            fontSize: 11,
                           ),
                         ),
                       ),
@@ -201,18 +156,21 @@ class EmployeeMoreScreen extends StatelessWidget {
           InkWell(
             onTap: () => confirmEmployeeSignOut(context),
             child: Container(
-              height: 84,
+              height: 52,
               decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0xFFE5BDB9))),
+                border: Border(top: BorderSide(color: AppColors.cardBorder)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.logout, color: red, size: 31),
-                  const SizedBox(width: 25),
+                  const Icon(Icons.logout, color: AppColors.red, size: 20),
+                  const SizedBox(width: 10),
                   Text(
                     'Cerrar sesión',
-                    style: GoogleFonts.dmSerifDisplay(color: red, fontSize: 22),
+                    style: GoogleFonts.dmSerifDisplay(
+                      color: AppColors.red,
+                      fontSize: 15,
+                    ),
                   ),
                 ],
               ),
@@ -231,22 +189,25 @@ class EmployeeMoreScreen extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        height: 68,
-        padding: const EdgeInsets.symmetric(horizontal: 26),
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Color(0xFFE5BDB9))),
+          border: Border(top: BorderSide(color: AppColors.cardBorder)),
         ),
         child: Row(
           children: [
-            Icon(icon, color: muted, size: 29),
-            const SizedBox(width: 28),
+            Icon(icon, color: AppColors.muted, size: 20),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 20),
+                style: GoogleFonts.dmSerifDisplay(
+                  color: AppColors.ink,
+                  fontSize: 15,
+                ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: muted, size: 30),
+            const Icon(Icons.chevron_right, color: AppColors.muted, size: 20),
           ],
         ),
       ),
@@ -271,7 +232,7 @@ class EmployeeMoreScreen extends StatelessWidget {
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
-                  top: BorderSide(color: red, width: 1),
+                  top: BorderSide(color: AppColors.red, width: 1),
                   left: BorderSide(color: Color(0xFFEDE6E4)),
                   right: BorderSide(color: Color(0xFFEDE6E4)),
                 ),
@@ -289,14 +250,18 @@ class EmployeeMoreScreen extends StatelessWidget {
                           children: [
                             Icon(
                               items[index].$1,
-                              color: index == 4 ? red : muted,
+                              color: index == 4
+                                  ? AppColors.red
+                                  : AppColors.muted,
                               size: 19,
                             ),
                             const SizedBox(height: 1),
                             Text(
                               items[index].$2,
                               style: GoogleFonts.dmSerifDisplay(
-                                color: index == 4 ? red : muted,
+                                color: index == 4
+                                    ? AppColors.red
+                                    : AppColors.muted,
                                 fontSize: 10,
                                 height: 1,
                                 fontWeight: index == 4

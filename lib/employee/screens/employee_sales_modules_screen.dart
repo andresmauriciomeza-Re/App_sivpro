@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
-import '../../theme/app_colors.dart';
 import '../../shared/page_transitions.dart';
 import 'employee_clients_screen.dart';
 import 'employee_returns_screen.dart';
@@ -117,42 +117,9 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(
-            'La Sirena Pizza',
-            style: GoogleFonts.dmSerifDisplay(color: red, fontSize: 16),
-          ),
-          const Spacer(),
-          Container(
-            width: 25,
-            height: 25,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
-            child: Text(
-              getInitials('María González'),
-              style: GoogleFonts.dmSerifDisplay(
-                color: Colors.white,
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      initials: getInitials('María González'),
     );
   }
 
