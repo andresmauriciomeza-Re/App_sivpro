@@ -92,7 +92,7 @@ class PurchasesScreen extends StatelessWidget {
             _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -100,7 +100,7 @@ class PurchasesScreen extends StatelessWidget {
                       'Compras',
                       style: GoogleFonts.montserrat(
                         color: ink,
-                        fontSize: 34,
+                        fontSize: 26,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -109,10 +109,10 @@ class PurchasesScreen extends StatelessWidget {
                       'Seleccione un módulo para administrar',
                       style: GoogleFonts.poppins(
                         color: muted,
-                        fontSize: 20,
+                        fontSize: 15,
                       ),
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 24),
                     _ModuleCard(
                       icon: Icons.shopping_bag_outlined,
                       title: 'Compras',
@@ -233,7 +233,7 @@ class _ModuleCard extends StatelessWidget {
       child: Container(
       height: 288,
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(36, 36, 26, 28),
+      padding: const EdgeInsets.fromLTRB(25, 25, 18, 20),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: PurchasesScreen.page,

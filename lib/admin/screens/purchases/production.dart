@@ -1299,7 +1299,7 @@ class _ProductionScreen extends StatelessWidget {
             _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1307,7 +1307,7 @@ class _ProductionScreen extends StatelessWidget {
                       'Gestión de Producción',
                       style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
-                        fontSize: 34,
+                        fontSize: 26,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1316,10 +1316,10 @@ class _ProductionScreen extends StatelessWidget {
                       'Seleccione el módulo que desea gestionar.',
                       style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
-                        fontSize: 20,
+                        fontSize: 15,
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 24),
                     _productionCard(
                       icon: Icons.assignment_outlined,
                       title: 'Orden Producción',
@@ -1377,7 +1377,7 @@ class _ProductionScreen extends StatelessWidget {
       child: Container(
         width: double.infinity,
         clipBehavior: Clip.antiAlias,
-        padding: const EdgeInsets.fromLTRB(36, 36, 30, 32),
+        padding: const EdgeInsets.fromLTRB(25, 25, 21, 22),
         decoration: BoxDecoration(
           color: PurchasesScreen.page,
           borderRadius: BorderRadius.circular(17),

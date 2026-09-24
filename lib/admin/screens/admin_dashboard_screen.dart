@@ -90,7 +90,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           child: Text(
                             'Ver todos  →',
                             style: GoogleFonts.poppins(
-                              color: red,
+                              color: ink,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
@@ -122,7 +122,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Text(
             'La Sirena Pizza',
             style: GoogleFonts.montserrat(
-              color: red,
+              color: ink,
               fontSize: 20,
               fontWeight: FontWeight.w700,
             ),

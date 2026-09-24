@@ -27,7 +27,7 @@ class _ProductManagementScreen extends StatefulWidget {
 }
 
 class _ProductManagementScreenState extends State<_ProductManagementScreen> {
-  final _searchController = TextEditingController();
+  String _query = '';
   final _products = const [
     _Product(
       id: 'PROD-001',
@@ -72,20 +72,14 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
   ];
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final query = _searchController.text.toLowerCase();
     final filteredProducts = _products
         .where(
-          (product) =>
-              product.id.toLowerCase().contains(query) ||
-              product.name.toLowerCase().contains(query) ||
-              product.category.toLowerCase().contains(query),
+          (product) => matchesSearchQuery(_query, [
+            product.id,
+            product.name,
+            product.category,
+          ]),
         )
         .toList();
 
@@ -120,8 +114,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                     ),
                     const SizedBox(height: 22),
                     TextField(
-                      controller: _searchController,
-                      onChanged: (_) => setState(() {}),
+                      onChanged: (value) => setState(() => _query = value),
                       decoration: InputDecoration(
                         hintText: 'Buscar por ID, nombre o categoría...',
                         hintStyle: GoogleFonts.poppins(

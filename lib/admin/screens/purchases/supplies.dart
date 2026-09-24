@@ -125,28 +125,43 @@ class _SupplyManagementScreen extends StatelessWidget {
             _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(17, 86, 17, 24),
+                padding: const EdgeInsets.fromLTRB(17, 20, 17, 24),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      'Insumos',
+                      style: GoogleFonts.montserrat(
+                        color: PurchasesScreen.ink,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _summaryChip(
-                          '${_supplies.length}',
-                          'Total insumos',
-                          const Color(0xFFE8C7C4),
+                        Expanded(
+                          child: _summaryChip(
+                            '${_supplies.length}',
+                            'Total insumos',
+                            const Color(0xFFE8C7C4),
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        _summaryChip(
-                          '$lowCount',
-                          'Stock bajo',
-                          const Color(0xFFF5D9A5),
+                        Expanded(
+                          child: _summaryChip(
+                            '$lowCount',
+                            'Stock bajo',
+                            const Color(0xFFF5D9A5),
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        _summaryChip(
-                          '$emptyCount',
-                          'Agotados',
-                          const Color(0xFFF4C8CF),
+                        Expanded(
+                          child: _summaryChip(
+                            '$emptyCount',
+                            'Agotados',
+                            const Color(0xFFF4C8CF),
+                          ),
                         ),
                       ],
                     ),
@@ -182,7 +197,7 @@ class _SupplyManagementScreen extends StatelessWidget {
     final isWarning = label == 'Stock bajo';
     final isEmpty = label == 'Agotados';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: isWarning
             ? const Color(0xFFFFF3DF)
@@ -200,7 +215,7 @@ class _SupplyManagementScreen extends StatelessWidget {
                 : isEmpty
                     ? PurchasesScreen.red
                     : PurchasesScreen.ink,
-            fontSize: 14,
+            fontSize: 12,
           ),
           children: [
             TextSpan(

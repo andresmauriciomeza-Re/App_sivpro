@@ -72,10 +72,19 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 42, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          'Proveedores',
+                          style: GoogleFonts.montserrat(
+                            color: PurchasesScreen.ink,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
                         Text(
                           '${_providers.length} proveedores registrados',
                           style: GoogleFonts.poppins(
