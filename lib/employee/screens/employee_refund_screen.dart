@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
-import '../../theme/app_colors.dart';
 import '../../shared/page_transitions.dart';
 import '../services/return_service.dart';
 
@@ -73,61 +73,10 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
   }
 
   Widget _header() {
-    return Container(
-      height: 78,
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 28),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'LA SIRENA PIZZA',
-                style: GoogleFonts.dmSerifDisplay(
-                  color: red,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
-                ),
-              ),
-              Text(
-                'S.I.V.PRO Mobile',
-                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              getInitials('María González'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('María González'),
     );
   }
 

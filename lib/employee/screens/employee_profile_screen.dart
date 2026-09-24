@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../theme/app_colors.dart';
 import '../services/employee_profile_service.dart';
 import '../../shared/page_transitions.dart';
 
-/// Perfil del Empleado (réplica del perfil del Administrador, con los campos
-/// Nombre, Documento, Correo y Teléfono editables en modo edición).
+/// Perfil del Empleado (estilo compacto similar al perfil del Cliente, con los
+/// campos Nombre, Documento, Correo y Teléfono editables en modo edición).
 class EmployeeProfileScreen extends StatefulWidget {
   const EmployeeProfileScreen({super.key});
 
@@ -15,9 +16,6 @@ class EmployeeProfileScreen extends StatefulWidget {
 }
 
 class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
-  static const Color red = Color(0xFFC9151E);
-  static const Color ink = Color(0xFF211616);
-
   late final TextEditingController _nameController;
   late final TextEditingController _documentController;
   late final TextEditingController _emailController;
@@ -132,7 +130,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   Widget build(BuildContext context) {
     final profile = EmployeeProfileService.instance.profile;
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFBFA),
+      backgroundColor: AppColors.page,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -140,36 +138,31 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             _header(context, profile),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 28, 16, 26),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text('Inicio', style: _crumb(const Color(0xFF9A9290))),
-                        const Icon(Icons.chevron_right,
-                            color: Color(0xFFB9B0AE)),
-                        Text('Mi perfil', style: _crumb(ink)),
-                      ],
-                    ),
-                    const SizedBox(height: 34),
                     Text(
                       'Mi Perfil',
                       style: GoogleFonts.dmSerifDisplay(
-                        color: ink,
-                        fontSize: 36,
+                        color: AppColors.ink,
+                        fontSize: 26,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
-                      'Consulta y actualiza tu información de contacto',
+                      'Tu información de contacto',
                       style: GoogleFonts.dmSerifDisplay(
-                        color: const Color(0xFF776D6A),
-                        fontSize: 17,
+                        color: AppColors.muted,
+                        fontSize: 13,
                       ),
                     ),
-                    const SizedBox(height: 34),
-                    _profileCard(context, profile),
+                    const SizedBox(height: 14),
+                    _headerCard(context, profile),
+                    const SizedBox(height: 12),
+                    _fieldsCard(context),
+                    const SizedBox(height: 14),
+                    _actions(),
                   ],
                 ),
               ),
@@ -181,240 +174,126 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
-  TextStyle _crumb(Color color) => GoogleFonts.dmSerifDisplay(
-        color: color,
-        fontSize: 16,
-        fontWeight: color == const Color(0xFF211616)
-            ? FontWeight.w600
-            : FontWeight.w400,
-      );
-
   Widget _header(BuildContext context, EmployeeProfile profile) {
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials(profile.fullName),
+    );
+  }
+
+  Widget _headerCard(BuildContext context, EmployeeProfile profile) {
     return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.profileCardBorder),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 29),
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppColors.red,
+            child: Text(
+              getInitials(profile.fullName),
+              style: GoogleFonts.dmSerifDisplay(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
+          const SizedBox(width: 12),
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('La Sirena Pizza',
-                    style: GoogleFonts.dmSerifDisplay(
-                        color: red,
-                        fontSize: 23,
-                        fontWeight: FontWeight.w700)),
+                Text(
+                  profile.fullName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.dmSerifDisplay(
+                    color: AppColors.ink,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Empleado',
+                  style: GoogleFonts.dmSerifDisplay(
+                    color: AppColors.muted,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
-          Container(
-            width: 48,
-            height: 48,
-            margin: const EdgeInsets.only(right: 14),
-            decoration: const BoxDecoration(
-                color: red, shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child: Text(getInitials(profile.fullName),
-                style: GoogleFonts.dmSerifDisplay(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700)),
+          const SizedBox(width: 8),
+          OutlinedButton.icon(
+            onPressed: _editing ? _saveProfile : _startEditing,
+            icon: Icon(_editing ? Icons.check : Icons.edit_outlined, size: 16),
+            label: Text(_editing ? 'Guardar' : 'Editar'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.ink,
+              side: const BorderSide(color: AppColors.pillBorder),
+              shape: const StadiumBorder(),
+              minimumSize: const Size(0, 36),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              textStyle: GoogleFonts.dmSerifDisplay(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _profileCard(BuildContext context, EmployeeProfile profile) {
-    final editButton = FilledButton.icon(
-      onPressed: _editing ? _saveProfile : _startEditing,
-      icon: Icon(_editing ? Icons.check : Icons.edit_outlined, size: 18),
-      label: Text(_editing ? 'Guardar' : 'Editar'),
-      style: FilledButton.styleFrom(
-        backgroundColor: const Color(0xFFD5262D),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-      ),
-    );
-
+  Widget _fieldsCard(BuildContext context) {
     return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5DFDD)),
+        border: Border.all(color: AppColors.profileCardBorder),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 42,
-                  backgroundColor: const Color(0xFFD5262D),
-                  child: Text(
-                    getInitials(profile.fullName),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 31,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              profile.fullName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.dmSerifDisplay(
-                                color: ink,
-                                fontSize: 21,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          editButton,
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 13,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFE9E9),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Text(
-                          'Empleado',
-                          style: GoogleFonts.dmSerifDisplay(
-                            color: const Color(0xFFAD2525),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          _field(
+            icon: Icons.person_outline,
+            label: 'Nombre completo',
+            controller: _nameController,
+            keyboardType: TextInputType.text,
           ),
-          const Divider(height: 1, color: Color(0xFFEDE8E7)),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(36, 18, 36, 28),
-            child: Column(
-              children: [
-                _field(
-                  icon: Icons.person_outline,
-                  label: 'Nombre completo',
-                  controller: _nameController,
-                  keyboardType: TextInputType.text,
-                ),
-                const SizedBox(height: 25),
-                _field(
-                  icon: Icons.badge_outlined,
-                  label: 'Número de documento',
-                  controller: _documentController,
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 25),
-                _field(
-                  icon: Icons.mail_outline,
-                  label: 'Correo electrónico',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 25),
-                _field(
-                  icon: Icons.phone_outlined,
-                  label: 'Número de teléfono',
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                ),
-              ],
-            ),
+          const SizedBox(height: 14),
+          _field(
+            icon: Icons.badge_outlined,
+            label: 'Número de documento',
+            controller: _documentController,
+            keyboardType: TextInputType.number,
           ),
-          const Divider(height: 1, color: Color(0xFFEDE8E7)),
-          Padding(
-            padding: const EdgeInsets.all(28),
-            child: Column(
-              children: [
-                if (_editing) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _cancelEditing,
-                      icon: const Icon(Icons.close),
-                      label: const Text('Cancelar'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: ink,
-                        side: const BorderSide(color: Color(0xFFE5BDB9)),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: _saveProfile,
-                      icon: const Icon(Icons.check),
-                      label: const Text('Guardar cambios'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFD5262D),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                    ),
-                  ),
-                ] else ...[
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () =>
-                          Navigator.of(context).popUntil((route) => route.isFirst),
-                      icon: const Icon(Icons.arrow_back),
-                      label: const Text('Volver al inicio'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF5B514F),
-                        backgroundColor: const Color(0xFFF7F6F6),
-                        side: BorderSide.none,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => confirmEmployeeSignOut(context),
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Cerrar sesión'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFC9151E),
-                        side: const BorderSide(color: Color(0xFFFFBFC2)),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+          const SizedBox(height: 14),
+          _field(
+            icon: Icons.mail_outline,
+            label: 'Correo electrónico',
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+          ),
+          const SizedBox(height: 14),
+          _field(
+            icon: Icons.phone_outlined,
+            label: 'Número de teléfono',
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
           ),
         ],
       ),
@@ -431,42 +310,114 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
-          Icon(icon, color: const Color(0xFF968D8B), size: 25),
-          const SizedBox(width: 12),
+          Icon(icon, color: AppColors.profileLabelIcon, size: 16),
+          const SizedBox(width: 8),
           Text(
             label,
             style: GoogleFonts.dmSerifDisplay(
-              color: const Color(0xFF5B514F),
-              fontSize: 18,
+              color: AppColors.profileLabel,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ]),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         TextField(
           controller: controller,
           enabled: _editing,
           keyboardType: keyboardType,
           style: GoogleFonts.dmSerifDisplay(
-            color: const Color(0xFF211616),
-            fontSize: 18,
+            color: AppColors.ink,
+            fontSize: 14.5,
           ),
           decoration: InputDecoration(
             filled: true,
             fillColor:
-                _editing ? const Color(0xFFFFFEFE) : const Color(0xFFF8F5F4),
+                _editing ? AppColors.profileFieldFillActive : AppColors.profileFieldFill,
+            isDense: true,
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 25, vertical: 17),
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFE5DFDD)),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFE5DFDD)),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFD5262D), width: 2),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _actions() {
+    if (_editing) {
+      return SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: _cancelEditing,
+          icon: const Icon(Icons.close, size: 16),
+          label: const Text('Cancelar'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.ink,
+            side: const BorderSide(color: AppColors.cardBorder),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            textStyle: GoogleFonts.dmSerifDisplay(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+    }
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () =>
+                Navigator.of(context).popUntil((route) => route.isFirst),
+            icon: const Icon(Icons.arrow_back, size: 16),
+            label: const Text('Volver al inicio'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.profileLabel,
+              backgroundColor: AppColors.buttonSoftBg,
+              side: BorderSide.none,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              textStyle: GoogleFonts.dmSerifDisplay(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => confirmEmployeeSignOut(context),
+            icon: const Icon(Icons.logout, size: 16),
+            label: const Text('Cerrar sesión'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.red,
+              side: const BorderSide(color: AppColors.logOutBorder),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              textStyle: GoogleFonts.dmSerifDisplay(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
@@ -492,7 +443,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
-                  top: BorderSide(color: red, width: 1),
+                  top: BorderSide(color: AppColors.red, width: 1),
                   left: BorderSide(color: Color(0xFFEDE6E4)),
                   right: BorderSide(color: Color(0xFFEDE6E4)),
                 ),
@@ -511,7 +462,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                             Icon(
                               items[index].$1,
                               color: index == 4
-                                  ? red
+                                  ? AppColors.red
                                   : const Color(0xFF756D6A),
                               size: 19,
                             ),
@@ -520,7 +471,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               items[index].$2,
                               style: GoogleFonts.dmSerifDisplay(
                                 color: index == 4
-                                    ? red
+                                    ? AppColors.red
                                     : const Color(0xFF756D6A),
                                 fontSize: 10,
                                 height: 1,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
-import '../../theme/app_colors.dart';
 import '../../shared/menu_item.dart';
 
 /// Menú compacto para escoger el producto de sustitución equivalente.
@@ -89,54 +89,9 @@ class _EmployeeSubstitutionPickerScreenState
   }
 
   Widget _header() {
-    return Container(
-      height: 78,
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'LA SIRENA PIZZA',
-                style: GoogleFonts.dmSerifDisplay(
-                  color: red,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
-                ),
-              ),
-              Text(
-                'S.I.V.PRO Mobile',
-                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              getInitials('María González'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      initials: getInitials('María González'),
     );
   }
 

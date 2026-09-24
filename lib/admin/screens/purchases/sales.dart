@@ -101,48 +101,10 @@ class SalesScreen extends StatelessWidget {
     }
 
     Widget _buildHeader(BuildContext context) {
-      return Container(
-        height: 72,
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-        ),
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 29),
-            ),
-            Expanded(
-              child: Text(
-                'La Sirena Pizza',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.dmSerifDisplay(
-                  color: AppColors.red,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            Container(
-              width: 48,
-              height: 48,
-              margin: const EdgeInsets.only(left: 14, right: 14),
-              decoration: const BoxDecoration(
-                color: AppColors.red,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                getInitials('Gloria Inés Vargas'),
-                style: GoogleFonts.dmSerifDisplay(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
+      return AppHeader(
+        title: 'La Sirena Pizza',
+        onBack: () => Navigator.of(context).pop(),
+        initials: getInitials('Gloria Inés Vargas'),
       );
     }
 
@@ -462,48 +424,10 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      height: 58,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 27),
-          ),
-          Expanded(
-            child: Text(
-              'La Sirena Pizza',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
-                color: AppColors.red,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            margin: const EdgeInsets.only(right: 14),
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
     );
   }
 
@@ -891,37 +815,10 @@ class _SaleDetailScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              height: 74,
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: AppColors.headerDivider),
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: AppColors.red,
-                      size: 32,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'Detalle de Venta',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSerifDisplay(
-                        color: AppColors.red,
-                        fontSize: 27,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 48),
-                ],
-              ),
+            AppHeader(
+              title: 'Detalle de Venta',
+              onBack: () => Navigator.of(context).pop(),
+              initials: getInitials('Gloria Inés Vargas'),
             ),
             Expanded(
               child: SingleChildScrollView(

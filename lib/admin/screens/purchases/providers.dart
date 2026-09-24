@@ -146,52 +146,10 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      height: 60,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(
-              Icons.arrow_back,
-              color: AppColors.red,
-              size: 28,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              'Gestión Proveedor',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
-                color: AppColors.red,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            margin: const EdgeInsets.only(right: 12),
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'Gestión Proveedor',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
     );
   }
 
