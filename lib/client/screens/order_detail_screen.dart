@@ -118,7 +118,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   Expanded(
                     child: Text(
                       'Pedido ${widget.order.numero}',
-                      style: GoogleFonts.montserrat(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontSize: 20,
                         color: Colors.black87,
                       ),
@@ -154,7 +154,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         const SizedBox(width: 6),
                         Text(
                           cancelado ? 'Cancelada' : 'Aprobado',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             color: widget.order.estado.color,
@@ -168,14 +168,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     children: [
                       Text(
                         _fechaTexto(widget.order.fecha),
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontSize: 11.5,
                           color: Colors.black45,
                         ),
                       ),
                       Text(
                         _horaTexto(widget.order.fecha),
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontSize: 11.5,
                           color: Colors.black45,
                         ),
@@ -221,7 +221,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   children: [
                     Text(
                       'Productos',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                         color: Colors.black87,
@@ -259,7 +259,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 children: [
                                   Text(
                                     producto.nombre,
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.dmSerifDisplay(
                                       fontSize: 13.5,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.black87,
@@ -267,7 +267,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   ),
 Text(
                               'Cant: ${producto.cantidad} x \$${formatoMiles(producto.precioUnitario)}',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 fontSize: 12,
                                 color: Colors.black87,
                               ),
@@ -277,7 +277,7 @@ Text(
                             ),
                             Text(
                               '\$${formatoMiles(producto.subtotal)}',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black87,
@@ -294,14 +294,14 @@ Text(
                       children: [
                         Text(
                           'Total:',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
                         ),
                         Text(
                           '\$${formatoMiles(widget.order.total)}',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
                             color: Colors.black87,
@@ -329,7 +329,7 @@ Text(
                   children: [
                     Text(
                       'Método de Pago',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                         color: Colors.black87,
@@ -356,7 +356,7 @@ Text(
                         const SizedBox(width: 10),
                         Text(
                           'Transferencia',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
@@ -384,7 +384,7 @@ Text(
                   children: [
                     Text(
                       'Ubicación del Local',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                         color: Colors.black87,
@@ -532,7 +532,7 @@ Text(
               const SizedBox(height: 16),
               Text(
                 'Abrir ubicación con',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: Colors.black87,
@@ -574,7 +574,7 @@ Text(
             const SizedBox(width: 14),
             Text(
               nombre,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -666,7 +666,7 @@ Text(
               children: [
                 Text(
                   paso.titulo,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: pendiente ? Colors.black38 : Colors.black87,
@@ -675,7 +675,7 @@ Text(
                 if (horaPaso != null)
                   Text(
                     '${_fechaTexto(horaPaso)}, ${_horaTexto(horaPaso)}',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 11.5,
                       color: activo ? const Color(0xFFE68A00) : Colors.black45,
                     ),

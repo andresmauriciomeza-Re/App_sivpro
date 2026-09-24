@@ -105,6 +105,8 @@ class _SupplyManagementScreen extends StatelessWidget {
     ),
   ];
 
+  static final _wastes = <_InsumoWaste>[];
+
   @override
   Widget build(BuildContext context) {
     final lowCount = _supplies
@@ -168,7 +170,7 @@ class _SupplyManagementScreen extends StatelessWidget {
     return Container(
       height: 50,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
@@ -176,7 +178,7 @@ class _SupplyManagementScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(
               Icons.arrow_back,
-              color: PurchasesScreen.ink,
+              color: AppColors.red,
               size: 25,
             ),
           ),
@@ -185,7 +187,7 @@ class _SupplyManagementScreen extends StatelessWidget {
               'La Sirena Pizza',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
+                color: AppColors.red,
                 fontSize: 24,
               ),
             ),
@@ -195,12 +197,12 @@ class _SupplyManagementScreen extends StatelessWidget {
             height: 34,
             margin: const EdgeInsets.only(right: 10),
             decoration: const BoxDecoration(
-              color: PurchasesScreen.red,
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
             child: Text(
-              'G',
+              getInitials('Gloria Inés Vargas'),
               style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontSize: 19,
@@ -283,7 +285,7 @@ class _SupplyManagementScreen extends StatelessWidget {
             children: [
               Text(
                 supply.id,
-                style: GoogleFonts.robotoMono(
+                style: GoogleFonts.dmSerifDisplay(
                   color: PurchasesScreen.muted,
                   fontSize: 12,
                 ),
@@ -440,125 +442,33 @@ class _SupplyManagementScreen extends StatelessWidget {
     BuildContext context,
     _Supply supply,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final result = await showDialog<({double amount, String unit})>(
       context: context,
       barrierColor: Colors.black54,
-      builder: (dialogContext) {
-        return Dialog(
-          backgroundColor: PurchasesScreen.page,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFD8D8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.priority_high_rounded,
-                    color: PurchasesScreen.red,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Eliminar insumo',
-                  style: GoogleFonts.dmSerifDisplay(
-                    color: PurchasesScreen.ink,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text.rich(
-                  TextSpan(
-                    style: GoogleFonts.poppins(
-                      color: PurchasesScreen.muted,
-                      fontSize: 11,
-                      height: 1.35,
-                    ),
-                    children: [
-                      const TextSpan(
-                        text: '¿Seguro que deseas eliminar el insumo ',
-                      ),
-                      TextSpan(
-                        text: supply.id,
-                        style: GoogleFonts.robotoMono(
-                          color: PurchasesScreen.ink,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const TextSpan(
-                        text: '? Esta acción no se puede deshacer.',
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(false),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: PurchasesScreen.ink,
-                      side: const BorderSide(color: Color(0xFFE8C7C4)),
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                    child: Text(
-                      'Cancelar',
-                      style: GoogleFonts.dmSerifDisplay(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PurchasesScreen.red,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                    child: Text(
-                      'Eliminar',
-                      style: GoogleFonts.dmSerifDisplay(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      builder: (_) => _DeleteSupplyDialog(supply: supply),
     );
 
-    if (confirmed == true && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${supply.id} eliminado correctamente.')),
-      );
+    if (result == null || !context.mounted) {
+      return;
     }
+
+    _wastes.add(
+      _InsumoWaste(
+        id: supply.id,
+        amount: result.amount,
+        unit: result.unit,
+        date: DateTime.now(),
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Insumo eliminado. Desperdicio registrado: '
+          '${_formatAmount(result.amount)} ${result.unit}',
+        ),
+      ),
+    );
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
@@ -567,7 +477,7 @@ class _SupplyManagementScreen extends StatelessWidget {
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -592,7 +502,7 @@ class _SupplyManagementScreen extends StatelessWidget {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 1
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
@@ -632,6 +542,426 @@ class _Supply {
   final int minimum;
   final String price;
   final _SupplyStatus status;
+}
+
+String _formatAmount(double amount) {
+  if (amount == amount.roundToDouble()) {
+    return amount.toInt().toString();
+  }
+  return amount.toString();
+}
+
+class _InsumoWaste {
+  const _InsumoWaste({
+    required this.id,
+    required this.amount,
+    required this.unit,
+    required this.date,
+  });
+
+  final String id;
+  final double amount;
+  final String unit;
+  final DateTime date;
+}
+
+class _DeleteSupplyDialog extends StatefulWidget {
+  const _DeleteSupplyDialog({required this.supply});
+
+  final _Supply supply;
+
+  @override
+  State<_DeleteSupplyDialog> createState() => _DeleteSupplyDialogState();
+}
+
+class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
+  static const _unitOptions = <(String, String)>[
+    ('und', 'Unidad (und)'),
+    ('kg', 'Kilogramo (kg)'),
+    ('g', 'Gramo (g)'),
+    ('lt', 'Litro (lt)'),
+    ('L', 'Litro (L)'),
+    ('ml', 'Mililitro (ml)'),
+    ('lb', 'Libra (lb)'),
+  ];
+
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  late String _unit;
+
+  _Supply get supply => widget.supply;
+
+  @override
+  void initState() {
+    super.initState();
+    _unit = supply.unit;
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      Navigator.of(context).pop((
+        amount: double.parse(_amountController.text.trim().replaceAll(',', '.')),
+        unit: _unit,
+      ));
+    }
+  }
+
+  String? _validateAmount(String? value) {
+    final raw = value?.trim() ?? '';
+    if (raw.isEmpty) {
+      return 'Ingresa la cantidad a desperdiciar';
+    }
+    final amount = double.tryParse(raw.replaceAll(',', '.'));
+    if (amount == null) {
+      return 'Cantidad no válida';
+    }
+    if (amount < 0) {
+      return 'No puede ser negativa';
+    }
+    if (_unit == 'und' && amount != amount.roundToDouble()) {
+      return 'En unidades solo se permiten enteros';
+    }
+    if (_exceedsStock(amount, _unit)) {
+      return 'No puede ser mayor al stock actual '
+          '(${supply.current} ${supply.unit})';
+    }
+    return null;
+  }
+
+  bool _exceedsStock(double amount, String unit) {
+    final supplyUnit = supply.unit;
+    if (unit == supplyUnit) {
+      return amount > supply.current;
+    }
+    if (!_compatibleUnits(unit, supplyUnit)) {
+      return false;
+    }
+    return _toBaseUnit(unit, amount) >
+        _toBaseUnit(supplyUnit, supply.current.toDouble());
+  }
+
+  static const _massUnits = {'kg', 'g', 'lb'};
+  static const _volumeUnits = {'L', 'lt', 'ml'};
+
+  bool _compatibleUnits(String a, String b) {
+    if (a == b) return true;
+    final bothMass = _massUnits.contains(a) && _massUnits.contains(b);
+    final bothVolume = _volumeUnits.contains(a) && _volumeUnits.contains(b);
+    return bothMass || bothVolume;
+  }
+
+  double _toBaseUnit(String unit, double value) {
+    switch (unit) {
+      case 'g':
+        return value / 1000;
+      case 'lb':
+        return value * 0.45359237;
+      case 'ml':
+        return value / 1000;
+      case 'kg':
+      case 'L':
+      case 'lt':
+        return value;
+      default:
+        return value;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(context),
+            const Divider(
+              color: AppColors.headerDivider,
+              height: 1,
+              thickness: 1,
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Indica cuánto de este insumo se desperdicia al '
+                        'eliminarlo.',
+                        style: GoogleFonts.dmSans(
+                          color: AppColors.muted,
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Stock actual: ${supply.current} ${supply.unit}',
+                        style: GoogleFonts.dmSans(
+                          color: AppColors.ink,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final amountField = _buildAmountField();
+                          final unitField = _buildUnitField();
+                          if (constraints.maxWidth < 380) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                amountField,
+                                const SizedBox(height: 16),
+                                unitField,
+                              ],
+                            );
+                          }
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 3, child: amountField),
+                              const SizedBox(width: 16),
+                              Expanded(flex: 2, child: unitField),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const Divider(
+              color: AppColors.headerDivider,
+              height: 1,
+              thickness: 1,
+            ),
+            _buildFooter(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Eliminar insumo',
+                  style: GoogleFonts.dmSerifDisplay(
+                    color: AppColors.ink,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${supply.name} · ${supply.id}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.dmSans(
+                    color: AppColors.muted,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close, color: AppColors.muted),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmountField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Cantidad desperdiciada',
+          style: GoogleFonts.dmSans(
+            color: AppColors.muted,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: _amountController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => _submit(),
+          style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+          decoration: InputDecoration(
+            hintText: '0',
+            hintStyle: GoogleFonts.dmSans(color: AppColors.muted, fontSize: 15),
+            filled: true,
+            fillColor: AppColors.fieldFill,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 13,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: const BorderSide(color: AppColors.fieldFill),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: const BorderSide(color: AppColors.fieldBorder, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: const BorderSide(color: AppColors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: const BorderSide(color: AppColors.red, width: 1.5),
+            ),
+            errorStyle: GoogleFonts.dmSans(color: AppColors.red, fontSize: 12),
+          ),
+          validator: _validateAmount,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUnitField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Unidad de medida',
+          style: GoogleFonts.dmSans(
+            color: AppColors.muted,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          initialValue: _unit,
+          isExpanded: true,
+          borderRadius: BorderRadius.circular(24),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.fieldFill,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 13,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: const BorderSide(color: AppColors.fieldFill),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: const BorderSide(color: AppColors.fieldBorder, width: 1.5),
+            ),
+          ),
+          style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.muted),
+          items: [
+            for (final (code, label) in _unitOptions)
+              DropdownMenuItem(
+                value: code,
+                child: Text(
+                  label,
+                  style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+                ),
+              ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _unit = value);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 48,
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.ink,
+                  side: const BorderSide(color: AppColors.fieldBorder),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                child: Text(
+                  'Cancelar',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.red,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                child: Text(
+                  'Eliminar',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SupplyDetailScreen extends StatelessWidget {
@@ -689,7 +1019,7 @@ class _SupplyDetailScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Text(
                             supply.id,
-                            style: GoogleFonts.robotoMono(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: PurchasesScreen.muted,
                               fontSize: 16,
                             ),
@@ -729,7 +1059,7 @@ class _SupplyDetailScreen extends StatelessWidget {
     return Container(
       height: 60,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
@@ -737,7 +1067,7 @@ class _SupplyDetailScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(
               Icons.arrow_back,
-              color: PurchasesScreen.ink,
+              color: AppColors.red,
               size: 28,
             ),
           ),
@@ -746,13 +1076,30 @@ class _SupplyDetailScreen extends StatelessWidget {
               'La Sirena Pizza',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
+                color: AppColors.red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          const SizedBox(width: 52),
+          Container(
+            width: 36,
+            height: 36,
+            margin: const EdgeInsets.only(right: 10),
+            decoration: const BoxDecoration(
+              color: AppColors.red,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              getInitials('Gloria Inés Vargas'),
+              style: GoogleFonts.dmSerifDisplay(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -770,7 +1117,7 @@ class _SupplyDetailScreen extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: PurchasesScreen.muted,
                 fontSize: 17,
               ),
@@ -782,12 +1129,12 @@ class _SupplyDetailScreen extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               style: mono
-                  ? GoogleFonts.robotoMono(
+                  ? GoogleFonts.dmSerifDisplay(
                       color: PurchasesScreen.ink,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     )
-                  : GoogleFonts.poppins(
+                  : GoogleFonts.dmSerifDisplay(
                       color: PurchasesScreen.ink,
                       fontSize: 17,
                     ),
@@ -804,7 +1151,7 @@ class _SupplyDetailScreen extends StatelessWidget {
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -829,7 +1176,7 @@ class _SupplyDetailScreen extends StatelessWidget {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 1
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,

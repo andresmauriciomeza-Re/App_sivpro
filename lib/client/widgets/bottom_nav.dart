@@ -140,7 +140,7 @@ class AppBottomNav extends StatelessWidget {
                   child: Text(
                     item.label,
                     maxLines: 1,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 10,
                       fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                       color: isActive ? Colors.white : Colors.black38,
@@ -185,7 +185,7 @@ class AppBottomNav extends StatelessWidget {
             ),
             child: Text(
               total > 99 ? '99+' : '$total',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
                 color: isActive ? kSplashRojo : Colors.white,

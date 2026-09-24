@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
+import '../../shared/initials.dart';
+import '../../theme/app_colors.dart';
+import '../widgets/production_summary_card.dart';
 
 part 'purchases/admin_profile.dart';
 part 'purchases/clients.dart';
@@ -95,7 +98,8 @@ class PurchasesScreen extends StatelessWidget {
                       'Compras',
                       style: GoogleFonts.dmSerifDisplay(
                         color: ink,
-                        fontSize: 40,
+                        fontSize: 34,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -103,7 +107,7 @@ class PurchasesScreen extends StatelessWidget {
                       'Seleccione un módulo para administrar',
                       style: GoogleFonts.dmSerifDisplay(
                         color: muted,
-                        fontSize: 22,
+                        fontSize: 20,
                       ),
                     ),
                     const SizedBox(height: 50),
@@ -157,20 +161,20 @@ class PurchasesScreen extends StatelessWidget {
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: muted, size: 28),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 28),
           ),
           Expanded(
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
+                color: AppColors.red,
                 fontSize: 25,
                 fontWeight: FontWeight.w700,
               ),
@@ -181,16 +185,16 @@ class PurchasesScreen extends StatelessWidget {
             height: 46,
             margin: const EdgeInsets.only(right: 16),
             decoration: const BoxDecoration(
-              color: Color(0xFFF0ECEB),
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
             child: Text(
-              'G',
-              style: GoogleFonts.poppins(
-                color: const Color(0xFF8E1118),
+              getInitials('Gloria Inés Vargas'),
+              style: GoogleFonts.dmSerifDisplay(
+                color: Colors.white,
                 fontSize: 23,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -205,7 +209,7 @@ class PurchasesScreen extends StatelessWidget {
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 9, bottom: 8),
@@ -230,7 +234,7 @@ class PurchasesScreen extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 1 ? red : muted,
                       fontSize: 12,
                       fontWeight: i == 1 ? FontWeight.w700 : FontWeight.w400,

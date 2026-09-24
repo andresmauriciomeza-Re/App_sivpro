@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../theme/app_colors.dart';
 import '../../shared/page_transitions.dart';
 
 class EmployeeSaleDetailScreen extends StatelessWidget {
@@ -72,19 +73,19 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE6E8EC))),
+        color: AppColors.page,
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           InkWell(
             onTap: () => Navigator.of(context).pop(),
-            child: const Icon(Icons.chevron_left, color: muted, size: 30),
+            child: const Icon(Icons.chevron_left, color: AppColors.red, size: 30),
           ),
           const SizedBox(width: 8),
           Text(
             'Volver a ventas',
-            style: GoogleFonts.poppins(color: ink, fontSize: 17),
+            style: GoogleFonts.dmSerifDisplay(color: AppColors.red, fontSize: 17),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 10),
@@ -92,7 +93,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
           ),
           Text(
             'Venta $index',
-            style: GoogleFonts.poppins(color: muted, fontSize: 17),
+            style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 17),
           ),
           const Spacer(),
           _statusChip(status),
@@ -122,7 +123,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.dmSerifDisplay(
               color: muted,
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -154,7 +155,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Método de pago',
-                    style: GoogleFonts.poppins(color: muted, fontSize: 16),
+                    style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
                   ),
                   const SizedBox(height: 5),
                   _paymentChip(),
@@ -171,11 +172,11 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.poppins(color: muted, fontSize: 16)),
+        Text(label, style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16)),
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.dmSerifDisplay(
             color: ink,
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -208,7 +209,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Margarita Clásica',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: ink,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -216,14 +217,14 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
                   ),
                   Text(
                     '\$28.000 × 2',
-                    style: GoogleFonts.poppins(color: muted, fontSize: 16),
+                    style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
                   ),
                 ],
               ),
             ),
             Text(
               amount,
-              style: GoogleFonts.robotoMono(
+              style: GoogleFonts.dmSerifDisplay(
                 color: red,
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -239,7 +240,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
           children: [
             Text(
               'Total',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: ink,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -248,7 +249,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
             const Spacer(),
             Text(
               amount,
-              style: GoogleFonts.robotoMono(
+              style: GoogleFonts.dmSerifDisplay(
                 color: red,
                 fontSize: 25,
                 fontWeight: FontWeight.w700,
@@ -289,11 +290,11 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             'Sin comprobante',
-            style: GoogleFonts.poppins(color: muted, fontSize: 17),
+            style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 17),
           ),
           Text(
             'No se adjuntó archivo de pago',
-            style: GoogleFonts.poppins(color: const Color(0xFF9AA6B7)),
+            style: GoogleFonts.dmSerifDisplay(color: const Color(0xFF9AA6B7)),
           ),
         ],
       ),
@@ -371,14 +372,14 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
             ),
             child: Text(
               label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: active ? activeColor : const Color(0xFFB45B00),
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
           const Spacer(),
-          Text(time, style: GoogleFonts.poppins(color: muted)),
+          Text(time, style: GoogleFonts.dmSerifDisplay(color: muted)),
         ],
       ),
     );
@@ -394,7 +395,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
       ),
       child: Text(
         isNequi ? '💜  Nequi' : '🏦  Bancolombia',
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           color: isNequi ? const Color(0xFF6E1DCB) : const Color(0xFF7A5900),
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -424,7 +425,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
           const SizedBox(width: 7),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.dmSerifDisplay(
               color: returned
                   ? const Color(0xFFB44A00)
                   : const Color(0xFF1455C0),
@@ -439,10 +440,10 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
   Widget _bottomNavigation(BuildContext context) {
     const items = [
       (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_bag_outlined, 'Compras'),
-      (Icons.local_fire_department_outlined, 'Producción'),
+      (Icons.people_outline, 'Clientes'),
       (Icons.receipt_long, 'Ventas'),
-      (Icons.menu, 'Más'),
+      (Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, 'Perfil'),
     ];
     return SizedBox(
       height: 80,
@@ -470,13 +471,13 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
                           children: [
                             Icon(
                               items[i].$1,
-                              color: i == 3 ? red : const Color(0xFF9AA6B7),
+                              color: i == 2 ? red : const Color(0xFF9AA6B7),
                               size: 22,
                             ),
                             Text(
                               items[i].$2,
-                              style: GoogleFonts.poppins(
-                                color: i == 3
+                              style: GoogleFonts.dmSerifDisplay(
+                                color: i == 2
                                     ? red
                                     : const Color(0xFF9AA6B7),
                                 fontSize: 10,

@@ -40,7 +40,7 @@ class PasswordUpdatedScreen extends StatelessWidget {
                     Text(
                       '¡Contraseña actualizada!',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.montserrat(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black87,
                         fontSize: 28,
                         fontWeight: FontWeight.w400,
@@ -50,7 +50,7 @@ class PasswordUpdatedScreen extends StatelessWidget {
                     Text(
                       'Tu contraseña ha sido cambiada exitosamente.\nYa puedes iniciar sesión con tu nueva contraseña.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black54,
                         fontSize: 15,
                       ),
@@ -78,7 +78,7 @@ class PasswordUpdatedScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'Ir a iniciar sesión',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
                           ),
@@ -97,7 +97,7 @@ class PasswordUpdatedScreen extends StatelessWidget {
                       },
                       child: Text(
                         'Volver al inicio',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: Colors.black54,
                           fontSize: 14,
                         ),

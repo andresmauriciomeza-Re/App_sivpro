@@ -48,7 +48,7 @@ class _CartScreenState extends State<CartScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: Text(
             'La Sirena',
-            style: GoogleFonts.montserrat(
+            style: GoogleFonts.dmSerifDisplay(
               fontSize: 20,
               color: Colors.black87,
             ),
@@ -69,7 +69,7 @@ class _CartScreenState extends State<CartScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'Tu carrito está vacío',
-                    style: GoogleFonts.montserrat(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 22,
                       color: Colors.black87,
                     ),
@@ -78,7 +78,7 @@ class _CartScreenState extends State<CartScreen> {
                   Text(
                     'Agrega algunas pizzas deliciosas para comenzar tu pedido',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 13,
                       color: Colors.black54,
                       height: 1.4,
@@ -104,7 +104,7 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                       child: Text(
                         'Ver el menú',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                         ),
@@ -136,7 +136,7 @@ class _CartScreenState extends State<CartScreen> {
               ),
               Text(
                 'Carrito',
-                style: GoogleFonts.montserrat(
+                style: GoogleFonts.dmSerifDisplay(
                   fontSize: 22,
                   color: const Color(0xFF1A1A1A),
                 ),
@@ -168,14 +168,14 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Text(
                     'Subtotal',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 13,
                       color: Colors.black54,
                     ),
                   ),
                   Text(
                     '\$${formatoMiles(cart.subtotal)}',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 13,
                       color: Colors.black54,
                     ),
@@ -188,7 +188,7 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Text(
                     'Total',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
                       color: Colors.black87,
@@ -196,7 +196,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   Text(
                     '\$${formatoMiles(cart.total)}',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontWeight: FontWeight.w800,
                       fontSize: 18,
                       color: Colors.black87,
@@ -226,7 +226,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   child: Text(
                     'Ir a pagar',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
@@ -293,7 +293,7 @@ class _CartItemCard extends StatelessWidget {
               children: [
                 Text(
                   item.nombre,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                     color: Colors.black87,
@@ -302,7 +302,7 @@ class _CartItemCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   'Size: ${item.tamanoNombre}',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     fontSize: 11,
                     color: Colors.black87,
                   ),
@@ -310,7 +310,7 @@ class _CartItemCard extends StatelessWidget {
                 if (item.adicionesTexto.isNotEmpty)
                   Text(
                     'Additions: ${item.adicionesTexto}',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 11,
                       color: Colors.black87,
                     ),
@@ -330,7 +330,7 @@ class _CartItemCard extends StatelessWidget {
                       child: Text(
                         '${item.cantidad}',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
@@ -364,7 +364,7 @@ class _CartItemCard extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 '\$${formatoMiles(item.subtotal)}',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   fontWeight: FontWeight.w800,
                   fontSize: 14,
                   color: Colors.black87,

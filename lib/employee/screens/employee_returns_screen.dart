@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/initials.dart';
+import '../../theme/app_colors.dart';
 import 'employee_exchange_screen.dart';
 import 'employee_refund_screen.dart';
 import '../../shared/page_transitions.dart';
@@ -46,7 +48,7 @@ class EmployeeReturnsScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         RichText(
                           text: TextSpan(
-                            style: GoogleFonts.poppins(fontSize: 20),
+                            style: GoogleFonts.dmSerifDisplay(fontSize: 20),
                             children: [
                               TextSpan(
                                 text: '${pendientes.length} pendientes',
@@ -100,14 +102,14 @@ class EmployeeReturnsScreen extends StatelessWidget {
       height: 72,
       padding: const EdgeInsets.symmetric(horizontal: 26),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFEDE6E4))),
+        color: AppColors.page,
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: ink, size: 30),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 30),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -118,7 +120,7 @@ class EmployeeReturnsScreen extends StatelessWidget {
             children: [
               Text(
                 'LA SIRENA PIZZA',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: red,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -127,7 +129,7 @@ class EmployeeReturnsScreen extends StatelessWidget {
               ),
               Text(
                 'S.I.V.PRO Mobile',
-                style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
               ),
             ],
           ),
@@ -141,9 +143,9 @@ class EmployeeReturnsScreen extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFFFCACA), width: 4),
             ),
-            child: const Text(
-              'M',
-              style: TextStyle(
+            child: Text(
+              getInitials('María González'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
@@ -159,11 +161,11 @@ class EmployeeReturnsScreen extends StatelessWidget {
       children: [
         const Icon(Icons.home_outlined, color: Color(0xFFA49A97), size: 20),
         const SizedBox(width: 6),
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 15)),
+        Text('Inicio', style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 15)),
         const Icon(Icons.chevron_right, color: Color(0xFFA49A97), size: 22),
         Text(
           'devoluciones',
-          style: GoogleFonts.poppins(color: ink, fontSize: 15),
+          style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 15),
         ),
       ],
     );
@@ -174,7 +176,7 @@ class EmployeeReturnsScreen extends StatelessWidget {
       children: [
         Text(
           title,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.dmSerifDisplay(
             color: const Color(0xFFA49A97),
             fontSize: 15,
             fontWeight: FontWeight.w700,
@@ -197,7 +199,7 @@ class EmployeeReturnsScreen extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           color: const Color(0xFF9B4610),
           fontWeight: FontWeight.w600,
         ),
@@ -236,7 +238,7 @@ class EmployeeReturnsScreen extends StatelessWidget {
               children: [
                 Text(
                   'Resolución de devoluciones',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: ink,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -245,7 +247,7 @@ class EmployeeReturnsScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Las devoluciones aprobadas se sincronizarán directamente con el módulo de caja y se notificará al cliente vía WhatsApp.',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: muted,
                     fontSize: 14,
                     height: 1.55,
@@ -262,10 +264,10 @@ class EmployeeReturnsScreen extends StatelessWidget {
   Widget _bottomNavigation(BuildContext context) {
     const items = [
       (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_bag_outlined, 'Compras'),
-      (Icons.local_fire_department_outlined, 'Producción'),
+      (Icons.people_outline, 'Clientes'),
       (Icons.receipt_long, 'Ventas'),
-      (Icons.menu, 'Más'),
+      (Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, 'Perfil'),
     ];
     return SizedBox(
       height: 80,
@@ -298,7 +300,7 @@ class EmployeeReturnsScreen extends StatelessWidget {
                             ),
                             Text(
                               items[i].$2,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: i == 3 ? red : const Color(0xFFA49A97),
                                 fontSize: 10,
                                 height: 1,
@@ -373,7 +375,7 @@ class _ReturnCard extends StatelessWidget {
               children: [
                 Text(
                   '#${item.index}  ${item.customer}',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: Colors.black,
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
@@ -381,7 +383,7 @@ class _ReturnCard extends StatelessWidget {
                 ),
                 Text(
                   item.date,
-                  style: GoogleFonts.poppins(color: const Color(0xFFA49A97)),
+                  style: GoogleFonts.dmSerifDisplay(color: const Color(0xFFA49A97)),
                 ),
                 const SizedBox(height: 10),
                 Column(
@@ -389,7 +391,7 @@ class _ReturnCard extends StatelessWidget {
                   children: [
                     Text(
                       item.amount,
-                      style: GoogleFonts.robotoMono(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black,
                         fontSize: 21,
                         fontWeight: FontWeight.w700,
@@ -437,7 +439,7 @@ class _PaymentBadge extends StatelessWidget {
       ),
       child: Text(
         isNequi ? '💜 Nequi' : '▤  Bancolombia',
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           color: isNequi ? const Color(0xFF6E1DCB) : const Color(0xFF8B3F11),
           fontSize: 13,
         ),
@@ -491,7 +493,7 @@ class _ResolvedCard extends StatelessWidget {
               children: [
                 Text(
                   '#${item.index}  ${item.customer}',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: Colors.black,
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
@@ -499,7 +501,7 @@ class _ResolvedCard extends StatelessWidget {
                 ),
                 Text(
                   item.date,
-                  style: GoogleFonts.poppins(color: const Color(0xFFA49A97)),
+                  style: GoogleFonts.dmSerifDisplay(color: const Color(0xFFA49A97)),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -509,7 +511,7 @@ class _ResolvedCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         _resolutionText,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: const Color(0xFF19733B),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -523,7 +525,7 @@ class _ResolvedCard extends StatelessWidget {
                   children: [
                     Text(
                       item.amount,
-                      style: GoogleFonts.robotoMono(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black,
                         fontSize: 21,
                         fontWeight: FontWeight.w700,
@@ -538,7 +540,7 @@ class _ResolvedCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       'Resuelta',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: const Color(0xFF19733B),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -570,7 +572,7 @@ class _ResolutionBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           color: const Color(0xFF19733B),
           fontSize: 13,
           fontWeight: FontWeight.w600,
@@ -618,7 +620,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                     const SizedBox(height: 22),
                     Text(
                       '¿Cómo se resuelve esta devolución?',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -656,7 +658,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                         ),
                         child: Text(
                           'Confirmar y procesar resolución',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -678,14 +680,14 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
       height: 78,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE8EBEF))),
+        color: AppColors.page,
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: ink, size: 28),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 28),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -696,7 +698,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
             children: [
               Text(
                 'LA SIRENA PIZZA',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: red,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -705,7 +707,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
               ),
               Text(
                 'S.I.V.PRO Mobile',
-                style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
               ),
             ],
           ),
@@ -715,12 +717,12 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
             height: 48,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
-              color: Color(0xFFC62828),
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
-            child: const Text(
-              'M',
-              style: TextStyle(
+            child: Text(
+              getInitials('María González'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -735,16 +737,16 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
   Widget _breadcrumb() {
     return Row(
       children: [
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 16)),
+        Text('Inicio', style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16)),
         const SizedBox(width: 36),
         Text(
           'devoluciones',
-          style: GoogleFonts.poppins(color: muted, fontSize: 16),
+          style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
         ),
         const SizedBox(width: 36),
         Text(
           'gestionar',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.dmSerifDisplay(
             color: ink,
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -781,7 +783,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                   children: [
                     Text(
                       '#${widget.item.index}  ${widget.item.customer} · ${widget.item.date}',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -790,7 +792,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                     const SizedBox(height: 8),
                     Text(
                       widget.item.amount,
-                      style: GoogleFonts.robotoMono(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 25,
                         fontWeight: FontWeight.w700,
@@ -822,7 +824,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
             alignment: Alignment.centerLeft,
             child: Text(
               '¿Cómo se resuelve esta devolución?',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: ink,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -844,7 +846,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
       ),
       child: Text(
         isNequi ? '💜 Nequi' : '🏦 Bancolombia',
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           color: isNequi ? const Color(0xFF6E1DCB) : const Color(0xFF8B3F11),
           fontSize: 13,
         ),
@@ -904,7 +906,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
             const SizedBox(height: 30),
             Text(
               title,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: ink,
                 fontSize: 19,
                 fontWeight: FontWeight.w700,
@@ -913,7 +915,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
             const SizedBox(height: 8),
             Text(
               description,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: muted,
                 fontSize: 16,
                 height: 1.55,
@@ -928,10 +930,10 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
   Widget _bottomNavigation() {
     const items = [
       (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_bag_outlined, 'Compras'),
-      (Icons.local_fire_department_outlined, 'Producción'),
+      (Icons.people_outline, 'Clientes'),
       (Icons.receipt_long, 'Ventas'),
-      (Icons.menu, 'Más'),
+      (Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, 'Perfil'),
     ];
     return SizedBox(
       height: 80,
@@ -959,7 +961,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                             ),
                             Text(
                               items[i].$2,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: i == 3 ? red : const Color(0xFFA4AAB5),
                                 fontSize: 10,
                               ),

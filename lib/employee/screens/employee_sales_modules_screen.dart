@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/initials.dart';
+import '../../theme/app_colors.dart';
+import '../../shared/page_transitions.dart';
 import 'employee_clients_screen.dart';
 import 'employee_returns_screen.dart';
 import 'employee_sales_management_screen.dart';
@@ -32,7 +35,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Inicio',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: muted,
                             fontSize: 10,
                           ),
@@ -47,7 +50,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                         ),
                         Text(
                           'Ventas',
-                          style: GoogleFonts.poppins(color: red, fontSize: 10),
+                          style: GoogleFonts.dmSerifDisplay(color: red, fontSize: 10),
                         ),
                       ],
                     ),
@@ -62,7 +65,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       'Seleccione el módulo que desea gestionar.',
-                      style: GoogleFonts.poppins(color: muted, fontSize: 11),
+                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 11),
                     ),
                     const SizedBox(height: 18),
                     _ModuleCard(
@@ -118,7 +121,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.page,
         boxShadow: [
           BoxShadow(
             color: Color(0x14000000),
@@ -140,8 +143,8 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
             alignment: Alignment.center,
             decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
             child: Text(
-              'M',
-              style: GoogleFonts.poppins(
+              getInitials('María González'),
+              style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
@@ -155,11 +158,11 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
 
   Widget _buildBottomNavigation(BuildContext context) {
     const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.home_outlined, Icons.home, 'Inicio'),
+      (Icons.people_outline, Icons.people, 'Clientes'),
+      (Icons.receipt_long_outlined, Icons.receipt_long, 'Ventas'),
+      (Icons.sync_alt, Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, Icons.person, 'Perfil'),
     ];
 
     return SizedBox(
@@ -182,31 +185,23 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                   for (var index = 0; index < items.length; index++)
                     Expanded(
                       child: InkWell(
-                        onTap: () {
-                          if (index == 0) {
-                            Navigator.of(context).pop();
-                          } else if (index == 3) {
-                            return;
-                          } else {
-                            _showComingSoon(context);
-                          }
-                        },
+                        onTap: () => handleEmployeeBottomNav(context, index),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              index == 3 ? Icons.receipt_long : items[index].$1,
-                              color: index == 3 ? red : muted,
+                              index == 2 ? items[index].$2 : items[index].$1,
+                              color: index == 2 ? red : muted,
                               size: 19,
                             ),
                             const SizedBox(height: 1),
                             Text(
-                              items[index].$2,
-                              style: GoogleFonts.poppins(
-                                color: index == 3 ? red : muted,
+                              items[index].$3,
+                              style: GoogleFonts.dmSerifDisplay(
+                                color: index == 2 ? red : muted,
                                 fontSize: 10,
                                 height: 1,
-                                fontWeight: index == 3
+                                fontWeight: index == 2
                                     ? FontWeight.w700
                                     : FontWeight.w400,
                               ),
@@ -221,14 +216,6 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
         ],
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Este módulo estará disponible próximamente.'),
       ),
     );
   }
@@ -298,7 +285,7 @@ class _ModuleCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: EmployeeSalesModulesScreen.ink,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -307,7 +294,7 @@ class _ModuleCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         description,
-                        style: GoogleFonts.robotoMono(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: EmployeeSalesModulesScreen.muted,
                           fontSize: 9,
                         ),
