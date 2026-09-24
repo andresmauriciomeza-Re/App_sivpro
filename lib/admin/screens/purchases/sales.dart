@@ -37,7 +37,7 @@ class SalesScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Inicio',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.muted,
                               fontSize: 16,
                             ),
@@ -52,7 +52,7 @@ class SalesScreen extends StatelessWidget {
                           ),
                           Text(
                             'Ventas',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.red,
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -63,7 +63,7 @@ class SalesScreen extends StatelessWidget {
                       const SizedBox(height: 14),
                       Text(
                         'Gestión de Ventas',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.montserrat(
                           color: PurchasesScreen.ink,
                           fontSize: 34,
                           fontWeight: FontWeight.w700,
@@ -72,7 +72,7 @@ class SalesScreen extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         'Seleccione el módulo que desea gestionar.',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: PurchasesScreen.muted,
                           fontSize: 19,
                         ),
@@ -116,7 +116,7 @@ class SalesScreen extends StatelessWidget {
               child: Text(
                 'La Sirena Pizza',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.montserrat(
                   color: AppColors.red,
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
@@ -134,7 +134,7 @@ class SalesScreen extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 getInitials('Gloria Inés Vargas'),
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -225,7 +225,7 @@ class SalesScreen extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 25,
                               fontWeight: FontWeight.w700,
@@ -234,7 +234,7 @@ class SalesScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             description,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.muted,
                               fontSize: 16,
                             ),
@@ -294,7 +294,7 @@ class SalesScreen extends StatelessWidget {
                       ),
                       Text(
                         items[i].$2,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: i == 3
                               ? PurchasesScreen.red
                               : PurchasesScreen.muted,
@@ -365,7 +365,7 @@ Widget _itemCountBadge(int count) {
     ),
     child: Text(
       '$count',
-      style: GoogleFonts.dmSerifDisplay(
+      style: GoogleFonts.poppins(
         color: PurchasesScreen.ink,
         fontSize: 12,
         fontWeight: FontWeight.w700,
@@ -544,7 +544,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                     const SizedBox(height: 20),
                     Text(
                       'Gestión Ventas',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -552,7 +552,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                     ),
                     Text(
                       '${_sales.length} ventas registradas',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 16,
                       ),
@@ -574,7 +574,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                         child: Center(
                           child: Text(
                             'No se encontraron ventas.',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.muted,
                               fontSize: 16,
                             ),
@@ -608,7 +608,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -626,7 +626,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -650,7 +650,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
     );
   }
 
-  TextStyle _breadcrumbStyle(Color color) => GoogleFonts.dmSerifDisplay(
+  TextStyle _breadcrumbStyle(Color color) => GoogleFonts.poppins(
         color: color,
         fontSize: 15,
         fontWeight: color == PurchasesScreen.ink
@@ -662,7 +662,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
     return TextField(
       controller: _searchController,
       onChanged: (value) => setState(() => _query = value),
-      style: GoogleFonts.dmSerifDisplay(color: PurchasesScreen.ink, fontSize: 15),
+      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 15),
       decoration: InputDecoration(
         prefixIcon: const Icon(
           Icons.search,
@@ -670,7 +670,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
           size: 28,
         ),
         hintText: 'Buscar por ID, usuario o producto...',
-        hintStyle: GoogleFonts.dmSerifDisplay(
+        hintStyle: GoogleFonts.poppins(
           color: PurchasesScreen.ink,
           fontSize: 15,
         ),
@@ -711,7 +711,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                           child: Text(
                             sale.id,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 22,
                               fontWeight: FontWeight.w500,
@@ -784,7 +784,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
           Text(
             '$count pedido${plural ? 's' : ''} '
             'pendiente${plural ? 's' : ''} por verificar',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFFB07C0E),
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -795,7 +795,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
     );
   }
 
-  TextStyle _labelStyle() => GoogleFonts.dmSerifDisplay(
+  TextStyle _labelStyle() => GoogleFonts.poppins(
         color: PurchasesScreen.muted,
         fontSize: 12,
       );
@@ -809,7 +809,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
         Text(
           value,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: PurchasesScreen.ink,
             fontSize: 16,
           ),
@@ -851,7 +851,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
           const SizedBox(width: 5),
           Text(
             sale.payment,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: sale.payment == 'Nequi'
                   ? const Color(0xFF7023C7)
                   : const Color(0xFFE08A00),
@@ -880,7 +880,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
             const SizedBox(width: 5),
             Text(
               'Por verificar',
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -952,7 +952,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
           children: [
             Text(
               sale.status,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: style.foreground,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -1000,7 +1000,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
               Text(
                 'Cambiar estado',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.montserrat(
                   color: Colors.black,
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -1011,7 +1011,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
           content: Text(
             '¿Estás seguro de cambiar el estado\nde "${sale.status}" a "Devolución"?',
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF5B4643),
               fontSize: 17,
             ),
@@ -1028,7 +1028,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                 ),
                 child: Text(
                   'Sí, confirmar',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1047,7 +1047,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                 ),
                 child: Text(
                   'Cancelar',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1113,7 +1113,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                     ),
                     Text(
                       items[i].$2,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: i == 3
                             ? PurchasesScreen.red
                             : PurchasesScreen.muted,
@@ -1165,7 +1165,7 @@ class _SaleDetailScreen extends StatelessWidget {
                     child: Text(
                       'Detalle de Venta',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: AppColors.red,
                         fontSize: 27,
                         fontWeight: FontWeight.w700,
@@ -1204,7 +1204,7 @@ class _SaleDetailScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'Cerrar Detalle',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 23,
                             fontWeight: FontWeight.w700,
                           ),
@@ -1237,7 +1237,7 @@ class _SaleDetailScreen extends StatelessWidget {
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.dmSerifDisplay(
+      style: GoogleFonts.poppins(
         color: const Color(0xFF5B4643),
         fontSize: 17,
         letterSpacing: 1.2,
@@ -1272,7 +1272,7 @@ class _SaleDetailScreen extends StatelessWidget {
                   ),
                   child: Text(
                     sale.status,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: style.foreground,
                       fontSize: 16,
                     ),
@@ -1312,7 +1312,7 @@ class _SaleDetailScreen extends StatelessWidget {
             Text(
               value,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: PurchasesScreen.ink,
                 fontSize: size,
               ),
@@ -1321,7 +1321,7 @@ class _SaleDetailScreen extends StatelessWidget {
     );
   }
 
-  TextStyle _detailLabelStyle() => GoogleFonts.dmSerifDisplay(
+  TextStyle _detailLabelStyle() => GoogleFonts.poppins(
         color: const Color(0xFF5B4643),
         fontSize: 16,
       );
@@ -1349,7 +1349,7 @@ class _SaleDetailScreen extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             sale.payment,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: isNequi
                   ? const Color(0xFF7023C7)
                   : const Color(0xFFE08A00),
@@ -1391,14 +1391,14 @@ class _SaleDetailScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Margarita Clásica',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.ink,
                         fontSize: 23,
                       ),
                     ),
                     Text(
                       'Cantidad: 2',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFF5B4643),
                         fontSize: 19,
                       ),
@@ -1408,7 +1408,7 @@ class _SaleDetailScreen extends StatelessWidget {
               ),
               Text(
                 '\$${sale.total}',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.red,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -1424,7 +1424,7 @@ class _SaleDetailScreen extends StatelessWidget {
             children: [
               Text(
                 'Total a pagar',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.ink,
                   fontSize: 25,
                   fontWeight: FontWeight.w700,
@@ -1433,7 +1433,7 @@ class _SaleDetailScreen extends StatelessWidget {
               const Spacer(),
               Text(
                 '\$${sale.total}',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.red,
                   fontSize: 25,
                   fontWeight: FontWeight.w700,
@@ -1497,7 +1497,7 @@ class _NoReceiptPlaceholder extends StatelessWidget {
           Text(
             'Sin comprobante adjunto',
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.ink,
               fontSize: 22,
             ),
@@ -1506,7 +1506,7 @@ class _NoReceiptPlaceholder extends StatelessWidget {
           Text(
             'El cliente no subió imagen de transferencia',
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF5B4643),
               fontSize: 17,
             ),
@@ -1592,7 +1592,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -1610,7 +1610,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -1638,7 +1638,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.dmSerifDisplay(
+      style: GoogleFonts.poppins(
         color: const Color(0xFF5B4643),
         fontSize: 17,
         letterSpacing: 1.2,
@@ -1647,7 +1647,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
   }
 
   TextStyle _detailLabelStyle() {
-    return GoogleFonts.dmSerifDisplay(
+    return GoogleFonts.poppins(
       color: const Color(0xFF5B4643),
       fontSize: 16,
     );
@@ -1681,7 +1681,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
                   ),
                   child: Text(
                     sale.status,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: style.foreground,
                       fontSize: 16,
                     ),
@@ -1721,7 +1721,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
             Text(
               value,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: PurchasesScreen.ink,
                 fontSize: size,
               ),
@@ -1753,7 +1753,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
           const SizedBox(width: 10),
           Text(
             sale.payment,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: color,
               fontSize: 20,
               fontWeight: FontWeight.w500,
@@ -1793,14 +1793,14 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
                   children: [
                     Text(
                       'Margarita Clásica',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.ink,
                         fontSize: 23,
                       ),
                     ),
                     Text(
                       'Cantidad: 2',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFF5B4643),
                         fontSize: 19,
                       ),
@@ -1810,7 +1810,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
               ),
               Text(
                 '\$${sale.total}',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.red,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -1826,7 +1826,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
             children: [
               Text(
                 'Total a pagar',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.ink,
                   fontSize: 25,
                   fontWeight: FontWeight.w700,
@@ -1835,7 +1835,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
               const Spacer(),
               Text(
                 '\$${sale.total}',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.red,
                   fontSize: 25,
                   fontWeight: FontWeight.w700,
@@ -1891,7 +1891,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
           const SizedBox(height: 6),
           Text(
             '\$${sale.total}',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.red,
               fontSize: 34,
               fontWeight: FontWeight.w700,
@@ -1903,19 +1903,19 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
           TextField(
             controller: _receivedController,
             keyboardType: TextInputType.number,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.ink,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
             decoration: InputDecoration(
               prefixText: '\$ ',
-              prefixStyle: GoogleFonts.dmSerifDisplay(
+              prefixStyle: GoogleFonts.poppins(
                 color: PurchasesScreen.muted,
                 fontSize: 20,
               ),
               hintText: '0',
-              hintStyle: GoogleFonts.dmSerifDisplay(
+              hintStyle: GoogleFonts.poppins(
                 color: PurchasesScreen.muted,
                 fontSize: 20,
               ),
@@ -1951,7 +1951,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
         ),
         child: Text(
           'Rechazar pago',
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -1972,7 +1972,7 @@ class _SaleVerificationScreenState extends State<_SaleVerificationScreen> {
         ),
         child: Text(
           'Confirmar pago',
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),

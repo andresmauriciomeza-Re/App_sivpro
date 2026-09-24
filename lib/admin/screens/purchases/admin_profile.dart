@@ -81,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 34),
                     Text(
                       'Mi Perfil',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
@@ -89,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     Text(
                       'Consulta y actualiza tu información de contacto',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFF776D6A),
                         fontSize: 17,
                       ),
@@ -99,20 +99,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 56),
                     Center(
                       child: Text('La Sirena Pizza',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.montserrat(
                               color: const Color(0xFF5B514F), fontSize: 16)),
                     ),
                     const SizedBox(height: 8),
                     Center(
                       child: Text('S.I.V.PRO — Panel Administrativo',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                               color: const Color(0xFFAAA19F), fontSize: 15)),
                     ),
                     const SizedBox(height: 16),
                     Center(
                       child: Text('© 2026 La Sirena Pizza · Medellín, Colombia · Desde 1994',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                               color: const Color(0xFFAAA19F), fontSize: 13)),
                     ),
                   ],
@@ -126,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  TextStyle _crumb(Color color) => GoogleFonts.dmSerifDisplay(
+  TextStyle _crumb(Color color) => GoogleFonts.poppins(
         color: color,
         fontSize: 16,
         fontWeight: color == const Color(0xFF211616)
@@ -150,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('La Sirena Pizza',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.montserrat(
                         color: const Color(0xFFC9151E),
                         fontSize: 23,
                         fontWeight: FontWeight.w700)),
@@ -165,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Color(0xFFC9151E), shape: BoxShape.circle),
             alignment: Alignment.center,
             child: Text(getInitials('Gloria Inés Vargas'),
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700)),
@@ -239,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   'Gloria Inés Vargas',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.dmSerifDisplay(
+                                  style: GoogleFonts.poppins(
                                     color: const Color(0xFF211616),
                                     fontSize: compact ? 21 : 26,
                                   ),
@@ -261,7 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             child: Text(
                               'Administrador',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: const Color(0xFFAD2525),
                                 fontSize: compact ? 14 : 16,
                               ),
@@ -368,14 +368,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Icon(icon, color: const Color(0xFF968D8B), size: 25),
           const SizedBox(width: 12),
           Text(label,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                   color: const Color(0xFF5B514F), fontSize: 18)),
         ]),
         const SizedBox(height: 10),
         TextField(
           controller: controller,
           enabled: enabled && _editing,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
               color: const Color(0xFF211616), fontSize: 18),
           decoration: InputDecoration(
             filled: true,
@@ -400,7 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Padding(
             padding: const EdgeInsets.only(left: 8, top: 7),
             child: Text('Este campo no es editable',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                     color: const Color(0xFFAAA19F), fontSize: 14)),
           ),
       ],
@@ -437,7 +437,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 4
                           ? const Color(0xFFC9151E)
                           : const Color(0xFFAAA19F),

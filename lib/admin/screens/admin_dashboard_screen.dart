@@ -57,7 +57,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Text(
                       '¡Bienvenido, Admin! 👋',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 29,
                       ),
@@ -65,7 +65,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Resumen del día — jueves 20 de agosto de 2026',
-                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 15),
+                      style: GoogleFonts.poppins(color: muted, fontSize: 15),
                     ),
                     const SizedBox(height: 34),
                     _buildSummaryGrid(),
@@ -79,7 +79,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       children: [
                         Text(
                           'Actividad reciente',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: ink,
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -89,7 +89,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           onTap: () => openSalesManagement(context),
                           child: Text(
                             'Ver todos  →',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: red,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -121,7 +121,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(width: 18),
           Text(
             'La Sirena Pizza',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.montserrat(
               color: red,
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -142,7 +142,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -214,7 +214,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Text(
                 'Ventas',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: ink,
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -269,7 +269,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         child: Text(
           label,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: selected ? Colors.white : muted,
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -291,19 +291,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Text(
                 sale.id,
-                style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 16),
+                style: GoogleFonts.poppins(color: ink, fontSize: 16),
               ),
               const SizedBox(height: 4),
               Text(
                 sale.customer,
-                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
+                style: GoogleFonts.poppins(color: muted, fontSize: 14),
               ),
             ],
           ),
           const Spacer(),
           Text(
             sale.amount,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: ink,
               fontSize: 17,
               fontWeight: FontWeight.w600,
@@ -341,7 +341,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   const SizedBox(height: 3),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 0 ? red : muted,
                       fontSize: 12,
                       fontWeight: i == 0 ? FontWeight.w700 : FontWeight.w400,
@@ -437,7 +437,7 @@ class _SummaryCard extends StatelessWidget {
                 ),
                 child: Text(
                   badge,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: badgeTextColor ?? const Color(0xFF27803D),
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -449,14 +449,14 @@ class _SummaryCard extends StatelessWidget {
           const Spacer(),
           Text(
             title,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: AdminDashboardScreen.muted,
               fontSize: 13,
             ),
           ),
           Text(
             value,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: highlight ? AdminDashboardScreen.red : Colors.black,
               fontSize: 18,
               fontWeight: FontWeight.w600,

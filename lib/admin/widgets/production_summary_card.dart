@@ -27,7 +27,7 @@ class ProductionSummaryCard extends StatelessWidget {
         children: [
           Text(
             'Resumen de Hoy',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: _ink,
               fontSize: 24,
               fontWeight: FontWeight.w700,
@@ -63,7 +63,7 @@ class ProductionSummaryCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: _muted,
             fontSize: 13,
             fontWeight: FontWeight.w700,
@@ -72,7 +72,7 @@ class ProductionSummaryCard extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           value,
-          style: GoogleFonts.dmSerifDisplay(color: color, fontSize: 42),
+          style: GoogleFonts.poppins(color: color, fontSize: 42),
         ),
       ],
     );

@@ -184,7 +184,7 @@ child: SingleChildScrollView(
                    const SizedBox(height: 18),
 Text(
                       'Clientes',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -192,7 +192,7 @@ Text(
                     ),
                     Text(
                       'Usuarios registrados con tipo cliente en La Sirena',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 16,
                       ),
@@ -257,7 +257,7 @@ Center(
                             ? 'No hay clientes para mostrar'
                             : 'Mostrando ${visibleClients.length} de '
                                 '${filteredClients.length} clientes',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: PurchasesScreen.muted,
                           fontSize: 14,
                         ),
@@ -291,7 +291,7 @@ Widget _buildHeader(BuildContext context) {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -309,7 +309,7 @@ Widget _buildHeader(BuildContext context) {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -327,7 +327,7 @@ Widget _breadcrumb() {
         const Icon(Icons.home_outlined, size: 20, color: PurchasesScreen.muted),
         Text(
           ' Inicio  ›  Ventas  ›  Clientes',
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: PurchasesScreen.muted,
             fontSize: 15,
           ),
@@ -351,7 +351,7 @@ Widget _summaryCard(String value, String label) {
         children: [
           Text(
             value,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.ink,
               fontSize: 28,
               fontWeight: FontWeight.w700,
@@ -360,7 +360,7 @@ Widget _summaryCard(String value, String label) {
           const SizedBox(height: 6),
           Text(
             label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.muted,
               fontSize: 13,
             ),
@@ -374,10 +374,10 @@ Widget _searchField() {
     return TextField(
       controller: _searchController,
       onChanged: (_) => setState(() => _visibleClients = _pageSize),
-      style: GoogleFonts.dmSerifDisplay(fontSize: 15),
+      style: GoogleFonts.poppins(fontSize: 15),
       decoration: InputDecoration(
         hintText: 'Buscar por nombre, correo o estado...',
-        hintStyle: GoogleFonts.dmSerifDisplay(fontSize: 15),
+        hintStyle: GoogleFonts.poppins(fontSize: 15),
         prefixIcon: const Icon(Icons.search, size: 28),
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         enabledBorder: const OutlineInputBorder(
@@ -399,7 +399,7 @@ return DropdownButtonFormField<String>(
       initialValue: value,
       onChanged: onChanged,
       isExpanded: true,
-      style: GoogleFonts.dmSerifDisplay(
+      style: GoogleFonts.poppins(
         color: PurchasesScreen.muted,
         fontSize: 14,
       ),
@@ -438,7 +438,7 @@ Widget _clientCard(_Client client) {
                 backgroundColor: client.color,
                 child: Text(
                   client.initials,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -452,7 +452,7 @@ Widget _clientCard(_Client client) {
                   children: [
                     Text(
                       client.name,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.ink,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -461,7 +461,7 @@ Widget _clientCard(_Client client) {
                     const SizedBox(height: 4),
                     Text(
                       client.id,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 13,
                       ),
@@ -509,7 +509,7 @@ Widget _clientCard(_Client client) {
       ),
       child: Text(
         client.active ? 'Activo' : 'Inactivo',
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: client.active ? const Color(0xFF278044) : PurchasesScreen.muted,
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -548,7 +548,7 @@ Widget _clientCard(_Client client) {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: PurchasesScreen.muted,
             fontSize: 12,
           ),
@@ -557,7 +557,7 @@ Widget _clientCard(_Client client) {
         Text(
           value,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: PurchasesScreen.ink,
             fontSize: 16,
           ),
@@ -595,7 +595,7 @@ for (var i = 0; i < items.length; i++)
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 3
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
@@ -639,7 +639,7 @@ class _ClientDetailScreen extends StatelessWidget {
                   ),
                   Text(
                     'Detalle Cliente',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.montserrat(
                       color: AppColors.red,
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -670,7 +670,7 @@ class _ClientDetailScreen extends StatelessWidget {
                             backgroundColor: client.color,
                             child: Text(
                               client.initials,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 42,
                                 fontWeight: FontWeight.w700,
@@ -681,7 +681,7 @@ class _ClientDetailScreen extends StatelessWidget {
                           Text(
                             client.name,
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 26,
                               fontWeight: FontWeight.w700,
@@ -690,7 +690,7 @@ class _ClientDetailScreen extends StatelessWidget {
                           const SizedBox(height: 5),
                           Text(
                             client.id,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.muted,
                               fontSize: 18,
                             ),
@@ -711,7 +711,7 @@ class _ClientDetailScreen extends StatelessWidget {
                           _detailClientRow(
                             'Pedidos totales',
                             '${client.orders}',
-                            valueStyle: GoogleFonts.dmSerifDisplay(
+                            valueStyle: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
@@ -733,7 +733,7 @@ class _ClientDetailScreen extends StatelessWidget {
                               ),
                               child: Text(
                                 client.active ? 'Activo' : 'Inactivo',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   color: client.active
                                       ? const Color(0xFF278044)
                                       : PurchasesScreen.muted,
@@ -762,7 +762,7 @@ class _ClientDetailScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'Cerrar',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 25,
                             fontWeight: FontWeight.w700,
                           ),
@@ -842,7 +842,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
                             const SizedBox(width: 8),
                             Text(
                               'Volver a Clientes',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: AppColors.red,
                                 fontSize: 18,
                               ),
@@ -853,7 +853,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
                       const SizedBox(height: 18),
                       Text(
                         'Editar Cliente',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.montserrat(
                           color: PurchasesScreen.ink,
                           fontSize: 34,
                           fontWeight: FontWeight.w700,
@@ -862,7 +862,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
                       const SizedBox(height: 3),
                       Text(
                         'ID: ${widget.client.id}',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: PurchasesScreen.muted,
                           fontSize: 17,
                         ),
@@ -933,7 +933,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
                                 ),
                                 child: Text(
                                   'Cancelar',
-                                  style: GoogleFonts.dmSerifDisplay(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -955,7 +955,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
                                 ),
                                 child: Text(
                                   'Guardar cambios',
-                                  style: GoogleFonts.dmSerifDisplay(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -992,7 +992,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
               child: Text(
                 'La Sirena Pizza',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.montserrat(
                   color: AppColors.red,
                   fontSize: 23,
                   fontWeight: FontWeight.w700,
@@ -1010,7 +1010,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
               alignment: Alignment.center,
               child: Text(
                 getInitials('Gloria Inés Vargas'),
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -1027,7 +1027,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
         padding: const EdgeInsets.only(bottom: 10),
         child: Text(
           label,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: PurchasesScreen.ink,
             fontSize: 20,
           ),
@@ -1042,7 +1042,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
       return TextField(
         controller: controller,
         keyboardType: keyboardType,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: PurchasesScreen.ink,
           fontSize: 20,
         ),
@@ -1073,7 +1073,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
           }
         },
         icon: const Icon(Icons.keyboard_arrow_down),
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: PurchasesScreen.ink,
           fontSize: 20,
         ),
@@ -1135,7 +1135,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
                     ),
                     Text(
                       items[i].$2,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: i == 4
                             ? PurchasesScreen.red
                             : PurchasesScreen.muted,
@@ -1169,7 +1169,7 @@ extension _ClientDetailHelpers on _ClientDetailScreen {
             flex: 2,
             child: Text(
               label,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: PurchasesScreen.muted,
                 fontSize: 18,
               ),
@@ -1187,7 +1187,7 @@ extension _ClientDetailHelpers on _ClientDetailScreen {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: valueStyle ??
-                        GoogleFonts.dmSerifDisplay(
+                        GoogleFonts.poppins(
                           color: PurchasesScreen.ink,
                           fontSize: 16,
                         ),
@@ -1220,7 +1220,7 @@ extension _ClientDetailHelpers on _ClientDetailScreen {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -1238,7 +1238,7 @@ extension _ClientDetailHelpers on _ClientDetailScreen {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,

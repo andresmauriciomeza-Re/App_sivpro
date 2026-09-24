@@ -186,7 +186,7 @@ class _SupplyManagementScreen extends StatelessWidget {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 24,
               ),
@@ -203,7 +203,7 @@ class _SupplyManagementScreen extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 19,
               ),
@@ -234,7 +234,7 @@ class _SupplyManagementScreen extends StatelessWidget {
       ),
       child: RichText(
         text: TextSpan(
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: isWarning
                 ? const Color(0xFFB65D0A)
                 : isEmpty
@@ -285,7 +285,7 @@ class _SupplyManagementScreen extends StatelessWidget {
             children: [
               Text(
                 supply.id,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.muted,
                   fontSize: 12,
                 ),
@@ -294,7 +294,7 @@ class _SupplyManagementScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${supply.categoryId} • ${supply.category}',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: PurchasesScreen.muted,
                     fontSize: 12,
                   ),
@@ -312,7 +312,7 @@ class _SupplyManagementScreen extends StatelessWidget {
                       : isEmpty
                           ? 'Agotado'
                           : 'O\nK',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: statusColor,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -325,7 +325,7 @@ class _SupplyManagementScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             supply.name,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.ink,
               fontSize: 19,
               fontWeight: FontWeight.w700,
@@ -333,7 +333,7 @@ class _SupplyManagementScreen extends StatelessWidget {
           ),
           Text(
             'Unidad: ${supply.unit}',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.muted,
               fontSize: 12,
             ),
@@ -344,7 +344,7 @@ class _SupplyManagementScreen extends StatelessWidget {
               Expanded(
                 child: Text.rich(
                   TextSpan(
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: PurchasesScreen.muted,
                       fontSize: 12,
                     ),
@@ -374,14 +374,14 @@ class _SupplyManagementScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Precio unit.',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: PurchasesScreen.muted,
                       fontSize: 11,
                     ),
                   ),
                   Text(
                     supply.price,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: PurchasesScreen.ink,
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -502,7 +502,7 @@ class _SupplyManagementScreen extends StatelessWidget {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 1
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
@@ -702,7 +702,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
                       Text(
                         'Indica cuánto de este insumo se desperdicia al '
                         'eliminarlo.',
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.poppins(
                           color: AppColors.muted,
                           fontSize: 14,
                           height: 1.4,
@@ -711,7 +711,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
                       const SizedBox(height: 6),
                       Text(
                         'Stock actual: ${supply.current} ${supply.unit}',
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.poppins(
                           color: AppColors.ink,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -771,7 +771,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
               children: [
                 Text(
                   'Eliminar insumo',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.montserrat(
                     color: AppColors.ink,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -782,7 +782,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
                   '${supply.name} · ${supply.id}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.poppins(
                     color: AppColors.muted,
                     fontSize: 13,
                   ),
@@ -805,7 +805,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
       children: [
         Text(
           'Cantidad desperdiciada',
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -817,10 +817,10 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (_) => _submit(),
-          style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
           decoration: InputDecoration(
             hintText: '0',
-            hintStyle: GoogleFonts.dmSans(color: AppColors.muted, fontSize: 15),
+            hintStyle: GoogleFonts.poppins(color: AppColors.muted, fontSize: 15),
             filled: true,
             fillColor: AppColors.fieldFill,
             contentPadding: const EdgeInsets.symmetric(
@@ -843,7 +843,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
               borderRadius: BorderRadius.circular(24),
               borderSide: const BorderSide(color: AppColors.red, width: 1.5),
             ),
-            errorStyle: GoogleFonts.dmSans(color: AppColors.red, fontSize: 12),
+            errorStyle: GoogleFonts.poppins(color: AppColors.red, fontSize: 12),
           ),
           validator: _validateAmount,
         ),
@@ -857,7 +857,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
       children: [
         Text(
           'Unidad de medida',
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -884,7 +884,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
               borderSide: const BorderSide(color: AppColors.fieldBorder, width: 1.5),
             ),
           ),
-          style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
           icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.muted),
           items: [
             for (final (code, label) in _unitOptions)
@@ -892,7 +892,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
                 value: code,
                 child: Text(
                   label,
-                  style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+                  style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
                 ),
               ),
           ],
@@ -926,7 +926,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
                 ),
                 child: Text(
                   'Cancelar',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -950,7 +950,7 @@ class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
                 ),
                 child: Text(
                   'Eliminar',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1002,7 +1002,7 @@ class _SupplyDetailScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Detalle',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.montserrat(
                               color: PurchasesScreen.ink,
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
@@ -1019,7 +1019,7 @@ class _SupplyDetailScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Text(
                             supply.id,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.muted,
                               fontSize: 16,
                             ),
@@ -1075,7 +1075,7 @@ class _SupplyDetailScreen extends StatelessWidget {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -1093,7 +1093,7 @@ class _SupplyDetailScreen extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -1117,7 +1117,7 @@ class _SupplyDetailScreen extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: PurchasesScreen.muted,
                 fontSize: 17,
               ),
@@ -1129,12 +1129,12 @@ class _SupplyDetailScreen extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               style: mono
-                  ? GoogleFonts.dmSerifDisplay(
+                  ? GoogleFonts.poppins(
                       color: PurchasesScreen.ink,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     )
-                  : GoogleFonts.dmSerifDisplay(
+                  : GoogleFonts.poppins(
                       color: PurchasesScreen.ink,
                       fontSize: 17,
                     ),
@@ -1176,7 +1176,7 @@ class _SupplyDetailScreen extends StatelessWidget {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 1
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,

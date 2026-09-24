@@ -104,7 +104,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                   children: [
                     Text(
                       'Gestión Producto',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -113,7 +113,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                     const SizedBox(height: 2),
                     Text(
                       '${_products.length} productos registrados',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 16,
                       ),
@@ -124,7 +124,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                       onChanged: (_) => setState(() {}),
                       decoration: InputDecoration(
                         hintText: 'Buscar por ID, nombre o categoría...',
-                        hintStyle: GoogleFonts.dmSerifDisplay(
+                        hintStyle: GoogleFonts.poppins(
                           color: const Color(0xFF6E7587),
                           fontSize: 18,
                         ),
@@ -182,7 +182,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -200,7 +200,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
@@ -257,7 +257,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                   children: [
                     Text(
                       product.name,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: Colors.black,
                         fontSize: 23,
                         fontWeight: FontWeight.w700,
@@ -271,7 +271,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                         _productTag(product.id),
                         Text(
                           product.category,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.muted,
                             fontSize: 14,
                           ),
@@ -291,7 +291,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
             children: [
               Text(
                 '\$${_formatPrice(product.price)}',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: Colors.black,
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
@@ -346,7 +346,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                 const SizedBox(width: 6),
                 Text(
                   'Stock: ${product.stock}',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: isLowStock
                         ? PurchasesScreen.red
                         : const Color(0xFF167B27),
@@ -370,7 +370,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
       ),
       child: Text(
         text,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: PurchasesScreen.ink,
           fontSize: 13,
         ),
@@ -418,7 +418,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                   Text(
                     'Eliminar producto',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.montserrat(
                       color: Colors.black,
                       fontSize: 31,
                       fontWeight: FontWeight.w700,
@@ -427,7 +427,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                   const SizedBox(height: 17),
                   Text.rich(
                     TextSpan(
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 18,
                         height: 1.45,
@@ -438,7 +438,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                         ),
                         TextSpan(
                           text: '${product.id}?',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.ink,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -473,7 +473,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                       ),
                       child: Text(
                         'Sí, confirmar',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                         ),
@@ -498,7 +498,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                       ),
                       child: Text(
                         'Cancelar',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                         ),
@@ -548,7 +548,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
@@ -591,7 +591,7 @@ class _ProductDetailScreen extends StatelessWidget {
                   const SizedBox(width: 24),
                   Text(
                     'Detalle',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.montserrat(
                       color: PurchasesScreen.ink,
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
@@ -600,7 +600,7 @@ class _ProductDetailScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     '—',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: PurchasesScreen.muted,
                       fontSize: 23,
                     ),
@@ -608,7 +608,7 @@ class _ProductDetailScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     product.id,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: PurchasesScreen.ink,
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -632,7 +632,7 @@ class _ProductDetailScreen extends StatelessWidget {
                       _detailSection(
                         'ID PRODUCTO',
                         product.id,
-                        valueStyle: GoogleFonts.dmSerifDisplay(
+                        valueStyle: GoogleFonts.poppins(
                           color: PurchasesScreen.ink,
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -641,7 +641,7 @@ class _ProductDetailScreen extends StatelessWidget {
                       _detailSection(
                         'NOMBRE',
                         product.name,
-                        valueStyle: GoogleFonts.dmSerifDisplay(
+                        valueStyle: GoogleFonts.poppins(
                           color: PurchasesScreen.ink,
                           fontSize: 25,
                           fontWeight: FontWeight.w700,
@@ -656,7 +656,7 @@ class _ProductDetailScreen extends StatelessWidget {
                       _detailSection(
                         'PRECIO UNITARIO',
                         '\$${_formatPrice(product.price)}',
-                        valueStyle: GoogleFonts.dmSerifDisplay(
+                        valueStyle: GoogleFonts.poppins(
                           color: PurchasesScreen.red,
                           fontSize: 27,
                           fontWeight: FontWeight.w700,
@@ -672,7 +672,7 @@ class _ProductDetailScreen extends StatelessWidget {
                               child: _detailValueColumn(
                                 'UNIDAD DE VENTA',
                                 'und',
-                                GoogleFonts.dmSerifDisplay(
+                                GoogleFonts.poppins(
                                   color: PurchasesScreen.ink,
                                   fontSize: 20,
                                 ),
@@ -681,7 +681,7 @@ class _ProductDetailScreen extends StatelessWidget {
                             _detailValueColumn(
                               'STOCK',
                               '${product.stock} und',
-                              GoogleFonts.dmSerifDisplay(
+                              GoogleFonts.poppins(
                                 color: PurchasesScreen.ink,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -715,7 +715,7 @@ class _ProductDetailScreen extends StatelessWidget {
                   ),
                   child: Text(
                     'Cerrar',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 25,
                       fontWeight: FontWeight.w700,
                     ),
@@ -749,7 +749,7 @@ class _ProductDetailScreen extends StatelessWidget {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
@@ -767,7 +767,7 @@ class _ProductDetailScreen extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -801,7 +801,7 @@ class _ProductDetailScreen extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.muted,
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -819,7 +819,7 @@ class _ProductDetailScreen extends StatelessWidget {
                 child: Text(
                   value,
                   style: valueStyle ??
-                      GoogleFonts.dmSerifDisplay(
+                      GoogleFonts.poppins(
                         color: valueColor ?? PurchasesScreen.ink,
                         fontSize: 20,
                       ),
@@ -843,7 +843,7 @@ class _ProductDetailScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: PurchasesScreen.muted,
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -1078,7 +1078,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                               ),
                               child: Text(
                                 'Cancelar',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1098,7 +1098,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                               ),
                               child: Text(
                                 'Guardar',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1139,7 +1139,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.red,
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
@@ -1157,7 +1157,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -1177,7 +1177,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
           const SizedBox(width: 24),
           Text(
             'Editar',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.montserrat(
               color: PurchasesScreen.ink,
               fontSize: 32,
               fontWeight: FontWeight.w700,
@@ -1186,7 +1186,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
           const SizedBox(width: 10),
           Text(
             '—',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.muted,
               fontSize: 23,
             ),
@@ -1194,7 +1194,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
           const SizedBox(width: 10),
           Text(
             widget.product.id,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: PurchasesScreen.ink,
               fontSize: 17,
             ),
@@ -1211,7 +1211,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
             alignment: Alignment.center,
             child: Text(
               getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -1228,7 +1228,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         label,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: PurchasesScreen.muted,
           fontSize: 20,
         ),
@@ -1244,7 +1244,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: GoogleFonts.dmSerifDisplay(
+      style: GoogleFonts.poppins(
         color: PurchasesScreen.ink,
         fontSize: 21,
       ),
@@ -1276,7 +1276,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       isExpanded: true,
       onChanged: onChanged,
       icon: const Icon(Icons.keyboard_arrow_down),
-      style: GoogleFonts.dmSerifDisplay(
+      style: GoogleFonts.poppins(
         color: PurchasesScreen.ink,
         fontSize: 18,
       ),
@@ -1338,7 +1338,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
