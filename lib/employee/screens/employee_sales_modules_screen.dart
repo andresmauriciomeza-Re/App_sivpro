@@ -35,7 +35,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Inicio',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: muted,
                             fontSize: 10,
                           ),
@@ -50,14 +50,14 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                         ),
                         Text(
                           'Ventas',
-                          style: GoogleFonts.dmSerifDisplay(color: red, fontSize: 10),
+                          style: GoogleFonts.poppins(color: red, fontSize: 10),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Ventas',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 24,
                       ),
@@ -65,7 +65,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       'Seleccione el módulo que desea gestionar.',
-                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 11),
+                      style: GoogleFonts.poppins(color: muted, fontSize: 11),
                     ),
                     const SizedBox(height: 18),
                     _ModuleCard(
@@ -164,7 +164,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                             const SizedBox(height: 1),
                             Text(
                               items[index].$3,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: index == 2 ? red : muted,
                                 fontSize: 10,
                                 height: 1,
@@ -252,7 +252,7 @@ class _ModuleCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: EmployeeSalesModulesScreen.ink,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -261,7 +261,7 @@ class _ModuleCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         description,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: EmployeeSalesModulesScreen.muted,
                           fontSize: 9,
                         ),

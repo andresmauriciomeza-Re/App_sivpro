@@ -12,11 +12,11 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   String _query = '';
 
   static const _purchases = [
-    _Purchase('COM-001', 'Distribuidora La Cosecha', '2024-01-10', '\$119.000', 'Enviado'),
-    _Purchase('COM-002', 'Carnes Premium Ltda.', '2024-01-12', '\$178.500', 'En Proceso'),
-    _Purchase('COM-003', 'Quesos del Norte S.A.S.', '2024-01-14', '\$59.500', 'Enviado'),
-    _Purchase('COM-004', 'Distribuidora La Cosecha', '2024-01-15', '\$238.000', 'Anulado'),
-    _Purchase('COM-005', 'Bebidas y Más', '2024-01-16', '\$89.250', 'En Proceso'),
+    _Purchase('COM-001', 'Distribuidora La Cosecha', '2024-01-10', '\$119.000', 'Enviado', 1),
+    _Purchase('COM-002', 'Carnes Premium Ltda.', '2024-01-12', '\$178.500', 'En Proceso', 1),
+    _Purchase('COM-003', 'Quesos del Norte S.A.S.', '2024-01-14', '\$59.500', 'Enviado', 1),
+    _Purchase('COM-004', 'Distribuidora La Cosecha', '2024-01-15', '\$238.000', 'Anulado', 1),
+    _Purchase('COM-005', 'Bebidas y Más', '2024-01-16', '\$89.250', 'En Proceso', 1),
   ];
 
   @override
@@ -42,7 +42,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                   children: [
                     Text(
                       'Gestión Compras',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -50,7 +50,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                     ),
                     Text(
                       '${_purchases.length} compras registradas',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 18,
                       ),
@@ -60,7 +60,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                       onChanged: (value) => setState(() => _query = value),
                       decoration: InputDecoration(
                         hintText: 'Buscar por ID o proveedor...',
-                        hintStyle: GoogleFonts.dmSerifDisplay(color: PurchasesScreen.ink),
+                        hintStyle: GoogleFonts.poppins(color: PurchasesScreen.ink),
                         prefixIcon: const Icon(Icons.search, color: PurchasesScreen.ink),
                         filled: true,
                         fillColor: const Color(0xFFFFFBFA),
@@ -123,7 +123,14 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _label('ID COMPRA'),
-                  Text(purchase.id, style: GoogleFonts.dmSerifDisplay(fontSize: 18)),
+                  Row(
+                    children: [
+                      Text(
+                        purchase.id,
+                        style: GoogleFonts.dmSerifDisplay(fontSize: 18),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               const Spacer(),
@@ -137,7 +144,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                   ),
                   child: Text(
                     '${purchase.status} ⌄',
-                    style: GoogleFonts.dmSerifDisplay(color: statusColor, fontSize: 12),
+                    style: GoogleFonts.poppins(color: statusColor, fontSize: 12),
                   ),
                 ),
               ),
@@ -171,7 +178,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                   _label('TOTAL'),
                   Text(
                     purchase.total,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: PurchasesScreen.red,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -233,7 +240,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                 Text(
                   'Cambiar estado',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.montserrat(
                     color: PurchasesScreen.ink,
                     fontSize: 30,
                   ),
@@ -241,7 +248,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                 const SizedBox(height: 14),
                 Text.rich(
                   TextSpan(
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: PurchasesScreen.muted,
                       fontSize: 17,
                       height: 1.45,
@@ -277,7 +284,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                     ),
                     child: Text(
                       'Cancelar',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                       ),
@@ -299,7 +306,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                     ),
                     child: Text(
                       'Sí, confirmar',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                       ),
@@ -328,7 +335,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
 
   Widget _label(String text) => Text(
         text,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: PurchasesScreen.muted,
           fontSize: 11,
           letterSpacing: 0.3,
@@ -359,7 +366,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(items[i].$1, color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted),
-                  Text(items[i].$2, style: GoogleFonts.dmSerifDisplay(color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted, fontSize: 12)),
+                  Text(items[i].$2, style: GoogleFonts.poppins(color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted, fontSize: 12)),
                 ],
               ),
             ),
@@ -370,13 +377,15 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
 }
 
 class _Purchase {
-  const _Purchase(this.id, this.provider, this.date, this.total, this.status);
+  const _Purchase(this.id, this.provider, this.date, this.total, this.status,
+      [this.itemCount = 1]);
 
   final String id;
   final String provider;
   final String date;
   final String total;
   final String status;
+  final int itemCount;
 }
 
 class _PurchaseDetailScreen extends StatelessWidget {
@@ -465,7 +474,7 @@ class _PurchaseDetailScreen extends StatelessWidget {
                   'Gestión ${purchase.id} · ${purchase.provider}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.montserrat(
                     color: AppColors.muted,
                     fontSize: 13,
                   ),
@@ -512,7 +521,7 @@ class _PurchaseDetailScreen extends StatelessWidget {
               message,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.poppins(
                 color: fg,
                 fontSize: 13,
                 height: 1.35,
@@ -530,7 +539,7 @@ class _PurchaseDetailScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -551,7 +560,7 @@ class _PurchaseDetailScreen extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.poppins(
               color: AppColors.ink,
               fontSize: 15,
             ),
@@ -606,7 +615,7 @@ class _PurchaseDetailScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Registra fecha de vencimiento por insumo (calculada automáticamente: recepción + 7 días)',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: AppColors.muted,
                     fontSize: 13,
                   ),
@@ -641,7 +650,7 @@ class _PurchaseDetailScreen extends StatelessWidget {
           ),
           child: Text(
             'Cerrar',
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -658,7 +667,7 @@ class _PurchaseDetailScreen extends StatelessWidget {
         color: background,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: Text(text, style: GoogleFonts.dmSerifDisplay(color: color, fontSize: 12)),
+      child: Text(text, style: GoogleFonts.poppins(color: color, fontSize: 12)),
     );
   }
 }
@@ -689,7 +698,7 @@ class _SupplyCard extends StatelessWidget {
                   insumo.$2,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: AppColors.ink,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -699,7 +708,7 @@ class _SupplyCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 insumo.$1,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: AppColors.muted,
                   fontSize: 12,
                 ),
@@ -730,7 +739,7 @@ class _SupplyCard extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: AppColors.muted,
               fontSize: 12,
             ),
@@ -740,7 +749,7 @@ class _SupplyCard extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: AppColors.ink,
               fontSize: 15,
             ),

@@ -83,16 +83,16 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
   Widget _breadcrumb() {
     return Row(
       children: [
-        Text('Inicio', style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16)),
+        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 16)),
         const SizedBox(width: 36),
         Text(
           'devoluciones',
-          style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
+          style: GoogleFonts.poppins(color: muted, fontSize: 16),
         ),
         const SizedBox(width: 36),
         Text(
           'gestionar',
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: ink,
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -123,7 +123,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
         Expanded(
           child: Text(
             'Reembolso en dinero',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.montserrat(
               color: ink,
               fontSize: 30,
             ),
@@ -169,7 +169,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
                   children: [
                     Text(
                       '#${widget.record.index}  ${widget.record.customer}',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: ink,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -178,7 +178,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
                     const SizedBox(height: 4),
                     Text(
                       widget.record.date,
-                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
+                      style: GoogleFonts.poppins(color: muted, fontSize: 14),
                     ),
                   ],
                 ),
@@ -206,7 +206,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
             children: [
               Text(
                 'Método de pago',
-                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 15),
+                style: GoogleFonts.poppins(color: muted, fontSize: 15),
               ),
               const Spacer(),
               Container(
@@ -222,7 +222,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
                 ),
                 child: Text(
                   isNequi ? '💜 Nequi' : '🏦 Bancolombia',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: isNequi
                         ? const Color(0xFF6E1DCB)
                         : const Color(0xFF8B3F11),
@@ -242,13 +242,13 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
   Widget _summaryRow(String label, String value) {
     return Row(
       children: [
-        Text(label, style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 15)),
+        Text(label, style: GoogleFonts.poppins(color: muted, fontSize: 15)),
         const Spacer(),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: ink,
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -281,7 +281,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
               const SizedBox(width: 10),
               Text(
                 'MONTO A REEMBOLSAR',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: greenDark,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -293,7 +293,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
           const SizedBox(height: 14),
           Text(
             widget.record.amountTexto,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: greenDark,
               fontSize: 38,
               fontWeight: FontWeight.w800,
@@ -302,7 +302,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
           const SizedBox(height: 12),
           Text(
             'Método original: ${widget.record.payment == 'Nequi' ? 'Nequi' : 'Bancolombia'}',
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF2C6E4F),
               fontSize: 14,
             ),
@@ -318,7 +318,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
       children: [
         Text(
           'Nota del reembolso (opcional)',
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: ink,
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -330,7 +330,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
           maxLines: 3,
           decoration: InputDecoration(
             hintText: 'Ej: Transferido por Nequi el 10/09...',
-            hintStyle: GoogleFonts.dmSerifDisplay(color: Colors.black38, fontSize: 14),
+            hintStyle: GoogleFonts.poppins(color: Colors.black38, fontSize: 14),
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.all(16),
@@ -369,7 +369,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
           Expanded(
             child: Text(
               'Asegúrate de haber realizado la transferencia antes de confirmar. Esta acción no se puede deshacer.',
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: greenDark,
                 fontSize: 14,
                 height: 1.55,
@@ -406,7 +406,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
               )
             : Text(
                 'Confirmar reembolso',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -429,7 +429,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
         ),
         child: Text(
           'Cancelar y volver',
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
@@ -482,7 +482,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
                             ),
                             Text(
                               items[i].$2,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: i == 3
                                     ? red
                                     : const Color(0xFFA4AAB5),

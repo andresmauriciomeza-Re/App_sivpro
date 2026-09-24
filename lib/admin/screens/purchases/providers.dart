@@ -78,7 +78,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                       children: [
                         Text(
                           '${_providers.length} proveedores registrados',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.muted,
                             fontSize: 17,
                           ),
@@ -88,7 +88,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                           onChanged: (value) => setState(() => _query = value),
                           decoration: InputDecoration(
                             hintText: 'Buscar por ID, nombre o email...',
-                            hintStyle: GoogleFonts.dmSerifDisplay(
+                            hintStyle: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 16,
                             ),
@@ -120,7 +120,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                               padding: const EdgeInsets.all(28),
                               child: Text(
                                 'No se encontraron proveedores.',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   color: PurchasesScreen.muted,
                                 ),
                               ),
@@ -171,7 +171,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                 backgroundColor: _avatarColorFor(provider.id),
                 child: Text(
                   getInitials(provider.name),
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -187,7 +187,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                       provider.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.ink,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -196,7 +196,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                     const SizedBox(height: 4),
                     Text(
                       provider.id,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 13,
                       ),
@@ -257,7 +257,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       ),
       child: Text(
         provider.active ? 'Activo' : 'Inactivo',
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: provider.active
               ? AppColors.statusGreenFg
               : AppColors.statusRedFg,
@@ -296,7 +296,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: PurchasesScreen.muted,
             fontSize: 12,
           ),
@@ -306,7 +306,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
             color: PurchasesScreen.ink,
             fontSize: 16,
           ),
@@ -347,7 +347,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                 const SizedBox(height: 28),
                 Text(
                   'Eliminar proveedor',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.montserrat(
                     color: PurchasesScreen.ink,
                     fontSize: 30,
                     fontWeight: FontWeight.w700,
@@ -356,7 +356,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                 const SizedBox(height: 20),
                 Text.rich(
                   TextSpan(
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: PurchasesScreen.muted,
                       fontSize: 17,
                       height: 1.5,
@@ -381,7 +381,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                           ),
                           child: Text(
                             provider.id,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -410,7 +410,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                     ),
                     child: Text(
                       'Sí, confirmar',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                       ),
@@ -432,7 +432,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                     ),
                     child: Text(
                       'Cancelar',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                       ),
@@ -484,7 +484,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
                       fontSize: 12,
                     ),
@@ -597,7 +597,7 @@ class _ProviderDetailScreen extends StatelessWidget {
               'Detalle — ${provider.id}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.ink,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -631,7 +631,7 @@ class _ProviderDetailScreen extends StatelessWidget {
           ),
           child: Text(
             'Cerrar',
-            style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w700),
+            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700),
           ),
         ),
       ),
@@ -754,7 +754,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
               'Editar — ${widget.provider.id}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 color: AppColors.ink,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -776,7 +776,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
       children: [
         Text(
           'Estado',
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -802,7 +802,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
               borderSide: BorderSide(color: AppColors.fieldBorder, width: 1.5),
             ),
           ),
-          style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
           icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.muted),
           items: const [
             DropdownMenuItem(value: true, child: Text('Activo')),
@@ -838,7 +838,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                 ),
                 child: Text(
                   'Cancelar',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -870,7 +870,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                 ),
                 child: Text(
                   'Guardar',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -896,7 +896,7 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           text.toUpperCase(),
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -956,7 +956,7 @@ class _ReadOnlyField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -977,7 +977,7 @@ class _ReadOnlyField extends StatelessWidget {
             value.isEmpty ? '—' : value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.dmSans(color: AppColors.muted, fontSize: 15),
+            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 15),
           ),
         ),
       ],
@@ -998,7 +998,7 @@ class _LockedField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -1019,13 +1019,13 @@ class _LockedField extends StatelessWidget {
             value.isEmpty ? '—' : value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.dmSans(color: AppColors.muted, fontSize: 15),
+            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 15),
           ),
         ),
         const SizedBox(height: 4),
         Text(
           'No se puede modificar',
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 11,
           ),
@@ -1055,7 +1055,7 @@ class _EditableField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.poppins(
             color: AppColors.muted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -1066,7 +1066,7 @@ class _EditableField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
-          style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.fieldFill,

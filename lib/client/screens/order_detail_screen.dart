@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../models/order_model.dart';
 import '../services/cart_service.dart';
 import '../widgets/bottom_nav.dart';
+import '../../shared/orders_repository.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({super.key, required this.order});
@@ -22,6 +23,9 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   static const Color splashRojo = Color(0xE6C32828);
+
+  OrderModel get order =>
+      OrdersRepository.instance.byNumero(widget.order.numero) ?? widget.order;
 
   // Pasos del ciclo de vida de un pedido, en orden.
   static const List<_TimelineStep> _pasos = [
@@ -42,7 +46,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   void initState() {
     super.initState();
+    OrdersRepository.instance.addListener(_onOrdersChanged);
     _geocodificar();
+  }
+
+  void _onOrdersChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    OrdersRepository.instance.removeListener(_onOrdersChanged);
+    super.dispose();
   }
 
   /// Geocodifica [direccionLocal] vía Nominatim y guarda las coordenadas
@@ -79,7 +94,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   /// Cuántos pasos de la línea de tiempo ya se completaron,
   /// según el estado actual del pedido.
   int get _pasoActual {
-    switch (widget.order.estado) {
+    switch (order.estado) {
       case OrderStatus.pagoPendiente:
         return 1; // "Pedido realizado" completo, "Pago en aprobación" activo
       case OrderStatus.enPreparacion:
@@ -92,14 +107,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   IconData get _iconoMetodoPago {
-    return widget.order.metodoPago.toLowerCase() == 'bancolombia'
+    return order.metodoPago.toLowerCase() == 'bancolombia'
         ? Icons.account_balance
         : Icons.smartphone;
   }
 
   @override
   Widget build(BuildContext context) {
-    final cancelado = widget.order.estado == OrderStatus.cancelada;
+    final cancelado = order.estado == OrderStatus.cancelada;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF7F5),
@@ -117,8 +132,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      'Pedido ${widget.order.numero}',
-                      style: GoogleFonts.dmSerifDisplay(
+                      'Pedido ${order.numero}',
+                      style: GoogleFonts.montserrat(
                         fontSize: 20,
                         color: Colors.black87,
                       ),
@@ -140,24 +155,24 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: widget.order.estado.color.withValues(alpha: 0.12),
+                      color: order.estado.color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          widget.order.estado.icono,
+                          order.estado.icono,
                           size: 14,
-                          color: widget.order.estado.color,
+                          color: order.estado.color,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           cancelado ? 'Cancelada' : 'Aprobado',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: widget.order.estado.color,
+                            color: order.estado.color,
                           ),
                         ),
                       ],
@@ -167,15 +182,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        _fechaTexto(widget.order.fecha),
-                        style: GoogleFonts.dmSerifDisplay(
+                        _fechaTexto(order.fecha),
+                        style: GoogleFonts.poppins(
                           fontSize: 11.5,
                           color: Colors.black45,
                         ),
                       ),
                       Text(
-                        _horaTexto(widget.order.fecha),
-                        style: GoogleFonts.dmSerifDisplay(
+                        _horaTexto(order.fecha),
+                        style: GoogleFonts.poppins(
                           fontSize: 11.5,
                           color: Colors.black45,
                         ),
@@ -221,14 +236,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   children: [
                     Text(
                       'Productos',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                         color: Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 10),
-                    for (final producto in widget.order.productos)
+                    for (final producto in order.productos)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Row(
@@ -259,7 +274,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 children: [
                                   Text(
                                     producto.nombre,
-                                    style: GoogleFonts.dmSerifDisplay(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 13.5,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.black87,
@@ -267,7 +282,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   ),
 Text(
                               'Cant: ${producto.cantidad} x \$${formatoMiles(producto.precioUnitario)}',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: Colors.black87,
                               ),
@@ -277,7 +292,7 @@ Text(
                             ),
                             Text(
                               '\$${formatoMiles(producto.subtotal)}',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black87,
@@ -294,14 +309,14 @@ Text(
                       children: [
                         Text(
                           'Total:',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
                         ),
                         Text(
-                          '\$${formatoMiles(widget.order.total)}',
-                          style: GoogleFonts.dmSerifDisplay(
+                          '\$${formatoMiles(order.total)}',
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
                             color: Colors.black87,
@@ -329,7 +344,7 @@ Text(
                   children: [
                     Text(
                       'Método de Pago',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                         color: Colors.black87,
@@ -356,7 +371,7 @@ Text(
                         const SizedBox(width: 10),
                         Text(
                           'Transferencia',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
@@ -384,7 +399,7 @@ Text(
                   children: [
                     Text(
                       'Ubicación del Local',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                         color: Colors.black87,
@@ -532,7 +547,7 @@ Text(
               const SizedBox(height: 16),
               Text(
                 'Abrir ubicación con',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: Colors.black87,
@@ -574,7 +589,7 @@ Text(
             const SizedBox(width: 14),
             Text(
               nombre,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -636,7 +651,7 @@ Text(
         : Colors.black26;
 
     final horaPaso = (completado || activo)
-        ? widget.order.fecha.add(Duration(minutes: index * 5))
+        ? order.fecha.add(Duration(minutes: index * 5))
         : null;
 
     return Padding(
@@ -666,7 +681,7 @@ Text(
               children: [
                 Text(
                   paso.titulo,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: pendiente ? Colors.black38 : Colors.black87,
@@ -675,7 +690,7 @@ Text(
                 if (horaPaso != null)
                   Text(
                     '${_fechaTexto(horaPaso)}, ${_horaTexto(horaPaso)}',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 11.5,
                       color: activo ? const Color(0xFFE68A00) : Colors.black45,
                     ),

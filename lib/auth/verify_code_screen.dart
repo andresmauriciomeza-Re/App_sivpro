@@ -65,7 +65,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                 ),
                 Text(
                   'Verificar código',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -102,7 +102,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                           Text(
                             'Código enviado',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.montserrat(
                               color: Colors.black87,
                               fontSize: 28,
                               fontWeight: FontWeight.w400,
@@ -111,7 +111,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                           const SizedBox(height: 12),
                           Text.rich(
                             TextSpan(
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: Colors.black54,
                                 fontSize: 15,
                               ),
@@ -144,7 +144,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
                                   maxLength: 1,
-                                  style: GoogleFonts.dmSerifDisplay(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
@@ -192,7 +192,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                               ),
                               child: Text(
                                 'Verificar código',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
                                 ),
@@ -210,7 +210,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                             },
                             child: Text(
                               'Reenviar código',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: Colors.black54,
                                 fontSize: 14,
                               ),

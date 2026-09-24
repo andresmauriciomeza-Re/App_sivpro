@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(width: 10),
           Text(
             label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: passed ? Colors.black87 : Colors.black45,
               fontSize: 13,
             ),
@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.only(bottom: 8, left: 2),
       child: Text(
         texto,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: Colors.black87,
@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.dmSerifDisplay(color: Colors.black38, fontSize: 15),
+      hintStyle: GoogleFonts.poppins(color: Colors.black38, fontSize: 15),
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       filled: true,
       fillColor: campoGris,
@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Expanded(
                 child: Text(
                   'Correo o contraseña incorrectos',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -179,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Términos de uso y política de privacidad',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.montserrat(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,
@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Antes de utilizar cualquiera de nuestros productos o servicios, lee atentamente y asegúrate de entender completamente los Términos de Uso y la Política de Privacidad. Al pulsar Aceptar y utilizar nuestros productos o servicios, afirmas que entiendes y aceptas todos los términos y condiciones de S.I.V.PRO y das tu consentimiento para compartir la información de tu cuenta con S.I.V.PRO.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.black54,
                     height: 1.45,
@@ -205,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     'Términos de uso y política de privacidad',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: splashRojo,
@@ -223,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () => Navigator.of(dialogContext).pop(),
                         child: Text(
                           'Rechazar',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 15,
                             color: Colors.black45,
                             fontWeight: FontWeight.w500,
@@ -240,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: Text(
                           'Aceptar',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 15,
                             color: splashRojo,
                             fontWeight: FontWeight.w700,
@@ -322,7 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'Bienvenido a La Sirena',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.montserrat(
                           color: Colors.black87,
                           fontSize: 32,
                           fontWeight: FontWeight.w400,
@@ -332,7 +332,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'Ingresa tus datos para continuar',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: Colors.black54,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -343,7 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _fieldLabel('Correo electrónico'),
                       TextField(
                         controller: _emailController,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: Colors.black87,
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
@@ -360,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: Colors.black87,
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
@@ -417,7 +417,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           child: Text(
                             '¿Olvidaste tu contraseña?',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: splashRojo,
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
@@ -439,7 +439,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: Text(
                           'Iniciar sesión',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.bold,
                             fontSize: 17,
                           ),
@@ -458,7 +458,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
                               'O continúa con',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: Colors.black45,
                                 fontSize: 13,
                               ),
@@ -485,7 +485,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               label: Text(
                                 'Google',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   color: Colors.black87,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 15,
@@ -517,7 +517,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               label: Text(
                                 'Apple',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   color: Colors.black87,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 15,
@@ -547,7 +547,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Text(
                             '¿No tienes cuenta? ',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: Colors.black54,
                               fontSize: 15,
                             ),
@@ -560,7 +560,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             child: Text(
                               'Regístrate aquí',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: splashRojo,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,

@@ -98,7 +98,7 @@ class PurchasesScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Compras',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
@@ -107,7 +107,7 @@ class PurchasesScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Seleccione un módulo para administrar',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: muted,
                         fontSize: 20,
                       ),
@@ -198,7 +198,7 @@ class PurchasesScreen extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 1 ? red : muted,
                       fontSize: 12,
                       fontWeight: i == 1 ? FontWeight.w700 : FontWeight.w400,
@@ -273,7 +273,7 @@ class _ModuleCard extends StatelessWidget {
               const Spacer(),
               Text(
                 title,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.ink,
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -282,7 +282,7 @@ class _ModuleCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 description,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.muted,
                   fontSize: 19,
                   height: 1.35,

@@ -25,7 +25,7 @@ class MoreOptionsScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Más opciones',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
@@ -37,7 +37,7 @@ class MoreOptionsScreen extends StatelessWidget {
                     Center(
                       child: Text(
                         'La Sirena Pizza – S.I.V.PRO',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: _muted,
                           fontSize: 16,
                         ),
@@ -47,7 +47,7 @@ class MoreOptionsScreen extends StatelessWidget {
                     Center(
                       child: Text(
                         'Versión 2.1.4',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: _muted,
                           fontSize: 15,
                         ),
@@ -95,7 +95,7 @@ class MoreOptionsScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     getInitials('Gloria Inés Vargas'),
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
@@ -109,7 +109,7 @@ class MoreOptionsScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Gloria Inés Vargas',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: _ink,
                           fontSize: 23,
                           fontWeight: FontWeight.w700,
@@ -117,7 +117,7 @@ class MoreOptionsScreen extends StatelessWidget {
                       ),
                       Text(
                         'Administrador',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: _muted,
                           fontSize: 17,
                         ),
@@ -134,7 +134,7 @@ class MoreOptionsScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'S.I.V.PRO',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: _muted,
                             fontSize: 14,
                           ),
@@ -167,7 +167,7 @@ class MoreOptionsScreen extends StatelessWidget {
                   const SizedBox(width: 25),
                   Text(
                     'Cerrar sesión',
-                    style: GoogleFonts.dmSerifDisplay(color: _red, fontSize: 22),
+                    style: GoogleFonts.poppins(color: _red, fontSize: 22),
                   ),
                 ],
               ),
@@ -198,7 +198,7 @@ class MoreOptionsScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.dmSerifDisplay(color: _ink, fontSize: 20),
+                style: GoogleFonts.montserrat(color: _ink, fontSize: 20),
               ),
             ),
             const Icon(Icons.chevron_right, color: _muted, size: 30),
@@ -237,7 +237,7 @@ class MoreOptionsScreen extends StatelessWidget {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 4 ? _red : _muted,
                       fontSize: 11,
                       fontWeight: i == 4 ? FontWeight.w700 : FontWeight.w400,

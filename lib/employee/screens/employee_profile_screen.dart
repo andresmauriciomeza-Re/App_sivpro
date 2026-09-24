@@ -135,7 +135,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         bottom: false,
         child: Column(
           children: [
-            _header(context, profile),
+            _header(profile),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
@@ -174,10 +174,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
-  Widget _header(BuildContext context, EmployeeProfile profile) {
+  Widget _header(EmployeeProfile profile) {
     return AppHeader(
       title: 'La Sirena Pizza',
-      onBack: () => Navigator.of(context).pop(),
       initials: getInitials(profile.fullName),
     );
   }
@@ -421,6 +420,26 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             ),
           ),
         ),
+        const SizedBox(height: 24),
+        Center(
+          child: Text(
+            'La Sirena Pizza – S.I.V.PRO',
+            style: GoogleFonts.dmSerifDisplay(
+              color: AppColors.muted,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Text(
+            'Versión 2.1.4',
+            style: GoogleFonts.dmSerifDisplay(
+              color: AppColors.muted,
+              fontSize: 11,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -469,7 +488,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                             const SizedBox(height: 1),
                             Text(
                               items[index].$2,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: index == 4
                                     ? AppColors.red
                                     : const Color(0xFF756D6A),

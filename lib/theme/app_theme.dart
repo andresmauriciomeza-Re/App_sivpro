@@ -4,7 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 abstract final class AppTheme {
   static ThemeData get theme {
     final base = ThemeData(useMaterial3: true);
-    final textTheme = GoogleFonts.dmSerifDisplayTextTheme(base.textTheme);
+    final tituloTextTheme = GoogleFonts.montserratTextTheme(base.textTheme);
+    final textoTextTheme = GoogleFonts.poppinsTextTheme(base.textTheme);
+    final textTheme = textoTextTheme.copyWith(
+      displayLarge: tituloTextTheme.displayLarge,
+      displayMedium: tituloTextTheme.displayMedium,
+      displaySmall: tituloTextTheme.displaySmall,
+      headlineLarge: tituloTextTheme.headlineLarge,
+      headlineMedium: tituloTextTheme.headlineMedium,
+      headlineSmall: tituloTextTheme.headlineSmall,
+      titleLarge: tituloTextTheme.titleLarge,
+    );
     return base.copyWith(
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
