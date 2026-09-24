@@ -14,7 +14,7 @@ class SalesScreen extends StatelessWidget {
 
         icon: Icons.groups_outlined,
 
-        title: 'Gesti├│n Clientes',
+        title: 'Gestión Clientes',
 
         description: 'Administrar base de clientes',
 
@@ -26,7 +26,7 @@ class SalesScreen extends StatelessWidget {
 
         icon: Icons.receipt_long_outlined,
 
-        title: 'Gesti├│n Ventas',
+        title: 'Gestión Ventas',
 
         description: 'Registro y control de pedidos',
 
@@ -60,7 +60,7 @@ class SalesScreen extends StatelessWidget {
 
                 child: SingleChildScrollView(
 
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
 
                   child: Column(
 
@@ -72,15 +72,22 @@ class SalesScreen extends StatelessWidget {
 
                         children: [
 
-                          Text(
+                          GestureDetector(
 
-                            'Inicio',
+                            onTap: () => Navigator.of(context)
+                                .popUntil((route) => route.isFirst),
 
-                            style: GoogleFonts.dmSerifDisplay(
+                            child: Text(
 
-                              color: PurchasesScreen.muted,
+                              'Inicio',
 
-                              fontSize: 16,
+                              style: GoogleFonts.poppins(
+
+                                color: PurchasesScreen.muted,
+
+                                fontSize: 16,
+
+                              ),
 
                             ),
 
@@ -106,7 +113,7 @@ class SalesScreen extends StatelessWidget {
 
                             'Ventas',
 
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
 
                               color: PurchasesScreen.red,
 
@@ -126,13 +133,13 @@ class SalesScreen extends StatelessWidget {
 
                       Text(
 
-                        'Gesti├│n de Ventas',
+                        'Gestión de Ventas',
 
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.montserrat(
 
                           color: PurchasesScreen.ink,
 
-                          fontSize: 34,
+                          fontSize: 26,
 
                           fontWeight: FontWeight.w700,
 
@@ -144,19 +151,19 @@ class SalesScreen extends StatelessWidget {
 
                       Text(
 
-                        'Seleccione el m├│dulo que desea gestionar.',
+                        'Seleccione el módulo que desea gestionar.',
 
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
 
                           color: PurchasesScreen.muted,
 
-                          fontSize: 19,
+                          fontSize: 15,
 
                         ),
 
                       ),
 
-                      const SizedBox(height: 34),
+                      const SizedBox(height: 24),
 
                       for (var i = 0; i < _modules.length; i++) ...[
 
@@ -210,7 +217,7 @@ class SalesScreen extends StatelessWidget {
 
         onBack: () => Navigator.of(context).pop(),
 
-        initials: getInitials('Gloria In├®s Vargas'),
+        initials: getInitials('Gloria Inés Vargas'),
 
       );
 
@@ -234,7 +241,7 @@ class SalesScreen extends StatelessWidget {
 
       return GestureDetector(
 
-        onTap: title == 'Gesti├│n Clientes'
+        onTap: title == 'Gestión Clientes'
 
             ? () => Navigator.of(context).push(
 
@@ -310,7 +317,7 @@ class SalesScreen extends StatelessWidget {
 
               Padding(
 
-                padding: const EdgeInsets.fromLTRB(48, 76, 28, 28),
+                padding: const EdgeInsets.fromLTRB(34, 53, 20, 20),
 
                 child: Row(
 
@@ -358,7 +365,7 @@ class SalesScreen extends StatelessWidget {
 
                             title,
 
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.montserrat(
 
                               color: PurchasesScreen.ink,
 
@@ -376,7 +383,7 @@ class SalesScreen extends StatelessWidget {
 
                             description,
 
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
 
                               color: PurchasesScreen.muted,
 
@@ -418,7 +425,7 @@ class SalesScreen extends StatelessWidget {
 
         (Icons.shopping_cart_outlined, 'Compras'),
 
-        (Icons.factory_outlined, 'Producci├│n'),
+        (Icons.factory_outlined, 'Producción'),
 
         (Icons.receipt_long_outlined, 'Ventas'),
 
@@ -470,7 +477,7 @@ class SalesScreen extends StatelessWidget {
 
                       items[i].$2,
 
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
 
                         color: i == 3
 
@@ -568,7 +575,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       id: 'VEN-001',
 
-      user: 'Mar├¡a Gonz├ílez',
+      user: 'María González',
 
       date: '2024-01-15',
 
@@ -584,7 +591,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       id: 'VEN-002',
 
-      user: 'Carlos Mart├¡nez',
+      user: 'Carlos Martínez',
 
       date: '2024-01-15',
 
@@ -600,7 +607,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       id: 'VEN-003',
 
-      user: 'Ana Rodr├¡guez',
+      user: 'Ana Rodríguez',
 
       date: '2024-01-16',
 
@@ -624,7 +631,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       paymentColor: Color(0xFFFFF2B8),
 
-      status: 'P├®rdida',
+      status: 'Pérdida',
 
     ),
 
@@ -648,7 +655,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       id: 'VEN-006',
 
-      user: 'Luis P├®rez',
+      user: 'Luis Pérez',
 
       date: '2024-01-17',
 
@@ -680,7 +687,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       id: 'VEN-008',
 
-      user: 'Diego Ram├¡rez',
+      user: 'Diego Ramírez',
 
       date: '2024-01-18',
 
@@ -758,9 +765,9 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                     Text(
 
-                      'Gesti├│n Ventas',
+                      'Gestión Ventas',
 
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
 
                         color: PurchasesScreen.ink,
 
@@ -776,7 +783,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                       '${_sales.length} ventas registradas',
 
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
 
                         color: PurchasesScreen.muted,
 
@@ -812,7 +819,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                             'No se encontraron ventas.',
 
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
 
                               color: PurchasesScreen.muted,
 
@@ -856,7 +863,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       onBack: () => Navigator.of(context).pop(),
 
-      initials: getInitials('Gloria In├®s Vargas'),
+      initials: getInitials('Gloria Inés Vargas'),
 
     );
 
@@ -870,7 +877,14 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       children: [
 
-        Text('Inicio', style: _breadcrumbStyle(PurchasesScreen.muted)),
+        GestureDetector(
+
+          onTap: () =>
+              Navigator.of(context).popUntil((route) => route.isFirst),
+
+          child: Text('Inicio', style: _breadcrumbStyle(PurchasesScreen.muted)),
+
+        ),
 
         const Icon(Icons.chevron_right, color: PurchasesScreen.muted, size: 20),
 
@@ -878,7 +892,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
         const Icon(Icons.chevron_right, color: PurchasesScreen.muted, size: 20),
 
-        Text('Gesti├│n Ventas', style: _breadcrumbStyle(PurchasesScreen.ink)),
+        Text('Gestión Ventas', style: _breadcrumbStyle(PurchasesScreen.ink)),
 
       ],
 
@@ -888,7 +902,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
 
 
-  TextStyle _breadcrumbStyle(Color color) => GoogleFonts.dmSerifDisplay(
+  TextStyle _breadcrumbStyle(Color color) => GoogleFonts.poppins(
 
         color: color,
 
@@ -912,7 +926,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       onChanged: (value) => setState(() => _query = value),
 
-      style: GoogleFonts.dmSerifDisplay(color: PurchasesScreen.ink, fontSize: 15),
+      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 15),
 
       decoration: InputDecoration(
 
@@ -928,7 +942,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
         hintText: 'Buscar por ID, usuario o producto...',
 
-        hintStyle: GoogleFonts.dmSerifDisplay(
+        hintStyle: GoogleFonts.poppins(
 
           color: PurchasesScreen.ink,
 
@@ -964,7 +978,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
   Widget _saleCard(_Sale sale) {
 
-    final isLoss = sale.status == 'P├®rdida';
+    final isLoss = sale.status == 'Pérdida';
 
     return Container(
 
@@ -1004,7 +1018,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                       sale.id,
 
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
 
                         color: PurchasesScreen.ink,
 
@@ -1088,7 +1102,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
 
 
-  TextStyle _labelStyle() => GoogleFonts.dmSerifDisplay(
+  TextStyle _labelStyle() => GoogleFonts.poppins(
 
         color: PurchasesScreen.muted,
 
@@ -1116,7 +1130,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
           overflow: TextOverflow.ellipsis,
 
-          style: GoogleFonts.dmSerifDisplay(
+          style: GoogleFonts.poppins(
 
             color: PurchasesScreen.ink,
 
@@ -1200,7 +1214,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
             sale.payment,
 
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
 
               color: sale.payment == 'Nequi'
 
@@ -1236,7 +1250,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
         PopupMenuItem(value: 'Venta', child: Text('Venta')),
 
-        PopupMenuItem(value: 'P├®rdida', child: Text('P├®rdida')),
+        PopupMenuItem(value: 'Pérdida', child: Text('Pérdida')),
 
       ],
 
@@ -1268,7 +1282,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
               sale.status,
 
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
 
                 color: isLoss ? PurchasesScreen.red : const Color(0xFF398047),
 
@@ -1310,7 +1324,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
 
 
-    if (status == 'P├®rdida' && sale.status == 'Venta') {
+    if (status == 'Pérdida' && sale.status == 'Venta') {
 
       final confirmed = await showDialog<bool>(
 
@@ -1364,7 +1378,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                 textAlign: TextAlign.center,
 
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.montserrat(
 
                   color: Colors.black,
 
@@ -1382,11 +1396,11 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
           content: Text(
 
-            '┬┐Est├ís seguro de cambiar el estado\nde "Venta" a "P├®rdida"?',
+            '¿Estás seguro de cambiar el estado\nde "Venta" a "Pérdida"?',
 
             textAlign: TextAlign.center,
 
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
 
               color: const Color(0xFF5B4643),
 
@@ -1418,9 +1432,9 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                 child: Text(
 
-                  'S├¡, confirmar',
+                  'Sí, confirmar',
 
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
 
                     fontSize: 17,
 
@@ -1458,7 +1472,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                   'Cancelar',
 
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
 
                     fontSize: 17,
 
@@ -1520,7 +1534,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
       (Icons.shopping_cart_outlined, 'Compras'),
 
-      (Icons.factory_outlined, 'Producci├│n'),
+      (Icons.factory_outlined, 'Producción'),
 
       (Icons.receipt_long_outlined, 'Ventas'),
 
@@ -1572,7 +1586,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                     items[i].$2,
 
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
 
                       color: i == 3
 
@@ -1620,7 +1634,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
   Widget build(BuildContext context) {
 
-    final isLoss = sale.status == 'P├®rdida';
+    final isLoss = sale.status == 'Pérdida';
 
     return Scaffold(
 
@@ -1638,7 +1652,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
               onBack: () => Navigator.of(context).pop(),
 
-              initials: getInitials('Gloria In├®s Vargas'),
+              initials: getInitials('Gloria Inés Vargas'),
 
             ),
 
@@ -1698,7 +1712,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
                           'Cerrar Detalle',
 
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
 
                             fontSize: 23,
 
@@ -1764,7 +1778,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
       title,
 
-      style: GoogleFonts.dmSerifDisplay(
+      style: GoogleFonts.montserrat(
 
         color: const Color(0xFF5B4643),
 
@@ -1790,7 +1804,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
         children: [
 
-          _sectionTitle('INFORMACI├ôN DE LA VENTA'),
+          _sectionTitle('INFORMACIÓN DE LA VENTA'),
 
           const SizedBox(height: 32),
 
@@ -1836,7 +1850,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
                     sale.status,
 
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
 
                       color: isLoss
 
@@ -1874,7 +1888,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          Text('M├®todo de pago', style: _detailLabelStyle()),
+          Text('Método de pago', style: _detailLabelStyle()),
 
           const SizedBox(height: 10),
 
@@ -1920,7 +1934,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
               overflow: TextOverflow.ellipsis,
 
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
 
                 color: PurchasesScreen.ink,
 
@@ -1938,7 +1952,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
 
 
-  TextStyle _detailLabelStyle() => GoogleFonts.dmSerifDisplay(
+  TextStyle _detailLabelStyle() => GoogleFonts.poppins(
 
         color: const Color(0xFF5B4643),
 
@@ -1994,7 +2008,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
             sale.payment,
 
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
 
               color: isNequi
 
@@ -2076,9 +2090,9 @@ class _SaleDetailScreen extends StatelessWidget {
 
                     Text(
 
-                      'Margarita Cl├ísica',
+                      'Margarita Clásica',
 
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
 
                         color: PurchasesScreen.ink,
 
@@ -2092,7 +2106,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
                       'Cantidad: 2',
 
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
 
                         color: const Color(0xFF5B4643),
 
@@ -2112,7 +2126,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
                 '\$56.000',
 
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
 
                   color: PurchasesScreen.red,
 
@@ -2144,7 +2158,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
                 'Total a pagar',
 
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
 
                   color: PurchasesScreen.ink,
 
@@ -2162,7 +2176,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
                 '\$56.000',
 
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
 
                   color: PurchasesScreen.red,
 
@@ -2244,7 +2258,7 @@ class _SaleDetailScreen extends StatelessWidget {
 
                   textAlign: TextAlign.center,
 
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
 
                     color: PurchasesScreen.ink,
 
@@ -2258,11 +2272,11 @@ class _SaleDetailScreen extends StatelessWidget {
 
                 Text(
 
-                  'El cliente no subi├│ imagen de transferencia',
+                  'El cliente no subió imagen de transferencia',
 
                   textAlign: TextAlign.center,
 
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
 
                     color: const Color(0xFF5B4643),
 
