@@ -52,7 +52,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Venta $index',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: ink,
                             fontSize: 20,
                           ),
