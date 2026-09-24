@@ -27,7 +27,7 @@ class PendingSalesBadge extends StatelessWidget {
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: Colors.white,
           fontSize: 11,
           fontWeight: FontWeight.w700,
