@@ -12,11 +12,11 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   String _query = '';
 
   static const _purchases = [
-    _Purchase('COM-001', 'Distribuidora La Cosecha', '2024-01-10', '\$119.000', 'Enviado'),
-    _Purchase('COM-002', 'Carnes Premium Ltda.', '2024-01-12', '\$178.500', 'En Proceso'),
-    _Purchase('COM-003', 'Quesos del Norte S.A.S.', '2024-01-14', '\$59.500', 'Enviado'),
-    _Purchase('COM-004', 'Distribuidora La Cosecha', '2024-01-15', '\$238.000', 'Anulado'),
-    _Purchase('COM-005', 'Bebidas y Más', '2024-01-16', '\$89.250', 'En Proceso'),
+    _Purchase('COM-001', 'Distribuidora La Cosecha', '2024-01-10', '\$119.000', 'Enviado', 1),
+    _Purchase('COM-002', 'Carnes Premium Ltda.', '2024-01-12', '\$178.500', 'En Proceso', 1),
+    _Purchase('COM-003', 'Quesos del Norte S.A.S.', '2024-01-14', '\$59.500', 'Enviado', 1),
+    _Purchase('COM-004', 'Distribuidora La Cosecha', '2024-01-15', '\$238.000', 'Anulado', 1),
+    _Purchase('COM-005', 'Bebidas y Más', '2024-01-16', '\$89.250', 'En Proceso', 1),
   ];
 
   @override
@@ -158,7 +158,21 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _label('ID COMPRA'),
-                  Text(purchase.id, style: GoogleFonts.dmSerifDisplay(fontSize: 18)),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          purchase.id,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.dmSerifDisplay(fontSize: 18),
+                        ),
+                      ),
+                      if (purchase.itemCount > 1) ...[
+                        const SizedBox(width: 8),
+                        _itemCountBadge(purchase.itemCount),
+                      ],
+                    ],
+                  ),
                 ],
               ),
               const Spacer(),
@@ -405,13 +419,15 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
 }
 
 class _Purchase {
-  const _Purchase(this.id, this.provider, this.date, this.total, this.status);
+  const _Purchase(this.id, this.provider, this.date, this.total, this.status,
+      [this.itemCount = 1]);
 
   final String id;
   final String provider;
   final String date;
   final String total;
   final String status;
+  final int itemCount;
 }
 
 class _PurchaseDetailScreen extends StatelessWidget {
