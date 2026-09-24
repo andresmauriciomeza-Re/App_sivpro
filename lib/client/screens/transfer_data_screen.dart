@@ -84,7 +84,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
               Expanded(
                 child: Text(
                   'Adjunte su comprobante',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -167,7 +167,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                   ),
                   Text(
                     'Datos de transferencia',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.montserrat(
                       fontSize: 20,
                       color: Colors.black87,
                     ),
@@ -195,14 +195,14 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                           children: [
                             Text(
                               'Método seleccionado',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: Colors.black45,
                               ),
                             ),
                             Text(
                               widget.metodoNombre,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 16,
                                 color: Colors.black87,
@@ -215,7 +215,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                     const SizedBox(height: 18),
                     Text(
                       'Número de cuenta destino',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.black87,
                         fontWeight: FontWeight.w600,
@@ -237,7 +237,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                         children: [
                           Text(
                             _numeroCuenta,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                               letterSpacing: 1,
@@ -260,7 +260,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                         Expanded(
                           child: Text(
                             'Por favor, realiza la transferencia a este número antes de confirmar el pedido.',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               fontSize: 11.5,
                               color: Colors.black45,
                               height: 1.3,
@@ -272,7 +272,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                     const SizedBox(height: 18),
                     Text(
                       'O escanea el código QR',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.black87,
                         fontWeight: FontWeight.w600,
@@ -323,7 +323,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                   children: [
                     Text(
                       'Sube tu recibo',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                         color: Colors.black87,
@@ -333,7 +333,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                     Text(
                       'Antes de continuar: 1) Haz la transferencia al número de arriba. 2) Toma una captura de pantalla de la confirmación de tu pago en Nequi o Bancolombia. 3) Toca el botón de abajo para adjuntar esa captura.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 12.5,
                         color: Colors.black54,
                         height: 1.4,
@@ -374,7 +374,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
                                 color: Colors.black87,
@@ -383,7 +383,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                             const SizedBox(height: 4),
                             Text(
                               'JPG, PNG o PDF (Máx. 5MB)',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 color: Colors.black38,
                               ),
@@ -408,7 +408,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                   children: [
                     Text(
                       'Total a enviar',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.black54,
                       ),
@@ -416,7 +416,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                     const SizedBox(height: 2),
                     Text(
                       '\$${formatoMiles(widget.total)}',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w800,
                         fontSize: 20,
                         color: Colors.black87,
@@ -434,7 +434,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                   icon: const Icon(Icons.check_circle_outline),
                   label: Text(
                     'Enviar comprobante',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
@@ -464,7 +464,7 @@ class _TransferDataScreenState extends State<TransferDataScreen> {
                   ),
                   child: Text(
                     'Volver al carrito',
-                    style: GoogleFonts.dmSerifDisplay(fontWeight: FontWeight.w600),
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

@@ -44,7 +44,7 @@ class _ReceiptSentScreenState extends State<ReceiptSentScreen> {
                   ),
                   Text(
                     'Comprobante enviado',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.montserrat(
                       fontSize: 18,
                       color: Colors.black87,
                     ),
@@ -75,7 +75,7 @@ class _ReceiptSentScreenState extends State<ReceiptSentScreen> {
                       const SizedBox(height: 20),
                       Text(
                         '¡Comprobante enviado!',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.montserrat(
                           fontSize: 22,
                           color: Colors.black87,
                         ),
@@ -84,7 +84,7 @@ class _ReceiptSentScreenState extends State<ReceiptSentScreen> {
                       Text(
                         'Tu pago está pendiente de aprobación. Te notificaremos cuando sea confirmado.',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: Colors.black54,
                           height: 1.4,
@@ -112,7 +112,7 @@ class _ReceiptSentScreenState extends State<ReceiptSentScreen> {
                           ),
                           child: Text(
                             'Ver mi pedido',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),

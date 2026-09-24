@@ -60,7 +60,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                   ),
                   Text(
                     'Método de pago',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.montserrat(
                       fontSize: 20,
                       color: Colors.black87,
                     ),
@@ -84,7 +84,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                       children: [
                         Text(
                           '${cart.totalArticulos} artículos',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: Colors.black54,
                           ),
@@ -93,7 +93,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                           onTap: () => Navigator.of(context).pop(),
                           child: Text(
                             'Ver detalles',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
@@ -108,14 +108,14 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                       children: [
                         Text(
                           'Total a pagar',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: Colors.black87,
                           ),
                         ),
                         Text(
                           '\$${formatoMiles(cart.total)}',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                             color: Colors.black87,
@@ -133,7 +133,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 'Elige tu método de pago',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                   color: Colors.black87,
@@ -208,7 +208,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                   icon: const Icon(Icons.check_circle_outline),
                   label: Text(
                     'Continuar con la compra',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
@@ -268,7 +268,7 @@ class _PaymentOption extends StatelessWidget {
             Expanded(
               child: Text(
                 nombre,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                   color: Colors.black87,
@@ -361,7 +361,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
               Expanded(
                 child: Text(
                   'Adjunte su comprobante',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -438,7 +438,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                 children: [
                   Text(
                     'Número de cuenta destino',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.black87,
                       fontWeight: FontWeight.w600,
@@ -460,7 +460,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                       children: [
                         Text(
                           _numeroCuenta,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
                             letterSpacing: 1,
@@ -473,7 +473,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                   const SizedBox(height: 18),
                   Text(
                     'O escanea el código QR',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.black87,
                       fontWeight: FontWeight.w600,
@@ -523,7 +523,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                 children: [
                   Text(
                     'Sube tu recibo',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
                       color: Colors.black87,
@@ -533,7 +533,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                   Text(
                     'Antes de continuar: 1) Haz la transferencia al número de arriba. 2) Toma una captura de pantalla de la confirmación de tu pago en Nequi o Bancolombia. 3) Toca el botón de abajo para adjuntar esa captura.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 12.5,
                       color: Colors.black54,
                       height: 1.4,
@@ -573,7 +573,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
                               color: Colors.black87,
@@ -582,7 +582,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                           const SizedBox(height: 4),
                           Text(
                             'JPG, PNG o PDF (Máx. 5MB)',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               fontSize: 11,
                               color: Colors.black38,
                             ),
@@ -607,7 +607,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                 children: [
                   Text(
                     'Total a enviar',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.black54,
                     ),
@@ -615,7 +615,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                   const SizedBox(height: 2),
                   Text(
                     '\$${formatoMiles(widget.total)}',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w800,
                       fontSize: 20,
                       color: Colors.black87,
@@ -633,7 +633,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                 icon: const Icon(Icons.check_circle_outline),
                 label: Text(
                   'Enviar comprobante',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
@@ -663,7 +663,7 @@ class _ModalTransferenciaState extends State<_ModalTransferencia> {
                 ),
                 child: Text(
                   'Volver al carrito',
-                  style: GoogleFonts.dmSerifDisplay(fontWeight: FontWeight.w600),
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                 ),
               ),
             ),

@@ -68,7 +68,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       children: [
                         Text(
                           'La Sirena',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.montserrat(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
                             color: Colors.black87,
@@ -76,7 +76,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         Text(
                           'Pizza · Desde 1994',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 10,
                             color: Colors.black45,
                           ),
@@ -113,7 +113,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   children: [
                     Text(
                       item.nombre,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         fontSize: 24,
                         color: Colors.black87,
                       ),
@@ -121,7 +121,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 6),
                     Text(
                       item.descripcion,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: Colors.black87,
                         height: 1.4,
@@ -131,7 +131,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                     Text(
                       'Elige el tamaño',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                         color: Colors.black87,
@@ -155,7 +155,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       children: [
                         Text(
                           'Cantidad',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                             color: Colors.black87,
@@ -173,7 +173,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       const SizedBox(height: 24),
                       Text(
                         'Adiciones (Bebidas)',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                           color: Colors.black87,
@@ -212,7 +212,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   children: [
                                     Text(
                                       a.nombre,
-                                      style: GoogleFonts.dmSerifDisplay(
+                                      style: GoogleFonts.poppins(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 13,
                                         color: Colors.black87,
@@ -221,7 +221,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       '\$${a.precio}',
-                                      style: GoogleFonts.dmSerifDisplay(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 11,
                                         color: Colors.black45,
                                       ),
@@ -249,14 +249,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       children: [
                         Text(
                           'Total a pagar',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: Colors.black87,
                           ),
                         ),
                         Text(
                           '\$${_formatoMiles(_total)}',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
                             color: Colors.black87,
@@ -320,7 +320,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   Expanded(
                                     child: Text(
                                       'Agregado al carrito',
-                                      style: GoogleFonts.dmSerifDisplay(
+                                      style: GoogleFonts.poppins(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
                                         color: Colors.white,
@@ -336,7 +336,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         icon: const Icon(Icons.shopping_bag_outlined),
                         label: Text(
                           'Agregar al carrito',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
@@ -405,7 +405,7 @@ class _SizeOption extends StatelessWidget {
             Expanded(
               child: Text(
                 nombre,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                   color: seleccionado ? splashRojo : Colors.black87,
@@ -414,7 +414,7 @@ class _SizeOption extends StatelessWidget {
             ),
             Text(
               '\$${_formatoMiles(precio)}',
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
                 color: seleccionado ? splashRojo : Colors.black87,
@@ -507,7 +507,7 @@ class _StepperState extends State<_Stepper> {
             focusNode: _focusNode,
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w700,
               fontSize: 14,
             ),

@@ -46,7 +46,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
             const SizedBox(height: 24),
             Text(
               'Aún no tienes pedidos',
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.montserrat(
                 fontSize: 22,
                 color: Colors.black87,
               ),
@@ -55,7 +55,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
             Text(
               'Cuando hagas tu primer pedido, lo verás aquí',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 color: Colors.black54,
                 height: 1.4,
@@ -81,7 +81,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                 ),
                 child: Text(
                   'Ir al menú',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
@@ -106,7 +106,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
               child: Text(
                 'Pedidos',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 30,
                   color: Colors.black87,
                 ),
@@ -116,7 +116,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 'Revisa el estado de tus pedidos recientes y tu historial de compras',
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   fontSize: 15,
                   color: const Color(0xFF1A1A1A),
                   fontWeight: FontWeight.w600,
@@ -189,7 +189,7 @@ class _OrderCard extends StatelessWidget {
                 children: [
                   Text(
                     order.numero,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
                       color: Colors.black87,
@@ -215,7 +215,7 @@ class _OrderCard extends StatelessWidget {
                         const SizedBox(width: 5),
                         Text(
                           order.estado.texto,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: order.estado.color,
@@ -233,7 +233,7 @@ class _OrderCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     '${order.fecha.day}/${order.fecha.month}/${order.fecha.year}, ${order.fecha.hour.toString().padLeft(2, '0')}:${order.fecha.minute.toString().padLeft(2, '0')}',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.black45,
                     ),
@@ -243,7 +243,7 @@ class _OrderCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     '${order.articulos} artículos',
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.black45,
                     ),
@@ -289,7 +289,7 @@ class _OrderCard extends StatelessWidget {
                         alignment: Alignment.center,
                         child: Text(
                           '+${order.imagenes.length - 2}',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Colors.black54,
@@ -308,14 +308,14 @@ class _OrderCard extends StatelessWidget {
                     children: [
                       Text(
                         'Total',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Colors.black45,
                         ),
                       ),
                       Text(
                         '\$${formatoMilesLocal(order.total)}',
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w800,
                           fontSize: 17,
                           color: Colors.black87,
@@ -334,7 +334,7 @@ class _OrderCard extends StatelessWidget {
                     ),
                     child: Text(
                       'Ver detalles',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                         color: Colors.black,
