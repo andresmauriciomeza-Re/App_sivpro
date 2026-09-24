@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../theme/app_colors.dart';
+import '../../shared/app_header.dart';
+import '../../shared/initials.dart';
 import '../../shared/page_transitions.dart';
 
 class EmployeeSaleDetailScreen extends StatelessWidget {
@@ -36,13 +37,31 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            _topBar(context, status),
+            AppHeader(
+              title: 'La Sirena Pizza',
+              onBack: () => Navigator.of(context).pop(),
+              initials: getInitials('María González'),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(28, 34, 28, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Venta $index',
+                          style: GoogleFonts.dmSerifDisplay(
+                            color: ink,
+                            fontSize: 20,
+                          ),
+                        ),
+                        const Spacer(),
+                        _statusChip(status),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
                     Text(
                       'Detalle de venta  —  ID $index',
                       style: GoogleFonts.montserrat(
@@ -64,40 +83,6 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _topBar(BuildContext context, String status) {
-    return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          InkWell(
-            onTap: () => Navigator.of(context).pop(),
-            child: const Icon(Icons.chevron_left, color: AppColors.red, size: 30),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Volver a ventas',
-            style: GoogleFonts.poppins(color: AppColors.red, fontSize: 17),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Text('·', style: TextStyle(color: muted, fontSize: 20)),
-          ),
-          Text(
-            'Venta $index',
-            style: GoogleFonts.poppins(color: muted, fontSize: 17),
-          ),
-          const Spacer(),
-          _statusChip(status),
-        ],
       ),
     );
   }

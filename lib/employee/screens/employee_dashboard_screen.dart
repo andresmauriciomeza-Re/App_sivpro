@@ -7,6 +7,7 @@ import 'employee_clients_screen.dart';
 import '../../shared/page_transitions.dart';
 import '../../auth/auth_service.dart';
 import '../../client/screens/home_screen.dart' hide AppColors;
+import '../services/return_service.dart';
 
 class EmployeeDashboardScreen extends StatelessWidget {
   const EmployeeDashboardScreen({super.key});
@@ -44,9 +45,9 @@ class EmployeeDashboardScreen extends StatelessWidget {
                       'Viernes, 18 De Septiembre De 2026',
                       style: GoogleFonts.poppins(color: muted, fontSize: 13),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     _buildSalesSummary(),
-                    const SizedBox(height: 26),
+                    const SizedBox(height: 16),
                     Text(
                       'ACCESOS RÁPIDOS',
                       style: GoogleFonts.poppins(
@@ -56,7 +57,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                         letterSpacing: 1,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
@@ -67,7 +68,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                             onTap: () => _openSalesManagement(context),
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: _QuickAccessCard(
                             icon: Icons.people_outline,
@@ -78,7 +79,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 26),
+                    const SizedBox(height: 18),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -176,68 +177,38 @@ class EmployeeDashboardScreen extends StatelessWidget {
   }
 
   Widget _buildSalesSummary() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-      decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEAF2FF),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.shopping_bag_outlined,
-                  color: Color(0xFF1464F4),
-                ),
-              ),
-              const Spacer(),
-              _badge('+12%', const Color(0xFFE5FAF0), const Color(0xFF008C5A)),
-            ],
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _CompactStatCard(
+            icon: Icons.shopping_bag_outlined,
+            iconBg: AppColors.salesIconBg,
+            iconColor: AppColors.salesIconFg,
+            value: '24',
+            label: 'Ventas hoy',
+            subtext: '+3 en la última hora',
+            badge: '+12%',
           ),
-          const SizedBox(height: 20),
-          Text(
-            '24',
-            style: GoogleFonts.poppins(color: ink, fontSize: 30),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _CompactStatCard(
+            icon: Icons.assignment_return_outlined,
+            iconBg: AppColors.returnIconBg,
+            iconColor: AppColors.returnIconFg,
+            value: '$_devolucionesHoy',
+            label: 'Devoluciones',
+            subtext: 'pendientes por atender',
           ),
-          Text(
-            'Ventas hoy',
-            style: GoogleFonts.poppins(color: muted, fontSize: 13),
-          ),
-          Text(
-            '+3 en la última hora',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFFAAA09D),
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _badge(String text, Color background, Color foreground) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(
-          color: foreground,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
+  static int get _devolucionesHoy =>
+      ReturnService.instance.pendientes.length +
+      ReturnService.instance.resueltas.length;
 
   Widget _buildBottomNavigation(BuildContext context) {
     const items = [
@@ -306,21 +277,6 @@ class EmployeeDashboardScreen extends StatelessWidget {
     );
   }
 
-  BoxDecoration _cardDecoration() {
-    return BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(17),
-      border: Border.all(color: const Color(0xFFECE6E4)),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x0A000000),
-          blurRadius: 6,
-          offset: Offset(0, 2),
-        ),
-      ],
-    );
-  }
-
   void _openSalesManagement(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -359,8 +315,8 @@ class _QuickAccessCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(17),
       child: Container(
-        height: 132,
-        padding: const EdgeInsets.all(16),
+        height: 108,
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(17),
@@ -370,30 +326,147 @@ class _QuickAccessCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF0F0),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: EmployeeDashboardScreen.red, size: 24),
+              child: Icon(icon, color: EmployeeDashboardScreen.red, size: 19),
             ),
             const SizedBox(height: 8),
             Text(
               label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
+                color: EmployeeDashboardScreen.ink,
                 fontWeight: FontWeight.w600,
-                fontSize: 15,
+                fontSize: 14,
               ),
             ),
             Text(
               subtitle,
-              style: GoogleFonts.poppins(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.dmSerifDisplay(
                 color: EmployeeDashboardScreen.muted,
                 fontSize: 11,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CompactStatCard extends StatelessWidget {
+  const _CompactStatCard({
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.value,
+    required this.label,
+    this.subtext,
+    this.badge,
+  });
+
+  final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
+  final String value;
+  final String label;
+  final String? subtext;
+  final String? badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(color: const Color(0xFFECE6E4)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const Spacer(),
+              if (badge != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.badgeGreenBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    badge!,
+                    style: GoogleFonts.dmSerifDisplay(
+                      color: AppColors.badgeGreenFg,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: GoogleFonts.dmSerifDisplay(
+                color: EmployeeDashboardScreen.ink,
+                fontSize: 26,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.dmSerifDisplay(
+              color: EmployeeDashboardScreen.muted,
+              fontSize: 13,
+            ),
+          ),
+          if (subtext != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              subtext!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.dmSerifDisplay(
+                color: AppColors.cardSubtext,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -1,19 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../theme/app_colors.dart';
 import 'employee_exchange_screen.dart';
 import 'employee_refund_screen.dart';
 import '../../shared/page_transitions.dart';
+import '../../shared/search.dart';
 import '../services/return_service.dart';
 
-class EmployeeReturnsScreen extends StatelessWidget {
+class EmployeeReturnsScreen extends StatefulWidget {
   const EmployeeReturnsScreen({super.key});
+
+  @override
+  State<EmployeeReturnsScreen> createState() => _EmployeeReturnsScreenState();
+}
+
+class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
+  final _searchController = TextEditingController();
+  String _query = '';
+  String _filter = 'todas';
 
   static const red = Color(0xFFC9151E);
   static const ink = Color(0xFF211616);
   static const muted = Color(0xFF766B68);
   static const page = Color(0xFFFCF9F8);
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +42,38 @@ class EmployeeReturnsScreen extends StatelessWidget {
         child: ListenableBuilder(
           listenable: ReturnService.instance,
           builder: (context, _) {
-            final pendientes = ReturnService.instance.pendientes;
-            final resueltas = ReturnService.instance.resueltas;
+            final service = ReturnService.instance;
+            final pendientes = service.pendientes;
+            final resueltas = service.resueltas;
+            final todos = <ReturnRecord>[...pendientes, ...resueltas];
+            final source = _filter == 'pendientes'
+                ? pendientes
+                : _filter == 'resueltas'
+                    ? resueltas
+                    : todos;
+            final resultados = source
+                .where(
+                  (r) => matchesSearchQuery(_query, [
+                    '${r.index}',
+                    r.customer,
+                    r.date,
+                    r.amount,
+                    r.payment,
+                    r.tipoVenta,
+                    ...r.products.map((p) => p.nombre),
+                    r.status,
+                    r.resolutionType,
+                    r.refundAmount,
+                    r.refundNote,
+                    r.replacementProduct,
+                    ...r.returnedProducts.map((p) => p.nombre),
+                  ]),
+                )
+                .toList();
+            final filteredPendientes =
+                resultados.where((r) => r.status == 'pendiente').toList();
+            final filteredResueltas =
+                resultados.where((r) => r.status == 'resuelta').toList();
             return Column(
               children: [
                 _header(context),
@@ -42,49 +89,72 @@ class EmployeeReturnsScreen extends StatelessWidget {
                           'Devoluciones',
                           style: GoogleFonts.montserrat(
                             color: ink,
-                            fontSize: 42,
+                            fontSize: 30,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        RichText(
-                          text: TextSpan(
-                            style: GoogleFonts.poppins(fontSize: 20),
-                            children: [
-                              TextSpan(
-                                text: '${pendientes.length} pendientes',
-                                style: const TextStyle(
-                                  color: Color(0xFFB44A00),
-                                ),
+                        const SizedBox(height: 14),
+                        AppSearchField(
+                          controller: _searchController,
+                          hint: 'Buscar devoluciones...',
+                          onChanged: (value) => setState(() => _query = value),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _filterChip(
+                                'todas',
+                                'Todas',
+                                todos.length,
                               ),
-                              TextSpan(
-                                text:
-                                    '  ·  ${resueltas.length} resueltas',
-                                style: const TextStyle(color: muted),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _filterChip(
+                                'pendientes',
+                                'Pendientes',
+                                pendientes.length,
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _filterChip(
+                                'resueltas',
+                                'Resueltas',
+                                resueltas.length,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 38),
-                        _sectionTitle(
-                          'PENDIENTES DE RESOLUCIÓN',
-                          badge: '${pendientes.length} en cola',
-                        ),
-                        const SizedBox(height: 18),
-                        ...pendientes.map(
-                          (item) => _ReturnCard(
-                            item: item,
-                            onManage: () => _showManageDialog(context, item),
-                          ),
-                        ),
-                        const SizedBox(height: 22),
-                        _sectionTitle('RESUELTAS'),
-                        const SizedBox(height: 18),
-                        if (resueltas.isNotEmpty)
-                          ...resueltas.map(
-                            (item) => _ResolvedCard(item: item),
-                          ),
-                        const SizedBox(height: 22),
-                        _resolutionInfo(),
+                        const SizedBox(height: 26),
+                        if (resultados.isEmpty)
+                          _emptySearchResult()
+                        else ...[
+                          if (filteredPendientes.isNotEmpty) ...[
+                            _sectionTitle(
+                              'PENDIENTES DE RESOLUCIÓN',
+                              badge: '${filteredPendientes.length} en cola',
+                            ),
+                            const SizedBox(height: 18),
+                            ...filteredPendientes.map(
+                              (item) => _ReturnCard(
+                                item: item,
+                                onManage: () =>
+                                    _showManageDialog(context, item),
+                              ),
+                            ),
+                            const SizedBox(height: 22),
+                          ],
+                          if (filteredResueltas.isNotEmpty) ...[
+                            _sectionTitle('RESUELTAS'),
+                            const SizedBox(height: 18),
+                            ...filteredResueltas.map(
+                              (item) => _ResolvedCard(item: item),
+                            ),
+                            const SizedBox(height: 22),
+                          ],
+                          _resolutionInfo(),
+                        ],
                       ],
                     ),
                   ),
@@ -98,61 +168,10 @@ class EmployeeReturnsScreen extends StatelessWidget {
   }
 
   Widget _header(BuildContext context) {
-    return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 26),
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 30),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          const SizedBox(width: 36),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'LA SIRENA PIZZA',
-                style: GoogleFonts.montserrat(
-                  color: red,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              Text(
-                'S.I.V.PRO Mobile',
-                style: GoogleFonts.poppins(color: muted, fontSize: 14),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: red,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFFFCACA), width: 4),
-            ),
-            child: Text(
-              getInitials('María González'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('María González'),
     );
   }
 
@@ -202,6 +221,61 @@ class EmployeeReturnsScreen extends StatelessWidget {
         style: GoogleFonts.poppins(
           color: const Color(0xFF9B4610),
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _filterChip(String value, String label, int count) {
+    final selected = _filter == value;
+    final foreground = !selected
+        ? muted
+        : switch (value) {
+            'pendientes' => AppColors.returnChipPendingFg,
+            'resueltas' => AppColors.returnChipResolvedFg,
+            _ => AppColors.returnChipAllFg,
+          };
+    final background = !selected
+        ? Colors.white
+        : switch (value) {
+            'pendientes' => AppColors.returnChipPendingBg,
+            'resueltas' => AppColors.returnChipResolvedBg,
+            _ => AppColors.returnChipAllBg,
+          };
+    return GestureDetector(
+      onTap: () => setState(() => _filter = value),
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: selected ? foreground : AppColors.fieldBorder,
+          ),
+        ),
+        child: Text(
+          '$label $count',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.dmSerifDisplay(
+            color: foreground,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _emptySearchResult() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Center(
+        child: Text(
+          'No se encontraron devoluciones',
+          style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 15),
         ),
       ),
     );
@@ -676,61 +750,10 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
   }
 
   Widget _header() {
-    return Container(
-      height: 78,
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 28),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'LA SIRENA PIZZA',
-                style: GoogleFonts.montserrat(
-                  color: red,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
-                ),
-              ),
-              Text(
-                'S.I.V.PRO Mobile',
-                style: GoogleFonts.poppins(color: muted, fontSize: 14),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              getInitials('María González'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('María González'),
     );
   }
 

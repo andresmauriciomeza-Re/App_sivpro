@@ -14,10 +14,21 @@ class _Client {
  final String name;
  final String email;
  final int orders;
- final bool active;
- final Color color;
+final bool active;
+  final Color color;
 
- String get initials => getInitials(name);
+  _Client copyWith({bool? active}) {
+    return _Client(
+      id: id,
+      name: name,
+      email: email,
+      orders: orders,
+      active: active ?? this.active,
+      color: color,
+    );
+  }
+
+  String get initials => getInitials(name);
 }
 
 class _ClientManagementScreen extends StatefulWidget {
@@ -35,7 +46,16 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
  static const _pageSize = 5;
  int _visibleClients = _pageSize;
 
- void _loadMore() {
+ void _toggleClientActive(_Client client) {
+    setState(() {
+      final index = _clients.indexWhere((c) => c.id == client.id);
+      if (index != -1) {
+        _clients[index] = client.copyWith(active: !client.active);
+      }
+    });
+  }
+
+  void _loadMore() {
    if (_visibleClients >= _clients.length) return;
    setState(() {
      _visibleClients += _pageSize;
@@ -45,15 +65,15 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
    });
  }
 
- static const _clients = [
-   _Client(
-     id: 'CLI-003',
-     name: 'Ana Rodríguez',
-     email: 'ana.rodriguez@outlook.com',
-     orders: 3,
-active: true,
+static final List<_Client> _clients = [
+    _Client(
+      id: 'CLI-003',
+      name: 'Ana Rodríguez',
+      email: 'ana.rodriguez@outlook.com',
+      orders: 3,
+      active: true,
       color: Color(0xFF008D83),
-   ),
+    ),
    _Client(
      id: 'CLI-018',
      name: 'Andrés Castillo',
@@ -134,28 +154,39 @@ active: true,
    super.dispose();
  }
 
- @override
- Widget build(BuildContext context) {
-   final query = _searchController.text.toLowerCase();
-   final filteredClients = _clients
-       .where(
-         (client) =>
-             client.name.toLowerCase().contains(query) ||
-             client.email.toLowerCase().contains(query) ||
-             client.id.toLowerCase().contains(query),
-       )
-       .where(
-         (client) =>
-             _statusFilter == 'Todos los estados' ||
-             (_statusFilter == 'Activos' && client.active) ||
-             (_statusFilter == 'Inactivos' && !client.active),
-       )
-       .toList();
-   if (_sortOrder == 'Ordenar por nombre') {
-     filteredClients.sort((a, b) => a.name.compareTo(b.name));
-   } else {
-     filteredClients.sort((a, b) => b.orders.compareTo(a.orders));
-   }
+@override
+  Widget build(BuildContext context) {
+    final query = _searchController.text;
+    final filteredClients = _clients
+        .where(
+          (client) =>
+              matchesSearchQuery(query, [
+                client.name,
+                client.email,
+                client.id,
+                client.active ? 'Activo' : 'Inactivo',
+              ]),
+        )
+        .where(
+          (client) =>
+              _statusFilter == 'Todos los estados' ||
+              (_statusFilter == 'Activo' && client.active) ||
+              (_statusFilter == 'Inactivo' && !client.active),
+        )
+        .toList();
+    if (_sortOrder == 'Ordenar por pedidos') {
+      filteredClients.sort((a, b) {
+        final byOrders = b.orders.compareTo(a.orders);
+        return byOrders != 0
+            ? byOrders
+            : normalizeForSearch(a.name).compareTo(normalizeForSearch(b.name));
+      });
+    } else {
+      filteredClients.sort(
+        (a, b) =>
+            normalizeForSearch(a.name).compareTo(normalizeForSearch(b.name)),
+      );
+    }
 final visibleClients =
        filteredClients.take(_visibleClients).toList();
 
@@ -225,27 +256,30 @@ Expanded(
                    const SizedBox(height: 18),
                    _searchField(),
                    const SizedBox(height: 12),
-                   _selectField(
-                     value: _statusFilter,
-                     items: const [
-                       'Todos los estados',
-                       'Activos',
-                       'Inactivos',
-                     ],
+_selectField(
+                      value: _statusFilter,
+                      items: const [
+                        'Todos los estados',
+                        'Activo',
+                        'Inactivo',
+                      ],
 onChanged: (value) => setState(() {
-                        _statusFilter = value!;
-                        _visibleClients = _pageSize;
-                      }),
-                   ),
-                   const SizedBox(height: 12),
-                   _selectField(
-                     value: _sortOrder,
-                     items: const ['Ordenar por nombre', 'Más pedidos'],
+                         _statusFilter = value!;
+                         _visibleClients = _pageSize;
+                       }),
+                    ),
+                    const SizedBox(height: 12),
+                    _selectField(
+                      value: _sortOrder,
+                      items: const [
+                        'Ordenar por nombre',
+                        'Ordenar por pedidos',
+                      ],
 onChanged: (value) => setState(() {
-                        _sortOrder = value!;
-                        _visibleClients = _pageSize;
-                      }),
-                   ),
+                         _sortOrder = value!;
+                         _visibleClients = _pageSize;
+                       }),
+                    ),
                    const SizedBox(height: 18),
 for (final client in visibleClients) ...[
                       _clientCard(client),
@@ -254,7 +288,7 @@ for (final client in visibleClients) ...[
 Center(
                       child: Text(
                         filteredClients.isEmpty
-                            ? 'No hay clientes para mostrar'
+                            ? 'No se encontraron clientes'
                             : 'Mostrando ${visibleClients.length} de '
                                 '${filteredClients.length} clientes',
                         style: GoogleFonts.poppins(
@@ -276,48 +310,10 @@ _buildBottomNavigation(context),
   }
 
 Widget _buildHeader(BuildContext context) {
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 27),
-          ),
-          Expanded(
-            child: Text(
-              'La Sirena Pizza',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                color: AppColors.red,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            margin: const EdgeInsets.only(right: 14),
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
     );
   }
 
@@ -379,6 +375,20 @@ Widget _searchField() {
         hintText: 'Buscar por nombre, correo o estado...',
         hintStyle: GoogleFonts.poppins(fontSize: 15),
         prefixIcon: const Icon(Icons.search, size: 28),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() => _visibleClients = _pageSize);
+                },
+                icon: const Icon(
+                  Icons.close,
+                  size: 20,
+                  color: PurchasesScreen.muted,
+                ),
+                tooltip: 'Limpiar búsqueda',
+              )
+            : null,
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         enabledBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFE5BDB9)),
@@ -490,7 +500,7 @@ Widget _clientCard(_Client client) {
               _statusBadge(client),
               const Spacer(),
               _clientAction(Icons.edit_outlined, client),
-              _clientAction(Icons.delete_outline, client),
+              _statusSwitch(client),
             ],
           ),
         ],
@@ -513,6 +523,32 @@ Widget _clientCard(_Client client) {
           color: client.active ? const Color(0xFF278044) : PurchasesScreen.muted,
           fontSize: 14,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _statusSwitch(_Client client) {
+    return SizedBox(
+      width: 46,
+      height: 40,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _toggleClientActive(client),
+        child: Center(
+          child: IgnorePointer(
+            child: Transform.scale(
+              scale: 0.75,
+              child: Switch(
+                value: client.active,
+                onChanged: (_) {},
+                activeTrackColor: AppColors.switchTrackActive,
+                inactiveTrackColor: AppColors.red,
+                thumbColor: WidgetStateProperty.all(Colors.white),
+                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -896,10 +932,7 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
                             ),
                             const SizedBox(height: 24),
                             _fieldLabel('Pedidos'),
-                            _textField(
-                              _ordersController,
-                              keyboardType: TextInputType.number,
-                            ),
+                            _lockedField(_ordersController),
                             const SizedBox(height: 24),
                             _fieldLabel('Estado'),
                             Row(
@@ -977,48 +1010,10 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
     }
 
     Widget _buildHeader(BuildContext context) {
-      return Container(
-        height: 72,
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-        ),
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 26),
-            ),
-            Expanded(
-              child: Text(
-                'La Sirena Pizza',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.montserrat(
-                  color: AppColors.red,
-                  fontSize: 23,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            Container(
-              width: 48,
-              height: 48,
-              margin: const EdgeInsets.only(right: 14),
-              decoration: const BoxDecoration(
-                color: AppColors.red,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                getInitials('Gloria Inés Vargas'),
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
+      return AppHeader(
+        title: 'La Sirena Pizza',
+        onBack: () => Navigator.of(context).pop(),
+        initials: getInitials('Gloria Inés Vargas'),
       );
     }
 
@@ -1060,6 +1055,41 @@ class _ClientEditScreenState extends State<_ClientEditScreen> {
             borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
           ),
         ),
+      );
+    }
+
+    Widget _lockedField(TextEditingController controller) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: controller,
+            enabled: false,
+            style: GoogleFonts.dmSerifDisplay(
+              color: PurchasesScreen.muted,
+              fontSize: 20,
+            ),
+            decoration: const InputDecoration(
+              filled: true,
+              fillColor: Color(0xFFF7F8F9),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 16,
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'No se puede modificar',
+            style: GoogleFonts.dmSerifDisplay(
+              color: PurchasesScreen.muted,
+              fontSize: 11,
+            ),
+          ),
+        ],
       );
     }
 
@@ -1200,53 +1230,10 @@ extension _ClientDetailHelpers on _ClientDetailScreen {
   }
 
   Widget _buildAppHeader(BuildContext context) {
-    return Container(
-      height: 62,
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(
-              Icons.arrow_back,
-              color: AppColors.red,
-              size: 23,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              'La Sirena Pizza',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                color: AppColors.red,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            width: 36,
-            height: 36,
-            margin: const EdgeInsets.only(right: 12),
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
     );
   }
 }

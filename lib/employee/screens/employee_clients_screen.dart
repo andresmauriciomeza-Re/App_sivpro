@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../shared/initials.dart';
 import '../../theme/app_colors.dart';
 import '../../shared/page_transitions.dart';
+import '../../shared/search.dart';
 
 class EmployeeClientsScreen extends StatefulWidget {
   const EmployeeClientsScreen({super.key});
@@ -18,7 +19,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
   static const Color muted = Color(0xFF617492);
   static const Color page = Color(0xFFFCFAF9);
 
-  static const clients = [
+  static final List<_Client> clients = [
     _Client(
       'Ana Rodríguez',
       'ana.rodriguez@outlook.com',
@@ -63,12 +64,61 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
 
   static const _pageSize = 5;
   int _visibleClients = _pageSize;
+  final _searchController = TextEditingController();
+  String _statusFilter = 'Todos los estados';
+  String _sortOrder = 'Ordenar por nombre';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<_Client> _filteredClients() {
+    final query = _searchController.text;
+    final filtered = clients.where((client) {
+      final matchesQuery = matchesSearchQuery(query, [
+        client.name,
+        client.email,
+        client.id,
+        client.active ? 'Activo' : 'Inactivo',
+      ]);
+      final matchesState = _statusFilter == 'Todos los estados' ||
+          (_statusFilter == 'Activo' && client.active) ||
+          (_statusFilter == 'Inactivo' && !client.active);
+      return matchesQuery && matchesState;
+    }).toList();
+    if (_sortOrder == 'Ordenar por pedidos') {
+      filtered.sort((a, b) {
+        final byOrders = b.orders.compareTo(a.orders);
+        return byOrders != 0
+            ? byOrders
+            : normalizeForSearch(a.name).compareTo(normalizeForSearch(b.name));
+      });
+    } else {
+      filtered.sort(
+        (a, b) => normalizeForSearch(a.name)
+            .compareTo(normalizeForSearch(b.name)),
+      );
+    }
+    return filtered;
+  }
+
+  void _toggleClientActive(_Client client) {
+    setState(() {
+      final index = clients.indexWhere((c) => c.id == client.id);
+      if (index != -1) {
+        clients[index] = client.copyWith(active: !client.active);
+      }
+    });
+  }
 
   void _loadMore() {
-    if (_visibleClients >= clients.length) return;
+    final filtered = _filteredClients().length;
+    if (_visibleClients >= filtered) return;
     setState(() {
       _visibleClients += _pageSize;
-      if (_visibleClients > clients.length) _visibleClients = clients.length;
+      if (_visibleClients > filtered) _visibleClients = filtered;
     });
   }
 
@@ -98,34 +148,46 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                   children: [
                     _buildBreadcrumb(),
                     const SizedBox(height: 4),
-                    Text(
-                      'Clientes',
-                      style: GoogleFonts.montserrat(
-                        color: ink,
-                        fontSize: 30,
-                      ),
-                    ),
-                    Text(
-                      'Usuarios registrados con tipo cliente en La Sirena',
-                      style: GoogleFonts.poppins(color: muted, fontSize: 14),
-                    ),
-                    const SizedBox(height: 18),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                          child: _ActionButton(
-                            icon: Icons.description_outlined,
-                            label: 'Generar reporte',
-                            onTap: () => _showComingSoon(context),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Clientes',
+                                style: GoogleFonts.dmSerifDisplay(
+                                  color: ink,
+                                  fontSize: 30,
+                                ),
+                              ),
+                              Text(
+                                'Usuarios registrados con tipo cliente en La Sirena',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.dmSerifDisplay(
+                                  color: muted,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Expanded(
-                          child: _ActionButton(
-                            icon: Icons.person_add_alt_1_outlined,
-                            label: 'Crear cliente',
-                            filled: true,
-                            onTap: () => _showCreateClientDialog(context),
+                        FilledButton.icon(
+                          onPressed: () => _showCreateClientDialog(context),
+                          icon: const Icon(Icons.person_add, size: 19),
+                          label: const Text('Crear cliente'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: red,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 13,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
                           ),
                         ),
                       ],
@@ -135,6 +197,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                       children: [
                         Expanded(
                           child: _StatCard(
+                            icon: Icons.groups_outlined,
                             value: '${clients.length}',
                             label: 'Total clientes',
                           ),
@@ -142,6 +205,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                         SizedBox(width: 12),
                         Expanded(
                           child: _StatCard(
+                            icon: Icons.how_to_reg_outlined,
                             value:
                                 '${clients.where((c) => c.active).length}',
                             label: 'Activos',
@@ -151,6 +215,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                         SizedBox(width: 12),
                         Expanded(
                           child: _StatCard(
+                            icon: Icons.person_off_outlined,
                             value:
                                 '${clients.where((c) => !c.active).length}',
                             label: 'Inactivos',
@@ -164,11 +229,49 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: _FilterButton(label: 'Todos los estados'),
+                          child: PopupMenuButton<String>(
+                            initialValue: _statusFilter,
+                            onSelected: (value) => setState(() {
+                              _statusFilter = value;
+                              _visibleClients = _pageSize;
+                            }),
+                            itemBuilder: (context) => const [
+                              PopupMenuItem(
+                                value: 'Todos los estados',
+                                child: Text('Todos los estados'),
+                              ),
+                              PopupMenuItem(
+                                value: 'Activo',
+                                child: Text('Activo'),
+                              ),
+                              PopupMenuItem(
+                                value: 'Inactivo',
+                                child: Text('Inactivo'),
+                              ),
+                            ],
+                            child: _FilterButton(label: _statusFilter),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _FilterButton(label: 'Ordenar por nombre'),
+                          child: PopupMenuButton<String>(
+                            initialValue: _sortOrder,
+                            onSelected: (value) => setState(() {
+                              _sortOrder = value;
+                              _visibleClients = _pageSize;
+                            }),
+                            itemBuilder: (context) => const [
+                              PopupMenuItem(
+                                value: 'Ordenar por nombre',
+                                child: Text('Ordenar por nombre'),
+                              ),
+                              PopupMenuItem(
+                                value: 'Ordenar por pedidos',
+                                child: Text('Ordenar por pedidos'),
+                              ),
+                            ],
+                            child: _FilterButton(label: _sortOrder),
+                          ),
                         ),
                       ],
                     ),
@@ -185,8 +288,8 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                           ),
                         ),
                         Text(
-                          '${_visibleClients >= clients.length ? clients.length : _visibleClients} DE ${clients.length}',
-                          style: GoogleFonts.poppins(
+                          '${_visibleClients >= _filteredClients().length ? _filteredClients().length : _visibleClients} DE ${_filteredClients().length}',
+                          style: GoogleFonts.dmSerifDisplay(
                             color: muted,
                             fontSize: 14,
                           ),
@@ -194,13 +297,28 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    ...clients.take(_visibleClients).map(
-                      (client) => _ClientCard(
-                        client: client,
-                        onView: () => _showClientDetail(context, client),
-                        onEdit: () => _showEditClientDialog(context, client),
+                    if (_filteredClients().isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 28),
+                        child: Center(
+                          child: Text(
+                            'No se encontraron clientes',
+                            style: GoogleFonts.dmSerifDisplay(
+                              color: muted,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      ..._filteredClients().take(_visibleClients).map(
+                        (client) => _ClientCard(
+                          client: client,
+                          onView: () => _showClientDetail(context, client),
+                          onEdit: () => _showEditClientDialog(context, client),
+                          onToggle: () => _toggleClientActive(client),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -234,8 +352,6 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
             style: GoogleFonts.montserrat(color: red, fontSize: 24),
           ),
           const Spacer(),
-          const Icon(Icons.nightlight_outlined, color: AppColors.red, size: 24),
-          const SizedBox(width: 24),
           Container(
             width: 44,
             height: 44,
@@ -271,26 +387,51 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
   }
 
   Widget _buildSearch() {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE6E1DF)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Color(0xFF8DA0BE), size: 23),
-          const SizedBox(width: 14),
-          Text(
-            'Buscar por nombre, correo o estado...',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFF91A3C0),
-              fontSize: 13,
-            ),
-          ),
-        ],
+    final hasText = _searchController.text.isNotEmpty;
+    return TextField(
+      controller: _searchController,
+      onChanged: (_) => setState(() => _visibleClients = _pageSize),
+      style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 13),
+      decoration: InputDecoration(
+        hintText: 'Buscar por nombre, correo o estado...',
+        hintStyle: GoogleFonts.dmSerifDisplay(
+          color: const Color(0xFF91A3C0),
+          fontSize: 13,
+        ),
+        prefixIcon: const Icon(
+          Icons.search,
+          color: Color(0xFF8DA0BE),
+          size: 23,
+        ),
+        prefixIconConstraints: const BoxConstraints(
+          minWidth: 40,
+          minHeight: 23,
+        ),
+        suffixIcon: hasText
+            ? IconButton(
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() => _visibleClients = _pageSize);
+                },
+                icon: const Icon(
+                  Icons.close,
+                  color: Color(0xFF91A3C0),
+                  size: 20,
+                ),
+                tooltip: 'Limpiar búsqueda',
+              )
+            : null,
+        contentPadding: const EdgeInsets.symmetric(vertical: 15),
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFE6E1DF)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: red),
+        ),
       ),
     );
   }
@@ -354,14 +495,6 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
           ),
           const SizedBox(height: 24),
         ],
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Esta función estará disponible próximamente.'),
       ),
     );
   }
@@ -764,6 +897,7 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                       hint: '0',
                       controller: ordersController,
                       keyboardType: TextInputType.number,
+                      readOnly: true,
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -928,6 +1062,7 @@ class _DialogField extends StatelessWidget {
     required this.controller,
     this.required = false,
     this.optional = false,
+    this.readOnly = false,
     this.keyboardType,
   });
 
@@ -936,6 +1071,7 @@ class _DialogField extends StatelessWidget {
   final TextEditingController controller;
   final bool required;
   final bool optional;
+  final bool readOnly;
   final TextInputType? keyboardType;
 
   @override
@@ -971,19 +1107,26 @@ class _DialogField extends StatelessWidget {
         const SizedBox(height: 7),
         TextField(
           controller: controller,
+          readOnly: readOnly,
           keyboardType: keyboardType,
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF353535),
+          style: GoogleFonts.dmSerifDisplay(
+            color: readOnly
+                ? const Color(0xFF9D9895)
+                : const Color(0xFF353535),
             fontSize: 16,
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.poppins(
-              color: const Color(0xFF353535),
+            hintStyle: GoogleFonts.dmSerifDisplay(
+              color: readOnly
+                  ? const Color(0xFF9D9895)
+                  : const Color(0xFF353535),
               fontSize: 16,
             ),
             filled: true,
-            fillColor: const Color(0xFFFCFCFB),
+            fillColor: readOnly
+                ? AppColors.fieldFill
+                : const Color(0xFFFCFCFB),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 18,
               vertical: 16,
@@ -998,62 +1141,29 @@ class _DialogField extends StatelessWidget {
             ),
           ),
         ),
+        if (readOnly) ...[
+          const SizedBox(height: 5),
+          Text(
+            'No se puede modificar',
+            style: GoogleFonts.dmSerifDisplay(
+              color: const Color(0xFF9D9895),
+              fontSize: 11,
+            ),
+          ),
+        ],
       ],
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.filled = false,
-  });
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final bool filled;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        icon: Icon(
-          icon,
-          color: filled ? Colors.white : _EmployeeClientsScreenState.ink,
-          size: 20,
-        ),
-        label: Text(
-          label,
-          style: GoogleFonts.poppins(
-            color: filled ? Colors.white : _EmployeeClientsScreenState.ink,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        style: OutlinedButton.styleFrom(
-          backgroundColor: filled ? _EmployeeClientsScreenState.red : Colors.white,
-          side: BorderSide(
-            color: filled ? _EmployeeClientsScreenState.red : const Color(0xFFD7D1CF),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
-          ),
-        ),
-      ),
     );
   }
 }
 
 class _StatCard extends StatelessWidget {
   const _StatCard({
+    required this.icon,
     required this.value,
     required this.label,
     this.active = false,
   });
+  final IconData icon;
   final String value;
   final String label;
   final bool active;
@@ -1061,33 +1171,53 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 88,
-      padding: const EdgeInsets.fromLTRB(14, 12, 8, 10),
+      height: 128,
+      padding: const EdgeInsets.fromLTRB(12, 12, 8, 10),
       decoration: BoxDecoration(
-        color: active ? const Color(0xFFF0FFF7) : Colors.white,
+        color: active ? AppColors.statGreenBg : Colors.white,
         borderRadius: BorderRadius.circular(17),
         border: Border.all(
-          color: active ? const Color(0xFF8DE9BD) : const Color(0xFFE5E0DE),
+          color: active ? AppColors.statGreenBorder : AppColors.statCardBorder,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              color: active
-                  ? const Color(0xFF009C68)
-                  : _EmployeeClientsScreenState.ink,
-              fontSize: 28,
-              fontWeight: FontWeight.w500,
+          Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppColors.iconCircleBg,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: _EmployeeClientsScreenState.red,
+              size: 21,
+            ),
+          ),
+          const Spacer(),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: GoogleFonts.dmSerifDisplay(
+                color: active
+                    ? AppColors.statGreenNumber
+                    : _EmployeeClientsScreenState.ink,
+                fontSize: 28,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.dmSerifDisplay(
               color: active
-                  ? const Color(0xFF167653)
+                  ? AppColors.statGreenLabel
                   : _EmployeeClientsScreenState.muted,
               fontSize: 12,
             ),
@@ -1143,10 +1273,12 @@ class _ClientCard extends StatelessWidget {
     required this.client,
     required this.onView,
     required this.onEdit,
+    required this.onToggle,
   });
   final _Client client;
   final VoidCallback onView;
   final VoidCallback onEdit;
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -1291,15 +1423,45 @@ class _ClientCard extends StatelessWidget {
                   size: 21,
                 ),
               ),
-              const SizedBox(width: 24),
-              const Icon(
-                Icons.sync,
-                color: _EmployeeClientsScreenState.muted,
-                size: 21,
-              ),
+              const SizedBox(width: 2),
+              _ClientStatusSwitch(value: client.active, onTap: onToggle),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ClientStatusSwitch extends StatelessWidget {
+  const _ClientStatusSwitch({required this.value, required this.onTap});
+
+  final bool value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 46,
+      height: 40,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Center(
+          child: IgnorePointer(
+            child: Transform.scale(
+              scale: 0.75,
+              child: Switch(
+                value: value,
+                onChanged: (_) {},
+                activeTrackColor: AppColors.switchTrackActive,
+                inactiveTrackColor: AppColors.red,
+                thumbColor: WidgetStateProperty.all(Colors.white),
+                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1320,6 +1482,17 @@ class _Client {
   final int orders;
   final bool active;
   final Color color;
+
+  _Client copyWith({bool? active}) {
+    return _Client(
+      name,
+      email,
+      id,
+      orders,
+      active ?? this.active,
+      color,
+    );
+  }
 
   String get initials => getInitials(name);
 }

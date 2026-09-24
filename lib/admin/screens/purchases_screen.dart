@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
+import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
-import '../../shared/pending_sales_badge.dart';
-import '../../shared/pending_sales_service.dart';
-import '../../shared/orders_repository.dart';
-import '../../client/models/order_model.dart' as client_order;
-import '../../auth/auth_service.dart';
+import '../../shared/search.dart';
 import '../../theme/app_colors.dart';
 import '../widgets/production_summary_card.dart';
 
@@ -163,48 +160,10 @@ class PurchasesScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 28),
-          ),
-          Expanded(
-            child: Text(
-              'La Sirena Pizza',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                color: AppColors.red,
-                fontSize: 25,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            width: 46,
-            height: 46,
-            margin: const EdgeInsets.only(right: 16),
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              getInitials('Gloria Inés Vargas'),
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 23,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
     );
   }
 

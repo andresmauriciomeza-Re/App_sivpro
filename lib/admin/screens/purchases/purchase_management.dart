@@ -83,45 +83,10 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      height: 48,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red),
-          ),
-          Expanded(
-            child: Text(
-              'La Sirena Pizza',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                color: AppColors.red,
-                fontSize: 23,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            width: 34,
-            height: 34,
-            margin: const EdgeInsets.only(right: 16),
-            decoration: const BoxDecoration(
-              color: AppColors.red,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              getInitials('Gloria Inés Vargas'),
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
     );
   }
 
@@ -160,17 +125,10 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                   _label('ID COMPRA'),
                   Row(
                     children: [
-                      Flexible(
-                        child: Text(
-                          purchase.id,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(fontSize: 18),
-                        ),
+                      Text(
+                        purchase.id,
+                        style: GoogleFonts.dmSerifDisplay(fontSize: 18),
                       ),
-                      if (purchase.itemCount > 1) ...[
-                        const SizedBox(width: 8),
-                        _itemCountBadge(purchase.itemCount),
-                      ],
                     ],
                   ),
                 ],

@@ -135,43 +135,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
   Widget _header(BuildContext context) {
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppColors.headerDivider))),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 29),
-          ),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('La Sirena Pizza',
-                    style: GoogleFonts.montserrat(
-                        color: const Color(0xFFC9151E),
-                        fontSize: 23,
-                        fontWeight: FontWeight.w700)),
-              ],
-            ),
-          ),
-          Container(
-            width: 48,
-            height: 48,
-            margin: const EdgeInsets.only(right: 14),
-            decoration: const BoxDecoration(
-                color: Color(0xFFC9151E), shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child: Text(getInitials('Gloria Inés Vargas'),
-                style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700)),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
     );
   }
 
