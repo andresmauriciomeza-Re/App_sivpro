@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'employee_sales_modules_screen.dart';
-import 'employee_more_screen.dart';
+import '../../shared/initials.dart';
+import '../../theme/app_colors.dart';
+import 'employee_sales_management_screen.dart';
+import 'employee_clients_screen.dart';
 import '../../shared/page_transitions.dart';
+import '../../auth/auth_service.dart';
+import '../../client/screens/home_screen.dart' hide AppColors;
 
 class EmployeeDashboardScreen extends StatelessWidget {
   const EmployeeDashboardScreen({super.key});
@@ -21,7 +25,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(18, 22, 18, 24),
@@ -38,14 +42,14 @@ class EmployeeDashboardScreen extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       'Viernes, 18 De Septiembre De 2026',
-                      style: GoogleFonts.poppins(color: muted, fontSize: 13),
+                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 13),
                     ),
                     const SizedBox(height: 24),
                     _buildSalesSummary(),
                     const SizedBox(height: 26),
                     Text(
                       'ACCESOS RÁPIDOS',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: muted,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -60,7 +64,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                             icon: Icons.point_of_sale_outlined,
                             label: 'Ventas',
                             subtitle: 'Cobrar orden',
-                            onTap: () => _showComingSoon(context),
+                            onTap: () => _openSalesManagement(context),
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -69,7 +73,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                             icon: Icons.people_outline,
                             label: 'Clientes',
                             subtitle: 'Directorio',
-                            onTap: () => _showComingSoon(context),
+                            onTap: () => _openClients(context),
                           ),
                         ),
                       ],
@@ -86,10 +90,10 @@ class EmployeeDashboardScreen extends StatelessWidget {
                           ),
                         ),
                         TextButton(
-                          onPressed: () => _showComingSoon(context),
+                          onPressed: () => _openSalesManagement(context),
                           child: Text(
                             'Ver todos  →',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: red,
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -100,8 +104,6 @@ class EmployeeDashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     ..._sales.map((sale) => _SaleCard(sale: sale)),
-                    const SizedBox(height: 16),
-                    _buildPagination(),
                   ],
                 ),
               ),
@@ -112,13 +114,13 @@ class EmployeeDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFEDE6E4))),
+        color: AppColors.page,
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
@@ -132,7 +134,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
               ),
               Text(
                 'S.I.V.PRO',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: muted,
                   fontSize: 10,
                   letterSpacing: 1,
@@ -141,14 +143,21 @@ class EmployeeDashboardScreen extends StatelessWidget {
             ],
           ),
           const Spacer(),
+          IconButton(
+            onPressed: () => _goToStore(context),
+            tooltip: 'Ir a la tienda',
+            color: red,
+            icon: const Icon(Icons.storefront, size: 26),
+          ),
+          const SizedBox(width: 6),
           Container(
             width: 36,
             height: 36,
             alignment: Alignment.center,
             decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
             child: Text(
-              'M',
-              style: GoogleFonts.poppins(
+              getInitials('María González'),
+              style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
@@ -156,6 +165,13 @@ class EmployeeDashboardScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _goToStore(BuildContext context) {
+    AuthService.instance.startStoreSession();
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
     );
   }
 
@@ -191,11 +207,11 @@ class EmployeeDashboardScreen extends StatelessWidget {
           ),
           Text(
             'Ventas hoy',
-            style: GoogleFonts.poppins(color: muted, fontSize: 13),
+            style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 13),
           ),
           Text(
             '+3 en la última hora',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.dmSerifDisplay(
               color: const Color(0xFFAAA09D),
               fontSize: 12,
             ),
@@ -214,58 +230,8 @@ class EmployeeDashboardScreen extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           color: foreground,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPagination() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: _cardDecoration(),
-      child: Column(
-        children: [
-          Text(
-            'Mostrando 1–5 de 24 ventas',
-            style: GoogleFonts.poppins(color: muted, fontSize: 12),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.chevron_left, color: Color(0xFFD4CCCA)),
-              const SizedBox(width: 14),
-              _pageNumber('1', selected: true),
-              _pageNumber('2'),
-              _pageNumber('3'),
-              const SizedBox(width: 14),
-              const Icon(Icons.chevron_right, color: ink),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _pageNumber(String number, {bool selected = false}) {
-    return Container(
-      width: 36,
-      height: 36,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: selected ? red : const Color(0xFFF8F6F5),
-        borderRadius: BorderRadius.circular(9),
-      ),
-      child: Text(
-        number,
-        style: GoogleFonts.poppins(
-          color: selected ? Colors.white : muted,
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
@@ -276,10 +242,10 @@ class EmployeeDashboardScreen extends StatelessWidget {
   Widget _buildBottomNavigation(BuildContext context) {
     const items = [
       (Icons.home_outlined, Icons.home, 'Inicio'),
-      (Icons.shopping_cart_outlined, Icons.shopping_cart, 'Compras'),
-      (Icons.factory_outlined, Icons.factory, 'Producción'),
+      (Icons.people_outline, Icons.people, 'Clientes'),
       (Icons.receipt_long_outlined, Icons.receipt_long, 'Ventas'),
-      (Icons.more_horiz, Icons.more_horiz, 'Más'),
+      (Icons.sync_alt, Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, Icons.person, 'Perfil'),
     ];
 
     return SizedBox(
@@ -302,41 +268,23 @@ class EmployeeDashboardScreen extends StatelessWidget {
                   for (var index = 0; index < items.length; index++)
                     Expanded(
                       child: InkWell(
-                        onTap: index == 3
-                            ? () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    settings: const RouteSettings(
-                                      name: kVentasModulesRoute,
-                                    ),
-                                    builder: (_) =>
-                                        const EmployeeSalesModulesScreen(),
-                                  ),
-                                );
-                              }
-                            : index == 4
-                            ? () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const EmployeeMoreScreen(),
-                                  ),
-                                );
-                              }
-                            : index == 0
+                        onTap: index == 0
                             ? null
-                            : () => _showComingSoon(context),
+                            : () => handleEmployeeBottomNav(context, index),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               index == 0 ? items[index].$2 : items[index].$1,
-                              color: index == 0 ? red : const Color(0xFF756D6A),
+                              color: index == 0
+                                  ? red
+                                  : const Color(0xFF756D6A),
                               size: 19,
                             ),
                             const SizedBox(height: 1),
                             Text(
                               items[index].$3,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: index == 0
                                     ? red
                                     : const Color(0xFF756D6A),
@@ -373,10 +321,20 @@ class EmployeeDashboardScreen extends StatelessWidget {
     );
   }
 
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Esta sección estará disponible próximamente.'),
+  void _openSalesManagement(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: kVentasModulesRoute),
+        builder: (_) => const EmployeeSalesManagementScreen(),
+      ),
+    );
+  }
+
+  void _openClients(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: kClientesRoute),
+        builder: (_) => const EmployeeClientsScreen(),
       ),
     );
   }
@@ -422,14 +380,14 @@ class _QuickAccessCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
               ),
             ),
             Text(
               subtitle,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: EmployeeDashboardScreen.muted,
                 fontSize: 11,
               ),
@@ -529,7 +487,7 @@ class _SaleCard extends StatelessWidget {
             children: [
               Text(
                 sale.id,
-                style: GoogleFonts.robotoMono(
+                style: GoogleFonts.dmSerifDisplay(
                   color: EmployeeDashboardScreen.muted,
                   fontSize: 12,
                 ),
@@ -537,7 +495,7 @@ class _SaleCard extends StatelessWidget {
               const Spacer(),
               Text(
                 sale.status,
-                style: GoogleFonts.poppins(color: statusColor, fontSize: 11),
+                style: GoogleFonts.dmSerifDisplay(color: statusColor, fontSize: 11),
               ),
             ],
           ),
@@ -546,7 +504,7 @@ class _SaleCard extends StatelessWidget {
             children: [
               Text(
                 sale.customer,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -554,7 +512,7 @@ class _SaleCard extends StatelessWidget {
               const Spacer(),
               Text(
                 sale.amount,
-                style: GoogleFonts.robotoMono(
+                style: GoogleFonts.dmSerifDisplay(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),
@@ -572,7 +530,7 @@ class _SaleCard extends StatelessWidget {
               const SizedBox(width: 5),
               Text(
                 sale.payment,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: EmployeeDashboardScreen.muted,
                   fontSize: 12,
                 ),
@@ -589,7 +547,7 @@ class _SaleCard extends StatelessWidget {
               const SizedBox(width: 5),
               Text(
                 sale.time,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: EmployeeDashboardScreen.muted,
                   fontSize: 12,
                 ),

@@ -3,10 +3,10 @@ part of '../purchases_screen.dart';
 class MoreOptionsScreen extends StatelessWidget {
   const MoreOptionsScreen({super.key});
 
-  static const _red = Color(0xFFC9151E);
-  static const _ink = Color(0xFF211616);
-  static const _muted = Color(0xFF6E5A58);
-  static const _page = Color(0xFFFFFBFA);
+  static const _red = AppColors.red;
+  static const _ink = AppColors.ink;
+  static const _muted = AppColors.muted;
+  static const _page = AppColors.page;
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +26,8 @@ class MoreOptionsScreen extends StatelessWidget {
                     Text(
                       'Más opciones',
                       style: GoogleFonts.dmSerifDisplay(
-                        color: _ink,
-                        fontSize: 35,
+                        color: PurchasesScreen.ink,
+                        fontSize: 34,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -37,7 +37,7 @@ class MoreOptionsScreen extends StatelessWidget {
                     Center(
                       child: Text(
                         'La Sirena Pizza – S.I.V.PRO',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: _muted,
                           fontSize: 16,
                         ),
@@ -47,7 +47,7 @@ class MoreOptionsScreen extends StatelessWidget {
                     Center(
                       child: Text(
                         'Versión 2.1.4',
-                        style: GoogleFonts.robotoMono(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: _muted,
                           fontSize: 15,
                         ),
@@ -68,19 +68,19 @@ class MoreOptionsScreen extends StatelessWidget {
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: _muted, size: 29),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 29),
           ),
           Expanded(
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: _red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -94,8 +94,8 @@ class MoreOptionsScreen extends StatelessWidget {
             decoration: const BoxDecoration(color: _red, shape: BoxShape.circle),
             alignment: Alignment.center,
             child: Text(
-              'GI',
-              style: GoogleFonts.poppins(
+              getInitials('Gloria Inés Vargas'),
+              style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -129,8 +129,8 @@ class MoreOptionsScreen extends StatelessWidget {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    'GI',
-                    style: GoogleFonts.poppins(
+                    getInitials('Gloria Inés Vargas'),
+                    style: GoogleFonts.dmSerifDisplay(
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
@@ -144,7 +144,7 @@ class MoreOptionsScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Gloria Inés Vargas',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: _ink,
                           fontSize: 23,
                           fontWeight: FontWeight.w700,
@@ -152,7 +152,7 @@ class MoreOptionsScreen extends StatelessWidget {
                       ),
                       Text(
                         'Administrador',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: _muted,
                           fontSize: 17,
                         ),
@@ -169,7 +169,7 @@ class MoreOptionsScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'S.I.V.PRO',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: _muted,
                             fontSize: 14,
                           ),
@@ -180,11 +180,6 @@ class MoreOptionsScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          _optionTile(
-            icon: Icons.analytics_outlined,
-            title: 'Reportes e Informes',
-            onTap: () => _showComingSoon(context, 'Reportes e Informes'),
           ),
           _optionTile(
             icon: Icons.person_outline,
@@ -207,7 +202,7 @@ class MoreOptionsScreen extends StatelessWidget {
                   const SizedBox(width: 25),
                   Text(
                     'Cerrar sesión',
-                    style: GoogleFonts.poppins(color: _red, fontSize: 22),
+                    style: GoogleFonts.dmSerifDisplay(color: _red, fontSize: 22),
                   ),
                 ],
               ),
@@ -238,7 +233,7 @@ class MoreOptionsScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.poppins(color: _ink, fontSize: 20),
+                style: GoogleFonts.dmSerifDisplay(color: _ink, fontSize: 20),
               ),
             ),
             const Icon(Icons.chevron_right, color: _muted, size: 30),
@@ -248,19 +243,13 @@ class MoreOptionsScreen extends StatelessWidget {
     );
   }
 
-  void _showComingSoon(BuildContext context, String item) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$item estará disponible próximamente.')),
-    );
-  }
-
   Widget _bottomNavigation(BuildContext context) {
     const items = [
       (Icons.home_outlined, 'Inicio'),
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -283,7 +272,7 @@ class MoreOptionsScreen extends StatelessWidget {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 4 ? _red : _muted,
                       fontSize: 11,
                       fontWeight: i == 4 ? FontWeight.w700 : FontWeight.w400,

@@ -1,34 +1,56 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../employee/screens/employee_more_screen.dart';
+import '../employee/screens/employee_clients_screen.dart';
+import '../employee/screens/employee_sales_management_screen.dart';
+import '../employee/screens/employee_returns_screen.dart';
 
-/// Nombre de ruta de la pantalla de módulos de Ventas (rol Empleado).
+/// Nombre de ruta de la raíz de la sección Ventas (rol Empleado).
 /// Permite volver a ella desde las pantallas internas de Devoluciones,
 /// Clientes y Ventas usando [handleEmployeeBottomNav].
 const String kVentasModulesRoute = '/ventas-empleado';
 
-/// Comportamiento de la barra inferior en las pantallas internas del rol
-/// Empleado (Devoluciones, Clientes, Ventas y detalle de venta).
+/// Nombre de ruta de la raíz de la sección Clientes (rol Empleado).
+const String kClientesRoute = '/clientes-empleado';
+
+/// Nombre de ruta de la raíz de la sección Devoluciones (rol Empleado).
+const String kDevolucionesRoute = '/devoluciones-empleado';
+
+/// Nombre de ruta de la raíz de la sección Perfil (rol Empleado).
+const String kPerfilRoute = '/perfil-empleado';
+
+/// Nombre de ruta del detalle del perfil del empleado (abierto desde la
+/// pantalla "Perfil" del rol Empleado).
+const String kEmployeeProfileDetailRoute = '/perfil-detalle-empleado';
+
+/// Comportamiento de la barra inferior en las pantallas del rol Empleado.
 /// - Inicio: lleva al dashboard (raíz del stack).
-/// - Ventas: vuelve a la pantalla de módulos de Ventas.
-/// - Más: abre la pantalla "Más".
-/// - Compras / Producción: aviso de "próximamente".
+/// - Clientes: abre la pantalla de Clientes.
+/// - Ventas: abre la Gestión de ventas.
+/// - Devoluciones: abre el listado de Devoluciones.
+/// - Perfil: abre la pantalla "Más"/Perfil.
+/// Cada sección se trae a foco si ya está en la pila o se abre encima de la
+/// raíz, para que no se acumulen pantallas ni se rompa la flecha de volver.
 void handleEmployeeBottomNav(BuildContext context, int index) {
-  final navigator = Navigator.of(context);
   switch (index) {
     case 0:
-      navigator.popUntil((route) => route.isFirst);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      break;
+    case 1:
+      _openSection(context, kClientesRoute, const EmployeeClientsScreen());
+      break;
+    case 2:
+      _openSection(
+        context,
+        kVentasModulesRoute,
+        const EmployeeSalesManagementScreen(),
+      );
       break;
     case 3:
-      navigator.popUntil(
-        (route) =>
-            route.settings.name == kVentasModulesRoute || route.isFirst,
-      );
+      _openSection(context, kDevolucionesRoute, const EmployeeReturnsScreen());
       break;
     case 4:
-      navigator.push(
-        MaterialPageRoute(builder: (_) => const EmployeeMoreScreen()),
-      );
+      _openSection(context, kPerfilRoute, const EmployeeMoreScreen());
       break;
     default:
       ScaffoldMessenger.of(context).showSnackBar(
@@ -36,6 +58,36 @@ void handleEmployeeBottomNav(BuildContext context, int index) {
           content: Text('Esta sección estará disponible próximamente.'),
         ),
       );
+  }
+}
+
+/// Abre una sección del bottom nav sin duplicar pantallas: si ya existe una
+/// ruta con [routeName] en la pila la trae a foco con [Navigator.popUntil];
+/// si no, hace un push con ese nombre de ruta.
+///
+/// El recorrido se detiene en la primera ruta (la raíz del stack, el
+/// dashboard) sin eliminarla, para que la flecha de volver y la opción
+/// Inicio siempre aterricen en ella y nunca se quede el Navigator vacío.
+void _openSection(BuildContext context, String routeName, Widget page) {
+  final navigator = Navigator.of(context);
+  var found = false;
+  navigator.popUntil((route) {
+    if (route.settings.name == routeName) {
+      found = true;
+      return true;
+    }
+    if (route.isFirst) {
+      return true;
+    }
+    return false;
+  });
+  if (!found) {
+    navigator.push(
+      MaterialPageRoute<void>(
+        settings: RouteSettings(name: routeName),
+        builder: (_) => page,
+      ),
+    );
   }
 }
 

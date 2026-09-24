@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'auth/splash_screen.dart';
+import 'theme/app_theme.dart';
 
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +19,7 @@ class SivproApp extends StatelessWidget {
     return MaterialApp(
       title: 'La Sirena',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true),
+      theme: AppTheme.theme,
       home: const SplashScreen(),
     );
   }

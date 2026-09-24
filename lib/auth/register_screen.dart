@@ -52,7 +52,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: const EdgeInsets.only(bottom: 8, left: 2),
       child: Text(
         texto,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: Colors.black87,
@@ -64,7 +64,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   InputDecoration _fieldDecoration({required String label, IconData? icon}) {
     return InputDecoration(
       hintText: label,
-      hintStyle: GoogleFonts.poppins(color: Colors.black38, fontSize: 15),
+      hintStyle: GoogleFonts.dmSerifDisplay(color: Colors.black38, fontSize: 15),
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       filled: true,
       fillColor: campoGris,
@@ -113,7 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   Text(
                     'Crear cuenta',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
@@ -162,7 +162,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Text(
                 'Crear cuenta',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.montserrat(
+                style: GoogleFonts.dmSerifDisplay(
                   color: Colors.black87,
                   fontSize: 32,
                   fontWeight: FontWeight.w400,
@@ -172,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Text(
                 'Completa todos tus datos para registrarte',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: Colors.black54,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -202,7 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   color: Colors.black54,
                                   size: 28,
                                 ),
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.dmSerifDisplay(
                                   color: Colors.black87,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
@@ -241,7 +241,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             children: [
                                               Text(
                                                 tipo['code']!,
-                                                style: GoogleFonts.poppins(
+                                                style: GoogleFonts.dmSerifDisplay(
                                                   fontWeight: FontWeight.w700,
                                                   fontSize: 12,
                                                   color: splashRojo,
@@ -249,7 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                               ),
                                               Text(
                                                 tipo['label']!,
-                                                style: GoogleFonts.poppins(
+                                                style: GoogleFonts.dmSerifDisplay(
                                                   fontSize: 12,
                                                   color: Colors.black87,
                                                 ),
@@ -279,7 +279,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               TextFormField(
                                 controller: _documentoController,
                                 keyboardType: TextInputType.number,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.dmSerifDisplay(
                                   color: Colors.black87,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
@@ -305,7 +305,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _fieldLabel('Nombre completo'),
                     TextFormField(
                       controller: _nombreController,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black87,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -327,7 +327,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextFormField(
                       controller: _correoController,
                       keyboardType: TextInputType.emailAddress,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black87,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -349,7 +349,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextFormField(
                       controller: _telefonoController,
                       keyboardType: TextInputType.phone,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black87,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -371,7 +371,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black87,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -408,7 +408,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextFormField(
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirmPassword,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black87,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -457,7 +457,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 child: Text(
                   'Crear cuenta',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     fontWeight: FontWeight.bold,
                     fontSize: 17,
                   ),
@@ -470,7 +470,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   Text(
                     '¿Ya tienes cuenta? ',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: Colors.black54,
                       fontSize: 15,
                     ),
@@ -481,7 +481,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                     child: Text(
                       'Ingresar',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: splashRojo,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/initials.dart';
+import '../../theme/app_colors.dart';
 import 'employee_sale_detail_screen.dart';
 import '../../shared/page_transitions.dart';
 
@@ -21,40 +23,105 @@ class _EmployeeSalesManagementScreenState
   final _searchController = TextEditingController();
   String _query = '';
 
+  static const _pageSize = 5;
+  int _visibleSales = _pageSize;
+
+  List<_Sale> get _filtered => sales
+      .where(
+        (sale) => sale.customer.toLowerCase().contains(_query.toLowerCase()),
+      )
+      .toList();
+
+  void _loadMore() {
+    if (_visibleSales >= _filtered.length) return;
+    setState(() {
+      _visibleSales += _pageSize;
+      if (_visibleSales > _filtered.length) _visibleSales = _filtered.length;
+    });
+  }
+
   final sales = <_Sale>[
     _Sale(
-      1,
-      'María González',
-      '2024-01-15',
-      'Nequi',
-      '\$56.000',
-      'Por entregar',
+      index: 1,
+      code: 'VEN-2024-0156',
+      customer: 'María González',
+      phone: '310 456 7890',
+      address: 'Cra 45 #12-45, Medellín',
+      date: '2024-01-15',
+      time: '18:30',
+      payment: 'Nequi',
+      amount: '\$56.000',
+      status: 'Por entregar',
+      products: const [
+        _SaleProduct(2, 'Pizza Maicitos', 'Familiar', '\$28.000'),
+        _SaleProduct(2, 'Pizza Jamón con Queso', 'Mediana', '\$28.000'),
+      ],
     ),
     _Sale(
-      2,
-      'Carlos Martínez',
-      '2024-01-15',
-      'Bancolombia',
-      '\$28.000',
-      'Por entregar',
+      index: 2,
+      code: 'VEN-2024-0155',
+      customer: 'Carlos Martínez',
+      phone: '320 567 8901',
+      address: 'Cll 8B #23-10, Envigado',
+      date: '2024-01-15',
+      time: '18:15',
+      payment: 'Bancolombia',
+      amount: '\$28.000',
+      status: 'Por entregar',
+      products: const [
+        _SaleProduct(2, 'Pizza Jamón con Queso', 'Grande', '\$28.000'),
+      ],
     ),
     _Sale(
-      3,
-      'Ana Rodríguez',
-      '2024-01-16',
-      'Nequi',
-      '\$90.000',
-      'Por verificar',
+      index: 3,
+      code: 'VEN-2024-0154',
+      customer: 'Ana Rodríguez',
+      phone: '301 678 9012',
+      address: 'Av 33 #56-21, Medellín',
+      date: '2024-01-16',
+      time: '17:45',
+      payment: 'Nequi',
+      amount: '\$90.000',
+      status: 'Por verificar',
+      products: const [
+        _SaleProduct(2, 'Pizza Cañon', 'Familiar', '\$32.000'),
+        _SaleProduct(2, 'Pizza Tocineta', 'Familiar', '\$32.000'),
+        _SaleProduct(1, 'Pizza Maicitos', 'Grande', '\$14.000'),
+        _SaleProduct(4, 'Coca Cola', null, '\$12.000'),
+      ],
     ),
     _Sale(
-      4,
-      'Jorge Vargas',
-      '2024-01-16',
-      'Bancolombia',
-      '\$32.000',
-      'Devolución',
+      index: 4,
+      code: 'VEN-2024-0153',
+      customer: 'Jorge Vargas',
+      phone: '312 789 0123',
+      address: 'Cra 70 #4-89, Itagüí',
+      date: '2024-01-16',
+      time: '17:20',
+      payment: 'Bancolombia',
+      amount: '\$32.000',
+      status: 'Devolución',
+      products: const [
+        _SaleProduct(2, 'Pizza Cañon', 'Mediana', '\$32.000'),
+      ],
     ),
-    _Sale(5, 'Patricia Soto', '2024-01-17', 'Nequi', '\$54.000', 'Completado'),
+    _Sale(
+      index: 5,
+      code: 'VEN-2024-0152',
+      customer: 'Patricia Soto',
+      phone: '314 890 1234',
+      address: 'Cll 20 #41-33, Bello',
+      date: '2024-01-17',
+      time: '16:50',
+      payment: 'Nequi',
+      amount: '\$54.000',
+      status: 'Completado',
+      products: const [
+        _SaleProduct(2, 'Pizza Jamón con Queso', 'Grande', '\$28.000'),
+        _SaleProduct(1, 'Pizza Maicitos', 'Grande', '\$14.000'),
+        _SaleProduct(4, 'Coca Cola', null, '\$12.000'),
+      ],
+    ),
   ];
 
   @override
@@ -65,11 +132,7 @@ class _EmployeeSalesManagementScreenState
 
   @override
   Widget build(BuildContext context) {
-    final filtered = sales
-        .where(
-          (sale) => sale.customer.toLowerCase().contains(_query.toLowerCase()),
-        )
-        .toList();
+    final filtered = _filtered;
 
     return Scaffold(
       backgroundColor: page,
@@ -80,7 +143,15 @@ class _EmployeeSalesManagementScreenState
           children: [
             _buildHeader(context),
             Expanded(
-              child: SingleChildScrollView(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification.metrics.pixels >=
+                      notification.metrics.maxScrollExtent - 200) {
+                    _loadMore();
+                  }
+                  return false;
+                },
+                child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,8 +173,8 @@ class _EmployeeSalesManagementScreenState
                                 ),
                               ),
                               Text(
-                                '${sales.length + 3} ventas registradas',
-                                style: GoogleFonts.poppins(
+                                '${sales.length} ventas registradas',
+                                style: GoogleFonts.dmSerifDisplay(
                                   color: muted,
                                   fontSize: 14,
                                 ),
@@ -131,24 +202,24 @@ class _EmployeeSalesManagementScreenState
                     const SizedBox(height: 20),
                     _buildSearch(),
                     const SizedBox(height: 18),
-                    ...filtered.map(
+                    ...filtered.take(_visibleSales).map(
                       (sale) => _SaleCard(
                         sale: sale,
+                        onTap: () => _showSaleDetailDialog(context, sale),
                         onStatusChanged: (status) =>
                             _changeSaleStatus(context, sale, status),
                         onDeleted: () => _deleteSale(context, sale),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    _buildPagination(),
                   ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -156,21 +227,21 @@ class _EmployeeSalesManagementScreenState
       height: 74,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE6E8EC))),
+        color: AppColors.page,
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: ink, size: 27),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 27),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 28),
           Text(
             'La Sirena Pizza',
-            style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 23),
+            style: GoogleFonts.dmSerifDisplay(color: AppColors.red, fontSize: 23),
           ),
           Container(
             margin: const EdgeInsets.only(left: 9),
@@ -181,7 +252,7 @@ class _EmployeeSalesManagementScreenState
             ),
             child: Text(
               'MOBILE',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: red,
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
@@ -189,16 +260,16 @@ class _EmployeeSalesManagementScreenState
             ),
           ),
           const Spacer(),
-          const Icon(Icons.nightlight_outlined, color: muted, size: 24),
+          const Icon(Icons.nightlight_outlined, color: AppColors.red, size: 24),
           const SizedBox(width: 22),
           Container(
             width: 42,
             height: 42,
             alignment: Alignment.center,
             decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
-            child: const Text(
-              'M',
-              style: TextStyle(
+            child: Text(
+              getInitials('María González'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
@@ -214,11 +285,11 @@ class _EmployeeSalesManagementScreenState
       children: [
         const Icon(Icons.home_outlined, color: muted, size: 17),
         const SizedBox(width: 5),
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 13)),
+        Text('Inicio', style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 13)),
         const Icon(Icons.chevron_right, color: muted, size: 18),
         Text(
           'ventas-pedidos',
-          style: GoogleFonts.poppins(color: ink, fontSize: 13),
+          style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 13),
         ),
       ],
     );
@@ -231,7 +302,7 @@ class _EmployeeSalesManagementScreenState
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search, color: muted),
         hintText: 'Buscar por #, cliente o producto...',
-        hintStyle: GoogleFonts.poppins(color: ink, fontSize: 15),
+        hintStyle: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 15),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
@@ -247,37 +318,13 @@ class _EmployeeSalesManagementScreenState
     );
   }
 
-  Widget _buildPagination() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.chevron_left, color: muted),
-        const SizedBox(width: 22),
-        Container(
-          width: 40,
-          height: 40,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
-          child: const Text(
-            '1',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-          ),
-        ),
-        const SizedBox(width: 28),
-        const Text('2', style: TextStyle(color: ink)),
-        const SizedBox(width: 28),
-        const Icon(Icons.chevron_right, color: ink),
-      ],
-    );
-  }
-
   Widget _buildBottomNavigation(BuildContext context) {
     const items = [
       (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
+      (Icons.people_outline, 'Clientes'),
       (Icons.receipt_long, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, 'Perfil'),
     ];
     return SizedBox(
       height: 80,
@@ -305,13 +352,13 @@ class _EmployeeSalesManagementScreenState
                           children: [
                             Icon(
                               items[index].$1,
-                              color: index == 3 ? red : muted,
+                              color: index == 2 ? red : muted,
                               size: 19,
                             ),
                             Text(
                               items[index].$2,
-                              style: GoogleFonts.poppins(
-                                color: index == 3 ? red : muted,
+                              style: GoogleFonts.dmSerifDisplay(
+                                color: index == 2 ? red : muted,
                                 fontSize: 10,
                                 height: 1,
                               ),
@@ -450,7 +497,7 @@ class _EmployeeSalesManagementScreenState
                     const SizedBox(height: 18),
                     Text(
                       'Estado',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -475,7 +522,7 @@ class _EmployeeSalesManagementScreenState
                           const SizedBox(width: 12),
                           Text(
                             'Por verificar',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: const Color(0xFF9B4610),
                               fontWeight: FontWeight.w700,
                             ),
@@ -483,7 +530,7 @@ class _EmployeeSalesManagementScreenState
                           const Spacer(),
                           Text(
                             'Se asigna automáticamente',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: const Color(0xFFD47700),
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -495,7 +542,7 @@ class _EmployeeSalesManagementScreenState
                     const SizedBox(height: 18),
                     Text(
                       'Método de pago *',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -527,7 +574,7 @@ class _EmployeeSalesManagementScreenState
                     const SizedBox(height: 18),
                     Text(
                       'Hora de recogida',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -545,7 +592,7 @@ class _EmployeeSalesManagementScreenState
                       ),
                       child: Text(
                         '●  Atendemos de 4:00 PM a 10:00 PM',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: const Color(0xFF087653),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -561,12 +608,12 @@ class _EmployeeSalesManagementScreenState
                     ),
                     Text(
                       'Ej: 06:30 PM — opcional',
-                      style: GoogleFonts.poppins(color: muted, fontSize: 12),
+                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 12),
                     ),
                     const SizedBox(height: 18),
                     Text(
                       'Comprobante de transferencia',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -598,14 +645,14 @@ class _EmployeeSalesManagementScreenState
                             const SizedBox(height: 8),
                             Text(
                               'Subir imagen del comprobante',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: ink,
                                 fontSize: 14,
                               ),
                             ),
                             Text(
                               'PNG, JPG, WEBP',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: Colors.black38,
                                 fontSize: 12,
                               ),
@@ -631,7 +678,7 @@ class _EmployeeSalesManagementScreenState
                             ),
                             child: Text(
                               'Cancelar',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: ink,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -670,7 +717,7 @@ class _EmployeeSalesManagementScreenState
                             ),
                             child: Text(
                               'Guardar',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -691,6 +738,161 @@ class _EmployeeSalesManagementScreenState
       dateController.dispose();
       timeController.dispose();
     });
+  }
+
+  void _showSaleDetailDialog(BuildContext context, _Sale sale) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (dialogContext) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 18),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(28, 24, 28, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Detalle de venta',
+                      style: GoogleFonts.dmSerifDisplay(
+                        color: ink,
+                        fontSize: 30,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      icon: const Icon(Icons.close, color: muted, size: 28),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const Divider(height: 30),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            sale.code,
+                            style: GoogleFonts.dmSerifDisplay(
+                              color: muted,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '${sale.date}  ·  ${sale.time}',
+                            style: GoogleFonts.dmSerifDisplay(
+                              color: muted,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _SaleStatusBadge(status: sale.status),
+                        const SizedBox(height: 10),
+                        Text(
+                          sale.amount,
+                          style: GoogleFonts.dmSerifDisplay(
+                            color: ink,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _SaleDetailRow(label: 'Teléfono', value: sale.phone),
+                _SaleDetailRow(label: 'Dirección de entrega', value: sale.address),
+                _SaleDetailRow(label: 'Método de pago', value: sale.payment),
+                const SizedBox(height: 18),
+                Text(
+                  'PRODUCTOS',
+                  style: GoogleFonts.dmSerifDisplay(
+                    color: muted,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                ...sale.products.map(
+                  (product) => _SaleProductRow(product: product),
+                ),
+                const SizedBox(height: 18),
+                const Divider(height: 1),
+                const SizedBox(height: 18),
+                Text(
+                  'Cambiar estado:',
+                  style: GoogleFonts.dmSerifDisplay(
+                    color: ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _stateChips(_currentChipStatus(sale.status)),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFF2F2F4),
+                      foregroundColor: ink,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: Text(
+                      'Cerrar',
+                      style: GoogleFonts.dmSerifDisplay(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _stateChips(String current) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final chip in _estadoChips)
+          _EstadoChip(
+            label: chip.label,
+            active: chip.label == current,
+            background: chip.background,
+            border: chip.border,
+            foreground: chip.foreground,
+          ),
+      ],
+    );
   }
 }
 
@@ -720,7 +922,7 @@ class _OrderField extends StatelessWidget {
           RichText(
             text: TextSpan(
               text: label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: _EmployeeSalesManagementScreenState.ink,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -743,7 +945,7 @@ class _OrderField extends StatelessWidget {
           keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.poppins(color: Colors.black38, fontSize: 15),
+            hintStyle: GoogleFonts.dmSerifDisplay(color: Colors.black38, fontSize: 15),
             suffixIcon: suffixIcon == null
                 ? null
                 : Icon(suffixIcon, color: Colors.black54),
@@ -798,7 +1000,7 @@ class _PaymentButton extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           color: _EmployeeSalesManagementScreenState.ink,
           fontSize: 14,
         ),
@@ -810,25 +1012,33 @@ class _PaymentButton extends StatelessWidget {
 class _SaleCard extends StatelessWidget {
   const _SaleCard({
     required this.sale,
+    required this.onTap,
     required this.onStatusChanged,
     required this.onDeleted,
   });
 
   final _Sale sale;
+  final VoidCallback onTap;
   final ValueChanged<String> onStatusChanged;
   final VoidCallback onDeleted;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE0E4E9)),
-      ),
-      child: Column(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFE0E4E9)),
+            ),
+            child: Column(
         children: [
           Row(
             children: [
@@ -846,7 +1056,7 @@ class _SaleCard extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 sale.date,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: _EmployeeSalesManagementScreenState.muted,
                 ),
               ),
@@ -894,14 +1104,14 @@ class _SaleCard extends StatelessWidget {
                 children: [
                   Text(
                     'CLIENTE',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: _EmployeeSalesManagementScreenState.muted,
                       fontSize: 12,
                     ),
                   ),
                   Text(
                     sale.customer,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: _EmployeeSalesManagementScreenState.ink,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -915,14 +1125,14 @@ class _SaleCard extends StatelessWidget {
                 children: [
                   Text(
                     'TOTAL',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: _EmployeeSalesManagementScreenState.muted,
                       fontSize: 12,
                     ),
                   ),
                   Text(
                     sale.amount,
-                    style: GoogleFonts.robotoMono(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: Colors.black,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -948,7 +1158,7 @@ class _SaleCard extends StatelessWidget {
                 ),
                 child: Text(
                   sale.payment == 'Nequi' ? '💜 Nequi' : '🏦 Bancolombia',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: const Color(0xFF4F416D),
                     fontSize: 12,
                   ),
@@ -970,7 +1180,7 @@ class _SaleCard extends StatelessWidget {
                         height: 38,
                         child: Text(
                           status,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: const Color(0xFF1747A6),
                             fontSize: 13,
                           ),
@@ -983,7 +1193,10 @@ class _SaleCard extends StatelessWidget {
             ],
           ),
         ],
+          ),
+        ),
       ),
+    ),
     );
   }
 }
@@ -1002,45 +1215,81 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isReturned = status == 'Devolución';
-    final isCompleted = status == 'Completado';
-    final isPending = status == 'Por verificar';
+    final colors = _statusColors(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isReturned
-            ? const Color(0xFFFFEBCF)
-            : isPending
-            ? const Color(0xFFFFFBF0)
-            : isCompleted
-            ? const Color(0xFFE0F5E9)
-            : const Color(0xFFD8EAFF),
+        color: colors.background,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isReturned
-              ? const Color(0xFFFFC477)
-              : isPending
-              ? const Color(0xFFFFDA70)
-              : isCompleted
-              ? const Color(0xFF9BD5B0)
-              : const Color(0xFFB6D4FF),
-        ),
+        border: Border.all(color: colors.border),
       ),
       child: Text(
         '$status ⌄',
-        style: GoogleFonts.poppins(
-          color: isReturned
-              ? const Color(0xFFB44A00)
-              : isPending
-              ? const Color(0xFFB45B00)
-              : isCompleted
-              ? const Color(0xFF19733B)
-              : const Color(0xFF2861B7),
+        style: GoogleFonts.dmSerifDisplay(
+          color: colors.foreground,
           fontSize: 12,
         ),
       ),
     );
   }
+}
+
+class _SaleStatusBadge extends StatelessWidget {
+  const _SaleStatusBadge({required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = _statusColors(status);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.background,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.border),
+      ),
+      child: Text(
+        status,
+        style: GoogleFonts.dmSerifDisplay(
+          color: colors.foreground,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+({Color background, Color border, Color foreground}) _statusColors(
+  String status,
+) {
+  if (status == 'Devolución') {
+    return (
+      background: const Color(0xFFFFEBCF),
+      border: const Color(0xFFFFC477),
+      foreground: const Color(0xFFB44A00),
+    );
+  }
+  if (status == 'Completado') {
+    return (
+      background: const Color(0xFFE0F5E9),
+      border: const Color(0xFF9BD5B0),
+      foreground: const Color(0xFF19733B),
+    );
+  }
+  if (status == 'Por verificar') {
+    return (
+      background: const Color(0xFFFFFBF0),
+      border: const Color(0xFFFFDA70),
+      foreground: const Color(0xFFB45B00),
+    );
+  }
+  return (
+    background: const Color(0xFFD8EAFF),
+    border: const Color(0xFFB6D4FF),
+    foreground: const Color(0xFF2861B7),
+  );
 }
 
 class _SaleConfirmationDialog extends StatelessWidget {
@@ -1093,7 +1342,7 @@ class _SaleConfirmationDialog extends StatelessWidget {
             const SizedBox(height: 30),
             Text(
               message,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: _EmployeeSalesManagementScreenState.ink,
                 fontSize: 17,
                 height: 1.55,
@@ -1114,7 +1363,7 @@ class _SaleConfirmationDialog extends StatelessWidget {
                     ),
                     child: Text(
                       'Cancelar',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -1135,7 +1384,7 @@ class _SaleConfirmationDialog extends StatelessWidget {
                     ),
                     child: Text(
                       'Sí, confirmar',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -1153,22 +1402,225 @@ class _SaleConfirmationDialog extends StatelessWidget {
 }
 
 class _Sale {
-  const _Sale(
-    this.index,
-    this.customer,
-    this.date,
-    this.payment,
-    this.amount,
-    this.status,
-  );
+  const _Sale({
+    required this.index,
+    required this.code,
+    required this.customer,
+    required this.phone,
+    required this.address,
+    required this.date,
+    required this.time,
+    required this.payment,
+    required this.amount,
+    required this.status,
+    required this.products,
+  });
+
   final int index;
+  final String code;
   final String customer;
+  final String phone;
+  final String address;
   final String date;
+  final String time;
   final String payment;
   final String amount;
   final String status;
+  final List<_SaleProduct> products;
 
   _Sale copyWith({String? status}) {
-    return _Sale(index, customer, date, payment, amount, status ?? this.status);
+    return _Sale(
+      index: index,
+      code: code,
+      customer: customer,
+      phone: phone,
+      address: address,
+      date: date,
+      time: time,
+      payment: payment,
+      amount: amount,
+      status: status ?? this.status,
+      products: products,
+    );
+  }
+}
+
+class _SaleProduct {
+  const _SaleProduct(this.quantity, this.name, this.size, this.price);
+  final int quantity;
+  final String name;
+  final String? size;
+  final String price;
+}
+
+class _SaleDetailRow extends StatelessWidget {
+  const _SaleDetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFEDEDED))),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.dmSerifDisplay(
+              color: _EmployeeSalesManagementScreenState.muted,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.dmSerifDisplay(
+                color: _EmployeeSalesManagementScreenState.ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SaleProductRow extends StatelessWidget {
+  const _SaleProductRow({required this.product});
+
+  final _SaleProduct product;
+
+  @override
+  Widget build(BuildContext context) {
+    final sizeText = product.size == null ? '' : ' (${product.size})';
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              '${product.quantity} × ${product.name}$sizeText',
+              style: GoogleFonts.dmSerifDisplay(
+                color: _EmployeeSalesManagementScreenState.ink,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            product.price,
+            style: GoogleFonts.dmSerifDisplay(
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EstadoChipData {
+  const _EstadoChipData(
+    this.label,
+    this.background,
+    this.border,
+    this.foreground,
+  );
+  final String label;
+  final Color background;
+  final Color border;
+  final Color foreground;
+}
+
+const _estadoChips = [
+  _EstadoChipData(
+    'Pendiente',
+    Color(0xFFFFFBF0),
+    Color(0xFFFFDA70),
+    Color(0xFFB45B00),
+  ),
+  _EstadoChipData(
+    'En preparación',
+    Color(0xFFD8EAFF),
+    Color(0xFFB6D4FF),
+    Color(0xFF2861B7),
+  ),
+  _EstadoChipData(
+    'Listo',
+    Color(0xFFE0F5E9),
+    Color(0xFF9BD5B0),
+    Color(0xFF19733B),
+  ),
+  _EstadoChipData(
+    'Entregado',
+    Color(0xFFEFF2F5),
+    Color(0xFFC9D2DB),
+    Color(0xFF6D7B91),
+  ),
+  _EstadoChipData(
+    'Cancelado',
+    Color(0xFFFFEBCF),
+    Color(0xFFFFC477),
+    Color(0xFFB44A00),
+  ),
+];
+
+String _currentChipStatus(String status) {
+  if (status == 'Por entregar' || status == 'Por verificar') return 'Pendiente';
+  if (status == 'Completado') return 'Entregado';
+  if (status == 'Devolución') return 'Cancelado';
+  return status;
+}
+
+class _EstadoChip extends StatelessWidget {
+  const _EstadoChip({
+    required this.label,
+    required this.active,
+    required this.background,
+    required this.border,
+    required this.foreground,
+  });
+
+  final String label;
+  final bool active;
+  final Color background;
+  final Color border;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: active ? background : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: active ? border : const Color(0xFFE0E4E9),
+        ),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.dmSerifDisplay(
+          color: active
+              ? foreground
+              : _EmployeeSalesManagementScreenState.muted,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
   }
 }

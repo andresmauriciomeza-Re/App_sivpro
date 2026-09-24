@@ -47,7 +47,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 Text(
                   'Recuperar contraseña',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -84,7 +84,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           Text(
                             '¿Olvidaste tu contraseña?',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.montserrat(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: Colors.black87,
                               fontSize: 28,
                               fontWeight: FontWeight.w400,
@@ -94,7 +94,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           Text(
                             'No te preocupes, ingresa tu correo y te enviaremos un código de verificación.',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: Colors.black54,
                               fontSize: 15,
                             ),
@@ -104,7 +104,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Correo electrónico',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: Colors.black87,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
@@ -115,10 +115,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           TextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: GoogleFonts.poppins(color: Colors.black87),
+                            style: GoogleFonts.dmSerifDisplay(color: Colors.black87),
                             decoration: InputDecoration(
                               hintText: 'gloria@lasirena.com',
-                              hintStyle: GoogleFonts.poppins(
+                              hintStyle: GoogleFonts.dmSerifDisplay(
                                 color: Colors.black38,
                               ),
                               prefixIcon: const Icon(
@@ -161,7 +161,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               ),
                               child: Text(
                                 'Enviar código',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.dmSerifDisplay(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
                                 ),
@@ -173,7 +173,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             onPressed: () => Navigator.of(context).pop(),
                             child: Text(
                               'Volver al inicio de sesión',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: Colors.black54,
                                 fontSize: 14,
                               ),

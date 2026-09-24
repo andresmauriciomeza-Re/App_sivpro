@@ -82,14 +82,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text(
                       'Mi Perfil',
                       style: GoogleFonts.dmSerifDisplay(
-                        color: const Color(0xFF211616),
-                        fontSize: 36,
+                        color: PurchasesScreen.ink,
+                        fontSize: 34,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       'Consulta y actualiza tu información de contacto',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: const Color(0xFF776D6A),
                         fontSize: 17,
                       ),
@@ -99,20 +99,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 56),
                     Center(
                       child: Text('La Sirena Pizza',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                               color: const Color(0xFF5B514F), fontSize: 16)),
                     ),
                     const SizedBox(height: 8),
                     Center(
                       child: Text('S.I.V.PRO — Panel Administrativo',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                               color: const Color(0xFFAAA19F), fontSize: 15)),
                     ),
                     const SizedBox(height: 16),
                     Center(
                       child: Text('© 2026 La Sirena Pizza · Medellín, Colombia · Desde 1994',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                               color: const Color(0xFFAAA19F), fontSize: 13)),
                     ),
                   ],
@@ -126,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  TextStyle _crumb(Color color) => GoogleFonts.poppins(
+  TextStyle _crumb(Color color) => GoogleFonts.dmSerifDisplay(
         color: color,
         fontSize: 16,
         fontWeight: color == const Color(0xFF211616)
@@ -138,19 +138,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8)))),
+          border: Border(bottom: BorderSide(color: AppColors.headerDivider))),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF5B514F), size: 29),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 29),
           ),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('La Sirena Pizza',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                         color: const Color(0xFFC9151E),
                         fontSize: 23,
                         fontWeight: FontWeight.w700)),
@@ -164,8 +164,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: const BoxDecoration(
                 color: Color(0xFFC9151E), shape: BoxShape.circle),
             alignment: Alignment.center,
-            child: Text('G',
-                style: GoogleFonts.poppins(
+            child: Text(getInitials('Gloria Inés Vargas'),
+                style: GoogleFonts.dmSerifDisplay(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700)),
@@ -188,58 +188,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             builder: (context, constraints) {
               final compact = constraints.maxWidth < 500;
               final avatarRadius = compact ? 42.0 : 51.0;
-              final topContent = Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: avatarRadius,
-                    backgroundColor: const Color(0xFFD5262D),
-                    child: Text(
-                      'G',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: compact ? 31 : 36,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: compact ? 14 : 25),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Gloria Inés Vargas',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.dmSerifDisplay(
-                            color: const Color(0xFF211616),
-                            fontSize: compact ? 21 : 26,
-                          ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 8),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 13,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE9E9),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Text(
-                            'Administrador',
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFFAD2525),
-                              fontSize: compact ? 14 : 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
               final editButton = FilledButton.icon(
                 onPressed: _editing ? _saveProfile : _startEditing,
                 icon: Icon(
@@ -263,28 +211,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   compact ? 18 : 28,
                   compact ? 22 : 28,
                 ),
-                child: compact
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: avatarRadius,
+                      backgroundColor: const Color(0xFFD5262D),
+                      child: Text(
+                        getInitials('Gloria Inés Vargas'),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: compact ? 31 : 36,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: compact ? 14 : 25),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          topContent,
-                          const SizedBox(height: 14),
-                          editButton,
-                        ],
-                      )
-                    : Row(
-                        children: [
-                          Expanded(child: topContent),
-                          const SizedBox(width: 14),
-                          editButton,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Gloria Inés Vargas',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.dmSerifDisplay(
+                                    color: const Color(0xFF211616),
+                                    fontSize: compact ? 21 : 26,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              editButton,
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 13,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFE9E9),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Text(
+                              'Administrador',
+                              style: GoogleFonts.dmSerifDisplay(
+                                color: const Color(0xFFAD2525),
+                                fontSize: compact ? 14 : 16,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
           const Divider(height: 1, color: Color(0xFFEDE8E7)),
           Padding(
-            padding: const EdgeInsets.fromLTRB(36, 28, 36, 28),
+            padding: const EdgeInsets.fromLTRB(36, 18, 36, 28),
             child: Column(
               children: [
                 _field(Icons.person_outline, 'Nombre completo',
@@ -375,14 +368,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Icon(icon, color: const Color(0xFF968D8B), size: 25),
           const SizedBox(width: 12),
           Text(label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                   color: const Color(0xFF5B514F), fontSize: 18)),
         ]),
         const SizedBox(height: 10),
         TextField(
           controller: controller,
           enabled: enabled && _editing,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.dmSerifDisplay(
               color: const Color(0xFF211616), fontSize: 18),
           decoration: InputDecoration(
             filled: true,
@@ -407,7 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Padding(
             padding: const EdgeInsets.only(left: 8, top: 7),
             child: Text('Este campo no es editable',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                     color: const Color(0xFFAAA19F), fontSize: 14)),
           ),
       ],
@@ -420,7 +413,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       (Icons.shopping_bag_outlined, 'Compras'),
       (Icons.inventory_2_outlined, 'Producción'),
       (Icons.bar_chart_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 10, bottom: 10),
@@ -444,7 +437,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 4
                           ? const Color(0xFFC9151E)
                           : const Color(0xFFAAA19F),

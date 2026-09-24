@@ -50,7 +50,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                     ),
                     Text(
                       '${_orders.length} órdenes registradas',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: PurchasesScreen.muted,
                         fontSize: 17,
                       ),
@@ -60,7 +60,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       onChanged: (value) => setState(() => _query = value),
                       decoration: InputDecoration(
                         hintText: 'Buscar por ID orden o receta...',
-                        hintStyle: GoogleFonts.poppins(
+                        hintStyle: GoogleFonts.dmSerifDisplay(
                           color: PurchasesScreen.ink,
                           fontSize: 16,
                         ),
@@ -99,20 +99,20 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     return Container(
       height: 58,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: PurchasesScreen.ink, size: 26),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 26),
           ),
           Expanded(
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
+                color: AppColors.red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -123,13 +123,13 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
             height: 38,
             margin: const EdgeInsets.only(right: 12),
             decoration: const BoxDecoration(
-              color: PurchasesScreen.red,
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
             child: Text(
-              'GV',
-              style: GoogleFonts.poppins(
+              getInitials('Gloria Inés Vargas'),
+              style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -176,7 +176,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       const SizedBox(height: 5),
                       Text(
                         order.id,
-                        style: GoogleFonts.robotoMono(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: PurchasesScreen.ink,
                           fontSize: 19,
                           fontWeight: FontWeight.w700,
@@ -192,7 +192,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                     const SizedBox(height: 5),
                     Text(
                       '${order.quantity}',
-                      style: GoogleFonts.robotoMono(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: PurchasesScreen.ink,
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
@@ -220,7 +220,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                         const SizedBox(height: 7),
                         Text(
                           order.recipeId,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: PurchasesScreen.ink,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -228,7 +228,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                         ),
                         Text(
                           order.recipe,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: PurchasesScreen.muted,
                             fontSize: 15,
                           ),
@@ -244,14 +244,14 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                         const SizedBox(height: 7),
                         Text(
                           '▣  ${order.date}',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: PurchasesScreen.ink,
                             fontSize: 15,
                           ),
                         ),
                         Text(
                           '◷  ${order.time}',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: PurchasesScreen.ink,
                             fontSize: 15,
                           ),
@@ -284,7 +284,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       children: [
                         Text(
                           order.status,
-                          style: GoogleFonts.robotoMono(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: statusColor,
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -333,7 +333,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
   Widget _orderLabel(String text) {
     return Text(
       text,
-      style: GoogleFonts.robotoMono(
+      style: GoogleFonts.dmSerifDisplay(
         color: PurchasesScreen.muted,
         fontSize: 11,
         letterSpacing: 0.8,
@@ -374,7 +374,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
               Text(
                 'Cambiar estado de la orden',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: PurchasesScreen.ink,
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
@@ -407,7 +407,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       value: status,
                       child: Text(
                         status,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: const Color(0xFF087A65),
                           fontSize: 14,
                         ),
@@ -439,7 +439,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                 Text(
                   'La orden ${order.id} pasará de:',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: PurchasesScreen.muted,
                     fontSize: 14,
                   ),
@@ -472,7 +472,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       ),
                       child: Text(
                         'Cancelar',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
@@ -495,7 +495,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       ),
                       child: Text(
                         'Confirmar',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
@@ -530,7 +530,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
       child: Text(
         status,
         textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.dmSerifDisplay(
           color: _statusColor(status),
           fontSize: 14,
           fontWeight: FontWeight.w700,
@@ -605,7 +605,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -630,7 +630,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
@@ -698,7 +698,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                           onTap: () => Navigator.of(context).pop(),
                           child: Text(
                             '←  Volver a Producción',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: PurchasesScreen.page,
                               fontSize: 18,
                             ),
@@ -727,7 +727,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           order.id,
-                          style: GoogleFonts.robotoMono(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: PurchasesScreen.ink,
                             fontSize: 27,
                             fontWeight: FontWeight.w700,
@@ -772,7 +772,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     'Estado Orden',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.dmSerifDisplay(
                                       color: PurchasesScreen.muted,
                                       fontSize: 18,
                                     ),
@@ -789,7 +789,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                                   ),
                                   child: Text(
                                     order.status,
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.dmSerifDisplay(
                                       color: statusColor,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
@@ -811,7 +811,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'Observación',
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.dmSerifDisplay(
                                     color: PurchasesScreen.muted,
                                     fontSize: 18,
                                   ),
@@ -821,7 +821,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                                   order.status == 'Completada'
                                       ? 'Turno mañana sin novedades.'
                                       : 'Pendiente de actualización.',
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.dmSerifDisplay(
                                     color: PurchasesScreen.ink,
                                     fontSize: 17,
                                   ),
@@ -847,7 +847,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'Cerrar',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
                           ),
@@ -868,14 +868,14 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Container(
       height: 60,
-      color: PurchasesScreen.page,
+      color: AppColors.page,
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(
               Icons.arrow_back,
-              color: PurchasesScreen.muted,
+              color: AppColors.red,
               size: 25,
             ),
           ),
@@ -884,7 +884,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
               'La Sirena Pizza',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
+                color: AppColors.red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -900,8 +900,8 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Text(
-              'GV',
-              style: GoogleFonts.poppins(
+              getInitials('Gloria Inés Vargas'),
+              style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -925,7 +925,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: PurchasesScreen.muted,
                 fontSize: 18,
               ),
@@ -937,12 +937,12 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               style: mono
-                  ? GoogleFonts.robotoMono(
+                  ? GoogleFonts.dmSerifDisplay(
                       color: PurchasesScreen.ink,
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     )
-                  : GoogleFonts.poppins(
+                  : GoogleFonts.dmSerifDisplay(
                       color: PurchasesScreen.ink,
                       fontSize: 18,
                     ),
@@ -992,7 +992,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -1017,7 +1017,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
@@ -1113,7 +1113,7 @@ class _ProductionOrderEditScreenState
                         const SizedBox(width: 10),
                         Text(
                           widget.order.id,
-                          style: GoogleFonts.robotoMono(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: PurchasesScreen.ink,
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
@@ -1158,7 +1158,7 @@ class _ProductionOrderEditScreenState
                           TextField(
                             controller: _observationController,
                             maxLines: 4,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: PurchasesScreen.ink,
                               fontSize: 17,
                             ),
@@ -1191,7 +1191,7 @@ class _ProductionOrderEditScreenState
                               ),
                               child: Text(
                                 'Guardar',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.dmSerifDisplay(
                                   fontSize: 19,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1213,7 +1213,7 @@ class _ProductionOrderEditScreenState
                               ),
                               child: Text(
                                 'Cancelar',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.dmSerifDisplay(
                                   fontSize: 19,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1238,7 +1238,7 @@ class _ProductionOrderEditScreenState
     return Container(
       height: 60,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
@@ -1246,7 +1246,7 @@ class _ProductionOrderEditScreenState
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(
               Icons.arrow_back,
-              color: PurchasesScreen.muted,
+              color: AppColors.red,
               size: 25,
             ),
           ),
@@ -1255,7 +1255,7 @@ class _ProductionOrderEditScreenState
               'La Sirena Pizza',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
+                color: AppColors.red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -1266,13 +1266,13 @@ class _ProductionOrderEditScreenState
             height: 36,
             margin: const EdgeInsets.only(right: 10),
             decoration: const BoxDecoration(
-              color: PurchasesScreen.red,
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
             child: Text(
-              'GV',
-              style: GoogleFonts.poppins(
+              getInitials('Gloria Inés Vargas'),
+              style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -1289,7 +1289,7 @@ class _ProductionOrderEditScreenState
       padding: const EdgeInsets.only(top: 18, bottom: 8),
       child: Text(
         text,
-        style: GoogleFonts.robotoMono(
+        style: GoogleFonts.dmSerifDisplay(
           color: PurchasesScreen.muted,
           fontSize: 13,
           fontWeight: FontWeight.w700,
@@ -1304,7 +1304,7 @@ class _ProductionOrderEditScreenState
       readOnly: true,
       controller: TextEditingController(text: value),
       decoration: _fieldDecoration(icon),
-      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 17),
+      style: GoogleFonts.dmSerifDisplay(color: PurchasesScreen.ink, fontSize: 17),
     );
   }
 
@@ -1317,7 +1317,7 @@ class _ProductionOrderEditScreenState
       controller: controller,
       keyboardType: keyboardType,
       decoration: _fieldDecoration(icon),
-      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 17),
+      style: GoogleFonts.dmSerifDisplay(color: PurchasesScreen.ink, fontSize: 17),
     );
   }
 
@@ -1364,7 +1364,7 @@ class _ProductionOrderEditScreenState
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -1376,25 +1376,28 @@ class _ProductionOrderEditScreenState
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           for (var i = 0; i < items.length; i++)
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  items[i].$1,
-                  color: i == 2
-                      ? PurchasesScreen.red
-                      : PurchasesScreen.muted,
-                ),
-                Text(
-                  items[i].$2,
-                  style: GoogleFonts.poppins(
+            GestureDetector(
+              onTap: () => navigateToBottomModule(context, i),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    items[i].$1,
                     color: i == 2
                         ? PurchasesScreen.red
                         : PurchasesScreen.muted,
-                    fontSize: 12,
                   ),
-                ),
-              ],
+                  Text(
+                    items[i].$2,
+                    style: GoogleFonts.dmSerifDisplay(
+                      color: i == 2
+                          ? PurchasesScreen.red
+                          : PurchasesScreen.muted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
@@ -1431,7 +1434,7 @@ class _ProductionScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       'Seleccione el módulo que desea gestionar.',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: PurchasesScreen.muted,
                         fontSize: 20,
                       ),
@@ -1462,47 +1465,7 @@ class _ProductionScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 72),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(36, 34, 36, 36),
-                      decoration: BoxDecoration(
-                        color: PurchasesScreen.page,
-                        borderRadius: BorderRadius.circular(17),
-                        border: Border.all(color: const Color(0xFFE8C7C4)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Resumen de Hoy',
-                            style: GoogleFonts.poppins(
-                              color: PurchasesScreen.ink,
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _summaryValue(
-                                  'ÓRDENES ACTIVAS',
-                                  '12',
-                                  PurchasesScreen.red,
-                                ),
-                              ),
-                              Expanded(
-                                child: _summaryValue(
-                                  'COMPLETADAS',
-                                  '45',
-                                  const Color(0xFF2E7D32),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                    const ProductionSummaryCard(),
                   ],
                 ),
               ),
@@ -1518,7 +1481,7 @@ class _ProductionScreen extends StatelessWidget {
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
@@ -1526,7 +1489,7 @@ class _ProductionScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(
               Icons.arrow_back,
-              color: PurchasesScreen.ink,
+              color: AppColors.red,
               size: 28,
             ),
           ),
@@ -1535,7 +1498,7 @@ class _ProductionScreen extends StatelessWidget {
               'La Sirena Pizza',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
+                color: AppColors.red,
                 fontSize: 25,
                 fontWeight: FontWeight.w700,
               ),
@@ -1546,13 +1509,13 @@ class _ProductionScreen extends StatelessWidget {
             height: 52,
             margin: const EdgeInsets.only(right: 16),
             decoration: const BoxDecoration(
-              color: PurchasesScreen.red,
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
             child: Text(
-              'GV',
-              style: GoogleFonts.poppins(
+              getInitials('Gloria Inés Vargas'),
+              style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -1615,7 +1578,7 @@ class _ProductionScreen extends StatelessWidget {
                 const SizedBox(height: 28),
                 Text(
                   title,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: PurchasesScreen.ink,
                     fontSize: 26,
                     fontWeight: FontWeight.w700,
@@ -1624,7 +1587,7 @@ class _ProductionScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   description,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: PurchasesScreen.muted,
                     fontSize: 18,
                     height: 1.45,
@@ -1638,34 +1601,13 @@ class _ProductionScreen extends StatelessWidget {
     );
   }
 
-  Widget _summaryValue(String label, String value, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.robotoMono(
-            color: PurchasesScreen.muted,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          value,
-          style: GoogleFonts.dmSerifDisplay(color: color, fontSize: 42),
-        ),
-      ],
-    );
-  }
-
   Widget _buildBottomNavigation(BuildContext context) {
     const items = [
       (Icons.home_outlined, 'Inicio'),
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -1690,7 +1632,7 @@ class _ProductionScreen extends StatelessWidget {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,

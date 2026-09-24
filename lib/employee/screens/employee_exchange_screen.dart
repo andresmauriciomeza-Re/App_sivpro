@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/initials.dart';
+import '../../theme/app_colors.dart';
 import 'employee_substitution_picker_screen.dart';
 import '../../shared/page_transitions.dart';
 import '../services/return_service.dart';
@@ -51,7 +53,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
                     const SizedBox(height: 24),
                     Text(
                       'Marca los productos de la venta que el cliente devolverá para canje:',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -78,14 +80,14 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
       height: 78,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE8EBEF))),
+        color: AppColors.page,
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: ink, size: 28),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 28),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -96,7 +98,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
             children: [
               Text(
                 'LA SIRENA PIZZA',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: red,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -105,7 +107,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
               ),
               Text(
                 'S.I.V.PRO Mobile',
-                style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
               ),
             ],
           ),
@@ -115,12 +117,12 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
             height: 48,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
-              color: Color(0xFFC62828),
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
-            child: const Text(
-              'M',
-              style: TextStyle(
+            child: Text(
+              getInitials('María González'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -135,16 +137,16 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
   Widget _breadcrumb() {
     return Row(
       children: [
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 16)),
+        Text('Inicio', style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16)),
         const SizedBox(width: 36),
         Text(
           'devoluciones',
-          style: GoogleFonts.poppins(color: muted, fontSize: 16),
+          style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
         ),
         const SizedBox(width: 36),
         Text(
           'gestionar',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.dmSerifDisplay(
             color: ink,
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -190,7 +192,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
                   children: [
                     Text(
                       '#${widget.record.index}  ${widget.record.customer}',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: ink,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -199,7 +201,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
                     const SizedBox(height: 4),
                     Text(
                       widget.record.date,
-                      style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
                     ),
                   ],
                 ),
@@ -227,7 +229,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
             children: [
               Text(
                 'Método de pago',
-                style: GoogleFonts.poppins(color: muted, fontSize: 15),
+                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 15),
               ),
               const Spacer(),
               Container(
@@ -243,7 +245,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
                 ),
                 child: Text(
                   isNequi ? '💜 Nequi' : '🏦 Bancolombia',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: isNequi
                         ? const Color(0xFF6E1DCB)
                         : const Color(0xFF8B3F11),
@@ -263,13 +265,13 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
   Widget _summaryRow(String label, String value) {
     return Row(
       children: [
-        Text(label, style: GoogleFonts.poppins(color: muted, fontSize: 15)),
+        Text(label, style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 15)),
         const Spacer(),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.dmSerifDisplay(
               color: ink,
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -334,7 +336,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
               children: [
                 Text(
                   product.nombre,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.dmSerifDisplay(
                     color: ink,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -343,7 +345,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
                 const SizedBox(height: 3),
                 Text(
                   '${product.precioTexto} · Cant: ${product.cantidad}',
-                  style: GoogleFonts.poppins(color: muted, fontSize: 13),
+                  style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 13),
                 ),
               ],
             ),
@@ -370,7 +372,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
           Expanded(
             child: Text(
               'Al confirmar, se abrirá el menú para escoger el nuevo producto de sustitución equivalente.',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: const Color(0xFF9B4610),
                 fontSize: 14,
                 height: 1.5,
@@ -405,7 +407,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
           ),
           child: Text(
             'Confirmar canje',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.dmSerifDisplay(
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -434,10 +436,10 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
   Widget _bottomNavigation() {
     const items = [
       (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_bag_outlined, 'Compras'),
-      (Icons.local_fire_department_outlined, 'Producción'),
+      (Icons.people_outline, 'Clientes'),
       (Icons.receipt_long, 'Ventas'),
-      (Icons.menu, 'Más'),
+      (Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, 'Perfil'),
     ];
     return SizedBox(
       height: 80,
@@ -465,7 +467,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
                             ),
                             Text(
                               items[i].$2,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: i == 3 ? red : const Color(0xFFA4AAB5),
                                 fontSize: 10,
                               ),

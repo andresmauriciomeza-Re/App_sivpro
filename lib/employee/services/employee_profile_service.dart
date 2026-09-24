@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../auth/login_screen.dart';
 import '../../auth/auth_service.dart';
+import '../../shared/initials.dart';
 
 /// Información del empleado que inició sesión (estado local en memoria).
 class EmployeeProfile {
@@ -31,22 +32,7 @@ class EmployeeProfile {
   }
 
   /// Iniciales a partir del nombre (p. ej. "María González" -> "MG").
-  String get initials {
-    final parts = fullName
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .toList();
-    if (parts.isEmpty) return '?';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return (parts.first[0] + parts.last[0]).toUpperCase();
-  }
-
-  /// Primera inicial, usada en avatares más pequeños.
-  String get initial {
-    final trimmed = fullName.trim();
-    return trimmed.isEmpty ? '?' : trimmed[0].toUpperCase();
-  }
+  String get initials => getInitials(fullName);
 }
 
 /// Única fuente de verdad del perfil del empleado mientras la app está abierta.

@@ -101,7 +101,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               child: Text(
                 filtro,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: activo ? Colors.white : Colors.black54,
@@ -124,7 +124,7 @@ class _MenuScreenState extends State<MenuScreen> {
           Text(
             'No encontramos pizzas con ese nombre',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
+            style: GoogleFonts.dmSerifDisplay(fontSize: 14, color: Colors.black54),
           ),
           const SizedBox(height: 16),
           TextButton.icon(
@@ -132,7 +132,7 @@ class _MenuScreenState extends State<MenuScreen> {
             icon: const Icon(Icons.refresh, size: 18),
             label: Text(
               'Limpiar búsqueda',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: splashRojo,
@@ -190,7 +190,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   const SizedBox(width: 10),
                   Text(
                     'La Sirena',
-                    style: GoogleFonts.montserrat(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 20,
                       color: Colors.black87,
                     ),
@@ -207,7 +207,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 children: [
                   Text(
                     'Nuestro Menú',
-                    style: GoogleFonts.montserrat(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 28,
                       color: Colors.black87,
                     ),
@@ -215,7 +215,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'Elige tu pizza favorita y personalízala a tu gusto',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 13,
                       color: Colors.black,
                       fontWeight: FontWeight.w600,
@@ -230,10 +230,10 @@ class _MenuScreenState extends State<MenuScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextField(
                 controller: _searchController,
-                style: GoogleFonts.poppins(fontSize: 14),
+                style: GoogleFonts.dmSerifDisplay(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Buscar pizza...',
-                  hintStyle: GoogleFonts.poppins(
+                  hintStyle: GoogleFonts.dmSerifDisplay(
                     color: Colors.black38,
                     fontSize: 14,
                   ),
@@ -268,7 +268,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                   child: Text(
                     entry.key,
-                    style: GoogleFonts.montserrat(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 22,
                       color: Colors.black87,
                     ),
@@ -371,7 +371,7 @@ class _MenuCard extends StatelessWidget {
                       ),
                       child: Text(
                         'Disponible',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -390,7 +390,7 @@ class _MenuCard extends StatelessWidget {
                       item.nombre,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1A1A1A),
@@ -401,7 +401,7 @@ class _MenuCard extends StatelessWidget {
                       item.descripcion,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontSize: 12.5,
                         color: Colors.black54,
                         height: 1.35,
@@ -410,7 +410,7 @@ class _MenuCard extends StatelessWidget {
                     const SizedBox(height: 10),
                     Text(
                       'Ver todo',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: textoNegro ? Colors.black : splashRojo,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/initials.dart';
+import '../../theme/app_colors.dart';
 import '../../shared/menu_item.dart';
 
 /// Menú compacto para escoger el producto de sustitución equivalente.
@@ -50,7 +52,7 @@ class _EmployeeSubstitutionPickerScreenState
                     const SizedBox(height: 6),
                     Text(
                       'Elige el producto de reemplazo equivalente que recibirá el cliente.',
-                      style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                      style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
                     ),
                     const SizedBox(height: 22),
                     GridView.builder(
@@ -91,8 +93,8 @@ class _EmployeeSubstitutionPickerScreenState
       height: 78,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE8EBEF))),
+        color: AppColors.page,
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
@@ -102,7 +104,7 @@ class _EmployeeSubstitutionPickerScreenState
             children: [
               Text(
                 'LA SIRENA PIZZA',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   color: red,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -111,7 +113,7 @@ class _EmployeeSubstitutionPickerScreenState
               ),
               Text(
                 'S.I.V.PRO Mobile',
-                style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 14),
               ),
             ],
           ),
@@ -121,12 +123,12 @@ class _EmployeeSubstitutionPickerScreenState
             height: 48,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
-              color: Color(0xFFC62828),
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
-            child: const Text(
-              'M',
-              style: TextStyle(
+            child: Text(
+              getInitials('María González'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -141,16 +143,16 @@ class _EmployeeSubstitutionPickerScreenState
   Widget _breadcrumb() {
     return Row(
       children: [
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 16)),
+        Text('Inicio', style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16)),
         const SizedBox(width: 36),
         Text(
           'devoluciones',
-          style: GoogleFonts.poppins(color: muted, fontSize: 16),
+          style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
         ),
         const SizedBox(width: 36),
         Text(
           'canje',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.dmSerifDisplay(
             color: ink,
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -183,7 +185,7 @@ class _EmployeeSubstitutionPickerScreenState
           ),
           child: Text(
             'Confirmar sustitución',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.dmSerifDisplay(
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -202,10 +204,10 @@ class _EmployeeSubstitutionPickerScreenState
   Widget _bottomNavigation() {
     const items = [
       (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_bag_outlined, 'Compras'),
-      (Icons.local_fire_department_outlined, 'Producción'),
+      (Icons.people_outline, 'Clientes'),
       (Icons.receipt_long, 'Ventas'),
-      (Icons.menu, 'Más'),
+      (Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, 'Perfil'),
     ];
     return SizedBox(
       height: 80,
@@ -231,7 +233,7 @@ class _EmployeeSubstitutionPickerScreenState
                           ),
                           Text(
                             items[i].$2,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: i == 3 ? red : const Color(0xFFA4AAB5),
                               fontSize: 10,
                             ),
@@ -318,7 +320,7 @@ class _SubstitutionCard extends StatelessWidget {
                           item.nombre,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w700,
                             color: Colors.black87,
@@ -327,7 +329,7 @@ class _SubstitutionCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           item.precioTexto,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                             color: Colors.black87,

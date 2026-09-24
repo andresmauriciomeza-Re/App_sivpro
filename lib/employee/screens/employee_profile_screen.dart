@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/initials.dart';
+import '../../theme/app_colors.dart';
 import '../services/employee_profile_service.dart';
 import '../../shared/page_transitions.dart';
 
@@ -161,7 +163,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                     ),
                     Text(
                       'Consulta y actualiza tu información de contacto',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         color: const Color(0xFF776D6A),
                         fontSize: 17,
                       ),
@@ -179,7 +181,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
-  TextStyle _crumb(Color color) => GoogleFonts.poppins(
+  TextStyle _crumb(Color color) => GoogleFonts.dmSerifDisplay(
         color: color,
         fontSize: 16,
         fontWeight: color == const Color(0xFF211616)
@@ -191,20 +193,20 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF5B514F), size: 29),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 29),
           ),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('La Sirena Pizza',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                         color: red,
                         fontSize: 23,
                         fontWeight: FontWeight.w700)),
@@ -218,8 +220,8 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             decoration: const BoxDecoration(
                 color: red, shape: BoxShape.circle),
             alignment: Alignment.center,
-            child: Text(profile.initial,
-                style: GoogleFonts.poppins(
+            child: Text(getInitials(profile.fullName),
+                style: GoogleFonts.dmSerifDisplay(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700)),
@@ -240,65 +242,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       ),
     );
 
-    final topContent = Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CircleAvatar(
-          radius: 42,
-          backgroundColor: const Color(0xFFD5262D),
-          child: Text(
-            profile.initial,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 31,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      profile.fullName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.dmSerifDisplay(
-                        color: ink,
-                        fontSize: 21,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                margin: const EdgeInsets.only(top: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 13,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFE9E9),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Text(
-                  'Empleado',
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFFAD2525),
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -309,18 +252,71 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                topContent,
-                const SizedBox(height: 14),
-                editButton,
+                CircleAvatar(
+                  radius: 42,
+                  backgroundColor: const Color(0xFFD5262D),
+                  child: Text(
+                    getInitials(profile.fullName),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 31,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              profile.fullName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.dmSerifDisplay(
+                                color: ink,
+                                fontSize: 21,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          editButton,
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 13,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFE9E9),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Text(
+                          'Empleado',
+                          style: GoogleFonts.dmSerifDisplay(
+                            color: const Color(0xFFAD2525),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
           const Divider(height: 1, color: Color(0xFFEDE8E7)),
           Padding(
-            padding: const EdgeInsets.fromLTRB(36, 28, 36, 28),
+            padding: const EdgeInsets.fromLTRB(36, 18, 36, 28),
             child: Column(
               children: [
                 _field(
@@ -439,7 +435,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           const SizedBox(width: 12),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.dmSerifDisplay(
               color: const Color(0xFF5B514F),
               fontSize: 18,
             ),
@@ -450,7 +446,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           controller: controller,
           enabled: _editing,
           keyboardType: keyboardType,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.dmSerifDisplay(
             color: const Color(0xFF211616),
             fontSize: 18,
           ),
@@ -481,10 +477,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   Widget _bottomNavigation(BuildContext context) {
     const items = [
       (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
+      (Icons.people_outline, 'Clientes'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, 'Perfil'),
     ];
     return SizedBox(
       height: 80,
@@ -513,7 +509,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              index == 4 ? Icons.more_horiz : items[index].$1,
+                              items[index].$1,
                               color: index == 4
                                   ? red
                                   : const Color(0xFF756D6A),
@@ -522,7 +518,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                             const SizedBox(height: 1),
                             Text(
                               items[index].$2,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: index == 4
                                     ? red
                                     : const Color(0xFF756D6A),

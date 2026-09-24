@@ -14,6 +14,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
   static const _providers = [
     _Provider(
       'PROV-001',
+      '900.123.456-1',
       'Distribuidora La Cosecha',
       '+57 300 123 4567',
       'ventas@lacosecha.com',
@@ -22,6 +23,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     ),
     _Provider(
       'PROV-002',
+      '800.654.321-2',
       'Lácteos El Buen Pastor',
       '+57 311 987 6543',
       'pedidos@buenpastor.co',
@@ -30,6 +32,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     ),
     _Provider(
       'PROV-003',
+      '700.111.222-3',
       'Empaques del Norte SAS',
       '+57 320 555 4433',
       'contacto@empaquesnorte.com',
@@ -38,6 +41,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     ),
     _Provider(
       'PROV-004',
+      '901.777.888-4',
       'Harinas y Cereales S.A.',
       '+57 601 234 5678',
       'proveedores@harinas.com',
@@ -51,6 +55,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     final query = _query.toLowerCase().trim();
     final filtered = _providers.where((provider) {
       return provider.id.toLowerCase().contains(query) ||
+          provider.nit.toLowerCase().contains(query) ||
           provider.name.toLowerCase().contains(query) ||
           provider.email.toLowerCase().contains(query);
     }).toList();
@@ -63,64 +68,74 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
           children: [
             _buildHeader(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 42, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${_providers.length} proveedores registrados',
-                      style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    TextField(
-                      onChanged: (value) => setState(() => _query = value),
-                      decoration: InputDecoration(
-                        hintText: 'Buscar por ID, nombre o email...',
-                        hintStyle: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
-                          fontSize: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 42, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${_providers.length} proveedores registrados',
+                          style: GoogleFonts.dmSerifDisplay(
+                            color: PurchasesScreen.muted,
+                            fontSize: 17,
+                          ),
                         ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: PurchasesScreen.muted,
-                          size: 28,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF9FBFC),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                        ),
-                        enabledBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFE0E0E0)),
-                        ),
-                        focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: PurchasesScreen.red),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    for (final provider in filtered) ...[
-                      _buildProviderCard(provider),
-                      const SizedBox(height: 20),
-                    ],
-                    if (filtered.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(28),
-                          child: Text(
-                            'No se encontraron proveedores.',
-                            style: GoogleFonts.poppins(
+                        const SizedBox(height: 28),
+                        TextField(
+                          onChanged: (value) => setState(() => _query = value),
+                          decoration: InputDecoration(
+                            hintText: 'Buscar por ID, nombre o email...',
+                            hintStyle: GoogleFonts.dmSerifDisplay(
+                              color: PurchasesScreen.ink,
+                              fontSize: 16,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search,
                               color: PurchasesScreen.muted,
+                              size: 28,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF9FBFC),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                            ),
+                            enabledBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFFE0E0E0)),
+                            ),
+                            focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: PurchasesScreen.red),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(28),
+                              child: Text(
+                                'No se encontraron proveedores.',
+                                style: GoogleFonts.dmSerifDisplay(
+                                  color: PurchasesScreen.muted,
+                                ),
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 18),
+                            itemBuilder: (context, index) =>
+                                _providerCard(filtered[index]),
+                          ),
+                  ),
+                ],
               ),
             ),
             _buildBottomNavigation(context),
@@ -134,7 +149,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     return Container(
       height: 60,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
@@ -142,7 +157,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(
               Icons.arrow_back,
-              color: PurchasesScreen.ink,
+              color: AppColors.red,
               size: 28,
             ),
           ),
@@ -151,7 +166,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
               'Gestión Proveedor',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
+                color: AppColors.red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -162,16 +177,16 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
             height: 40,
             margin: const EdgeInsets.only(right: 12),
             decoration: const BoxDecoration(
-              color: Color(0xFFF0ECEB),
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
             child: Text(
-              'GIV',
-              style: GoogleFonts.poppins(
-                color: const Color(0xFF8E1118),
+              getInitials('Gloria Inés Vargas'),
+              style: GoogleFonts.dmSerifDisplay(
+                color: Colors.white,
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -180,159 +195,165 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     );
   }
 
-  Widget _buildProviderCard(_Provider provider) {
-    final color = provider.active
-        ? const Color(0xFF16813A)
-        : const Color(0xFFD04444);
-    final background = provider.active
-        ? const Color(0xFFE2F3E5)
-        : const Color(0xFFFFE6E8);
-
+  Widget _providerCard(_Provider provider) {
     return Container(
+      padding: const EdgeInsets.fromLTRB(15, 16, 14, 13),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE0DCDC)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 3,
-            offset: Offset(0, 1),
-          ),
-        ],
+        color: PurchasesScreen.page,
+        border: Border.all(color: AppColors.cardBorder),
+        borderRadius: BorderRadius.circular(11),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            Container(width: 4, color: color),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: _avatarColorFor(provider.id),
+                child: Text(
+                  getInitials(provider.name),
+                  style: GoogleFonts.dmSerifDisplay(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF0EEED),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            provider.id,
-                            style: GoogleFonts.robotoMono(
-                              color: PurchasesScreen.muted,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: background,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Text(
-                            provider.active ? 'ACTIVO' : 'INACTIVO',
-                            style: GoogleFonts.poppins(
-                              color: color,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
                     Text(
                       provider.name,
-                      style: GoogleFonts.poppins(
-                        color: provider.active
-                            ? PurchasesScreen.ink
-                            : PurchasesScreen.muted,
-                        fontSize: 21,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.dmSerifDisplay(
+                        color: PurchasesScreen.ink,
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    _providerInfo(Icons.phone_outlined, provider.phone),
-                    _providerInfo(Icons.mail_outline, provider.email),
-                    _providerInfo(Icons.location_on_outlined, provider.address),
-                    const Divider(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        _providerAction(
-                          Icons.visibility_outlined,
-                          () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => _ProviderDetailScreen(
-                                provider: provider,
-                              ),
-                            ),
-                          ),
-                        ),
-                        _providerAction(
-                          Icons.edit_outlined,
-                          () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => _ProviderEditScreen(
-                                provider: provider,
-                              ),
-                            ),
-                          ),
-                        ),
-                        _providerAction(
-                          Icons.delete_outline,
-                          () => _showDeleteProviderDialog(provider),
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    Text(
+                      provider.id,
+                      style: GoogleFonts.dmSerifDisplay(
+                        color: PurchasesScreen.muted,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _providerInfo('NIT', provider.nit)),
+              Expanded(child: _providerInfo('TELÉFONO', provider.phone)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _providerInfo('EMAIL', provider.email)),
+              Expanded(child: _providerInfo('ASESOR COMERCIAL', '—')),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.only(top: 14, bottom: 11),
+            child: Divider(height: 1, color: AppColors.cardDivider),
+          ),
+          Row(
+            children: [
+              _statusBadge(provider),
+              const Spacer(),
+              _providerAction(Icons.visibility_outlined, provider),
+              _providerAction(Icons.edit_outlined, provider),
+              _providerAction(Icons.delete_outline, provider),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _avatarColorFor(String id) {
+    final hash =
+        id.codeUnits.fold<int>(0, (acc, code) => acc + code);
+    return AppColors.avatarPalette[hash % AppColors.avatarPalette.length];
+  }
+
+  Widget _statusBadge(_Provider provider) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+      decoration: BoxDecoration(
+        color: provider.active
+            ? AppColors.statusGreenBg
+            : AppColors.statusRedBg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        provider.active ? 'Activo' : 'Inactivo',
+        style: GoogleFonts.dmSerifDisplay(
+          color: provider.active
+              ? AppColors.statusGreenFg
+              : AppColors.statusRedFg,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
 
-  Widget _providerInfo(IconData icon, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
-      child: Row(
-        children: [
-          Icon(icon, color: PurchasesScreen.muted, size: 19),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
-                fontSize: 15,
-              ),
-            ),
-          ),
-        ],
+  Widget _providerAction(IconData icon, _Provider provider) {
+    return SizedBox(
+      width: 42,
+      height: 42,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        onPressed: icon == Icons.visibility_outlined
+            ? () => showDialog<void>(
+                  context: context,
+                  builder: (_) => _ProviderDetailScreen(provider: provider),
+                )
+            : icon == Icons.edit_outlined
+                ? () => showDialog<void>(
+                      context: context,
+                      builder: (_) => _ProviderEditScreen(provider: provider),
+                    )
+                : () => _showDeleteProviderDialog(provider),
+        icon: Icon(icon, size: 25, color: AppColors.cardIcon),
       ),
     );
   }
 
-  Widget _providerAction(IconData icon, VoidCallback onPressed) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: Icon(icon, color: PurchasesScreen.muted, size: 27),
-      tooltip: 'Acción',
+  Widget _providerInfo(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.dmSerifDisplay(
+            color: PurchasesScreen.muted,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.dmSerifDisplay(
+            color: PurchasesScreen.ink,
+            fontSize: 16,
+          ),
+        ),
+      ],
     );
   }
 
@@ -377,7 +398,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                 const SizedBox(height: 20),
                 Text.rich(
                   TextSpan(
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: PurchasesScreen.muted,
                       fontSize: 17,
                       height: 1.5,
@@ -402,7 +423,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                           ),
                           child: Text(
                             provider.id,
-                            style: GoogleFonts.robotoMono(
+                            style: GoogleFonts.dmSerifDisplay(
                               color: PurchasesScreen.ink,
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -431,7 +452,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                     ),
                     child: Text(
                       'Sí, confirmar',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                       ),
@@ -453,7 +474,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                     ),
                     child: Text(
                       'Cancelar',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                       ),
@@ -482,7 +503,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       (Icons.shopping_cart_outlined, 'Compras'),
       (Icons.factory_outlined, 'Producción'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.person_outline, 'Mi Perfil'),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -505,7 +526,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
                       fontSize: 12,
                     ),
@@ -522,6 +543,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
 class _Provider {
   const _Provider(
     this.id,
+    this.nit,
     this.name,
     this.phone,
     this.email,
@@ -530,6 +552,7 @@ class _Provider {
   );
 
   final String id;
+  final String nit;
   final String name;
   final String phone;
   final String email;
@@ -544,148 +567,62 @@ class _ProviderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = provider.active
-        ? const Color(0xFF16813A)
-        : const Color(0xFFD04444);
-    final statusBackground = provider.active
-        ? const Color(0xFFE2F3E5)
-        : const Color(0xFFFFE6E8);
-
-    return Scaffold(
-      backgroundColor: PurchasesScreen.page,
-      body: SafeArea(
-        bottom: false,
+    return Dialog(
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(context),
-            Expanded(
+            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
+            Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Detalle',
-                          style: GoogleFonts.dmSerifDisplay(
-                            color: PurchasesScreen.ink,
-                            fontSize: 34,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          '—',
-                          style: TextStyle(
-                            color: PurchasesScreen.muted,
-                            fontSize: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          provider.id,
-                          style: GoogleFonts.robotoMono(
-                            color: PurchasesScreen.muted,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+                    const _SectionTitle('Identificación del proveedor'),
+                    const SizedBox(height: 16),
+                    _FieldPair(
+                      left: _ReadOnlyField(label: 'NIT', value: provider.nit),
+                      right: _ReadOnlyField(label: 'Nombre', value: provider.name),
                     ),
                     const SizedBox(height: 28),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(24, 22, 24, 18),
-                      decoration: BoxDecoration(
-                        color: PurchasesScreen.page,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE8C7C4)),
-                      ),
-                      child: Column(
-                        children: [
-                          _detailRow('ID Proveedor', provider.id, mono: true),
-                          _detailRow('Nombre', provider.name),
-                          _detailRow(
-                            'Teléfono',
-                            provider.phone,
-                            accent: true,
-                          ),
-                          _detailRow(
-                            'Email',
-                            provider.email,
-                            accent: true,
-                          ),
-                          _detailRow('Dirección', provider.address),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Estado',
-                                    style: GoogleFonts.poppins(
-                                      color: PurchasesScreen.muted,
-                                      fontSize: 17,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 7,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: statusBackground,
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: Text(
-                                    '• ${provider.active ? 'Activo' : 'Inactivo'}',
-                                    style: GoogleFonts.robotoMono(
-                                      color: statusColor,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                    const _SectionTitle('Contacto'),
+                    const SizedBox(height: 16),
+                    _FieldPair(
+                      left: const _ReadOnlyField(label: 'Asesor Comercial', value: '—'),
+                      right: _ReadOnlyField(label: 'Teléfono', value: provider.phone),
+                    ),
+                    const SizedBox(height: 16),
+                    _FieldPair(
+                      left: _ReadOnlyField(label: 'Email', value: provider.email),
+                      right: _ReadOnlyField(label: 'Dirección', value: provider.address),
+                    ),
+                    const SizedBox(height: 28),
+                    const _SectionTitle('Configuración'),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FractionallySizedBox(
+                        widthFactor: 0.5,
+                        alignment: Alignment.centerLeft,
+                        child: _ReadOnlyField(
+                          label: 'Estado',
+                          value: provider.active ? 'Activo' : 'Inactivo',
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 18),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: PurchasesScreen.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Cerrar',
-                    style: GoogleFonts.poppins(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            _buildBottomNavigation(),
+            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
+            _buildFooter(context),
           ],
         ),
       ),
@@ -694,124 +631,51 @@ class _ProviderDetailScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      height: 60,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(
-              Icons.arrow_back,
-              color: PurchasesScreen.ink,
-              size: 28,
-            ),
-          ),
           Expanded(
             child: Text(
-              'La Sirena Pizza',
-              textAlign: TextAlign.center,
+              'Detalle — ${provider.id}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.dmSerifDisplay(
-                color: const Color(0xFF8E1118),
-                fontSize: 24,
+                color: AppColors.ink,
+                fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          const SizedBox(width: 52),
-        ],
-      ),
-    );
-  }
-
-  Widget _detailRow(
-    String label,
-    String value, {
-    bool mono = false,
-    bool accent = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE3DAD8))),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 105,
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
-                fontSize: 17,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              softWrap: true,
-              style: mono
-                  ? GoogleFonts.robotoMono(
-                      color: PurchasesScreen.ink,
-                      fontSize: 15,
-                    )
-                  : GoogleFonts.poppins(
-                      color: accent
-                          ? const Color(0xFF9B2931)
-                          : PurchasesScreen.ink,
-                      fontSize: 16,
-                      height: 1.35,
-                      decoration: accent
-                          ? TextDecoration.underline
-                          : TextDecoration.none,
-                    ),
-            ),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close, color: AppColors.muted),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomNavigation() {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
-    ];
+  Widget _buildFooter(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  items[i].$1,
-                  color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
-                ),
-                Text(
-                  items[i].$2,
-                  style: GoogleFonts.poppins(
-                    color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+      child: SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.buttonFill,
+            foregroundColor: AppColors.ink,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
             ),
-        ],
+          ),
+          child: Text(
+            'Cerrar',
+            style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        ),
       ),
     );
   }
@@ -827,7 +691,6 @@ class _ProviderEditScreen extends StatefulWidget {
 }
 
 class _ProviderEditScreenState extends State<_ProviderEditScreen> {
-  late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
   late final TextEditingController _addressController;
@@ -836,7 +699,6 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.provider.name);
     _phoneController = TextEditingController(text: widget.provider.phone);
     _emailController = TextEditingController(text: widget.provider.email);
     _addressController = TextEditingController(text: widget.provider.address);
@@ -845,7 +707,6 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     _addressController.dispose();
@@ -854,68 +715,71 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: PurchasesScreen.page,
-      body: SafeArea(
-        bottom: false,
+    return Dialog(
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(context),
-            Expanded(
+            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
+            Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 26, 24, 30),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
-                  decoration: BoxDecoration(
-                    color: PurchasesScreen.page,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE8C7C4)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Información del Proveedor',
-                        style: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
-                          fontSize: 25,
-                          fontWeight: FontWeight.w700,
-                        ),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _SectionTitle('Identificación del proveedor'),
+                    const SizedBox(height: 16),
+                    _FieldPair(
+                      left: _LockedField(label: 'NIT', value: widget.provider.nit),
+                      right: _LockedField(
+                        label: 'Nombre',
+                        value: widget.provider.name,
                       ),
-                      const SizedBox(height: 14),
-                      const Divider(color: Color(0xFFE4C4C1)),
-                      const SizedBox(height: 22),
-                      _buildStatusField(),
-                      const SizedBox(height: 28),
-                      _buildField(
-                        label: 'NOMBRE DE EMPRESA / CONTACTO',
-                        controller: _nameController,
-                        icon: Icons.storefront_outlined,
-                      ),
-                      _buildField(
-                        label: 'TELÉFONO PRINCIPAL',
+                    ),
+                    const SizedBox(height: 28),
+                    const _SectionTitle('Contacto'),
+                    const SizedBox(height: 16),
+                    _FieldPair(
+                      left: _EditableField(
+                        label: 'Teléfono',
                         controller: _phoneController,
-                        icon: Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
                       ),
-                      _buildField(
-                        label: 'CORREO ELECTRÓNICO',
+                      right: _EditableField(
+                        label: 'Email',
                         controller: _emailController,
-                        icon: Icons.mail_outline,
                         keyboardType: TextInputType.emailAddress,
                       ),
-                      _buildField(
-                        label: 'DIRECCIÓN FÍSICA',
-                        controller: _addressController,
-                        icon: Icons.location_on_outlined,
-                        textInputAction: TextInputAction.done,
+                    ),
+                    const SizedBox(height: 16),
+                    _EditableField(
+                      label: 'Dirección',
+                      controller: _addressController,
+                      textInputAction: TextInputAction.done,
+                    ),
+                    const SizedBox(height: 28),
+                    const _SectionTitle('Configuración'),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FractionallySizedBox(
+                        widthFactor: 0.5,
+                        alignment: Alignment.centerLeft,
+                        child: _buildEstadoField(),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            _buildActions(context),
+            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
+            _buildFooter(context),
           ],
         ),
       ),
@@ -924,196 +788,134 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
       child: Row(
         children: [
+          Expanded(
+            child: Text(
+              'Editar — ${widget.provider.id}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.dmSerifDisplay(
+                color: AppColors.ink,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(
-              Icons.arrow_back,
-              color: PurchasesScreen.ink,
-              size: 30,
-            ),
-          ),
-          Text(
-            'Editar',
-            style: GoogleFonts.dmSerifDisplay(
-              color: PurchasesScreen.ink,
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Text(
-            '—',
-            style: TextStyle(color: PurchasesScreen.muted, fontSize: 24),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            widget.provider.id,
-            style: GoogleFonts.robotoMono(
-              color: PurchasesScreen.muted,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-            ),
+            icon: const Icon(Icons.close, color: AppColors.muted),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatusField() {
+  Widget _buildEstadoField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Estado',
+          style: GoogleFonts.dmSans(
+            color: AppColors.muted,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<bool>(
+          initialValue: _isActive,
+          borderRadius: BorderRadius.circular(24),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.fieldFill,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 13,
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(24)),
+              borderSide: BorderSide(color: AppColors.fieldBorder),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(24)),
+              borderSide: BorderSide(color: AppColors.fieldBorder, width: 1.5),
+            ),
+          ),
+          style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.muted),
+          items: const [
+            DropdownMenuItem(value: true, child: Text('Activo')),
+            DropdownMenuItem(value: false, child: Text('Inactivo')),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _isActive = value);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooter(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9F5F4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE8C7C4)),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.radio_button_checked,
-            color: PurchasesScreen.muted,
-            size: 29,
-          ),
-          const SizedBox(width: 14),
-          Text(
-            'Estado',
-            style: GoogleFonts.poppins(
-              color: PurchasesScreen.muted,
-              fontSize: 18,
-            ),
-          ),
-          const Spacer(),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<bool>(
-              value: _isActive,
-              borderRadius: BorderRadius.circular(12),
-              items: const [
-                DropdownMenuItem(value: true, child: Text('Activo')),
-                DropdownMenuItem(value: false, child: Text('Inactivo')),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _isActive = value);
-                }
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildField({
-    required String label,
-    required TextEditingController controller,
-    required IconData icon,
-    TextInputType? keyboardType,
-    TextInputAction? textInputAction,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.robotoMono(
-              color: PurchasesScreen.muted,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            textInputAction: textInputAction,
-            style: GoogleFonts.poppins(
-              color: PurchasesScreen.ink,
-              fontSize: 18,
-            ),
-            decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: PurchasesScreen.muted, size: 28),
-              filled: true,
-              fillColor: const Color(0xFFF7F9FA),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 17,
-              ),
-              enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFFE5BCB9), width: 2),
-              ),
-              focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActions(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 14, 24, 22),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: PurchasesScreen.red,
-                side: const BorderSide(color: PurchasesScreen.red),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                'Cancelar',
-                style: GoogleFonts.poppins(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 22),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${widget.provider.name} actualizado correctamente.',
-                    ),
+            child: SizedBox(
+              height: 48,
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.ink,
+                  side: const BorderSide(color: AppColors.fieldBorder),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: PurchasesScreen.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Cancelar',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-              child: Text(
-                'Guardar',
-                style: GoogleFonts.poppins(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${widget.provider.name} actualizado correctamente.',
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                child: Text(
+                  'Guardar',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -1124,3 +926,207 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
   }
 }
 
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          text.toUpperCase(),
+          style: GoogleFonts.dmSans(
+            color: AppColors.muted,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.8,
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Divider(color: AppColors.fieldBorder, height: 1, thickness: 1),
+      ],
+    );
+  }
+}
+
+class _FieldPair extends StatelessWidget {
+  const _FieldPair({required this.left, required this.right});
+
+  final Widget left;
+  final Widget right;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 380) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              left,
+              const SizedBox(height: 16),
+              right,
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: left),
+            const SizedBox(width: 16),
+            Expanded(child: right),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ReadOnlyField extends StatelessWidget {
+  const _ReadOnlyField({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.dmSans(
+            color: AppColors.muted,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          height: 48,
+          width: double.infinity,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppColors.fieldFill,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.fieldBorder),
+          ),
+          child: Text(
+            value.isEmpty ? '—' : value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.dmSans(color: AppColors.muted, fontSize: 15),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LockedField extends StatelessWidget {
+  const _LockedField({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.dmSans(
+            color: AppColors.muted,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          height: 48,
+          width: double.infinity,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppColors.fieldFill,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.fieldBorder),
+          ),
+          child: Text(
+            value.isEmpty ? '—' : value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.dmSans(color: AppColors.muted, fontSize: 15),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'No se puede modificar',
+          style: GoogleFonts.dmSans(
+            color: AppColors.muted,
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EditableField extends StatelessWidget {
+  const _EditableField({
+    required this.label,
+    required this.controller,
+    this.keyboardType,
+    this.textInputAction,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.dmSans(
+            color: AppColors.muted,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          style: GoogleFonts.dmSans(color: AppColors.ink, fontSize: 15),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.fieldFill,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 13,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: const BorderSide(color: AppColors.fieldBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: const BorderSide(color: AppColors.fieldBorder, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

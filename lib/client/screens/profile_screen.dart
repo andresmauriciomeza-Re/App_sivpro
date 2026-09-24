@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/initials.dart';
 import 'menu_screen.dart';
 import '../../auth/login_screen.dart';
+import '../../auth/auth_service.dart';
 import '../widgets/bottom_nav.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,12 +17,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const Color splashRojo = Color(0xE6C32828);
   static const Color fondoClaro = Color(0xFFFCF7F5);
 
-  // Datos de ejemplo, mientras no hay backend/autenticación conectados.
-  final _nombreController = TextEditingController(text: 'Sebastián');
-  final _correoController = TextEditingController(text: 'sebas@gmail.com');
-  final _telefonoController = TextEditingController(text: '3109876543');
+  // Datos de la cuenta, tomados de la sesión real cuando existe.
+  late final TextEditingController _nombreController;
+  late final TextEditingController _correoController;
+  late final TextEditingController _telefonoController;
 
   bool _editando = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final session = AuthService.instance;
+    _nombreController = TextEditingController(
+      text: session.currentName ?? 'Sebastián',
+    );
+    _correoController = TextEditingController(
+      text: session.currentEmail ?? 'sebas@gmail.com',
+    );
+    _telefonoController = TextEditingController(text: '3109876543');
+  }
 
   @override
   void dispose() {
@@ -31,10 +46,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _cerrarSesion() {
+    AuthService.instance.logout();
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
+  }
+
+  void _regresarAlPanel() {
+    AuthService.instance.endStoreSession();
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
@@ -49,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Text(
                 'Mi Perfil',
-                style: GoogleFonts.montserrat(
+                style: GoogleFonts.dmSerifDisplay(
                   fontSize: 26,
                   color: Colors.black87,
                 ),
@@ -57,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 4),
               Text(
                 'Tu información de cuenta',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   fontSize: 13,
                   color: Colors.black,
                   fontWeight: FontWeight.w600,
@@ -76,15 +97,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: splashRojo,
                       child: Text(
                         _nombreController.text.isNotEmpty
-                            ? _nombreController.text[0].toUpperCase()
+                            ? getInitials(_nombreController.text)
                             : '?',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -96,13 +118,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _nombreController.text,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black87,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _nombreController.text,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.dmSerifDisplay(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton.icon(
+                                onPressed: () =>
+                                    setState(() => _editando = !_editando),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                  side: const BorderSide(color: Colors.black12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                icon: Icon(
+                                  _editando ? Icons.check : Icons.edit,
+                                  size: 16,
+                                ),
+                                label: Text(
+                                  _editando ? 'Listo' : 'Editar',
+                                  style: GoogleFonts.dmSerifDisplay(fontSize: 12),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
                           Container(
@@ -116,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             child: Text(
                               'Cliente',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.black,
@@ -126,28 +177,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     ),
-                    OutlinedButton.icon(
-                      onPressed: () => setState(() => _editando = !_editando),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        side: const BorderSide(color: Colors.black12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      icon: Icon(
-                        _editando ? Icons.check : Icons.edit,
-                        size: 16,
-                      ),
-                      label: Text(
-                        _editando ? 'Listo' : 'Editar',
-                        style: GoogleFonts.poppins(fontSize: 12),
-                      ),
-                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
 
               // ------------------------------------------------
               // Datos de la cuenta
@@ -174,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         'Este campo no es editable',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontSize: 11,
                           color: splashRojo,
                         ),
@@ -189,6 +222,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              if (AuthService.instance.fromPanel) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _regresarAlPanel,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: splashRojo,
+                      side: const BorderSide(color: splashRojo),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    icon: const Icon(Icons.dashboard_outlined, size: 16),
+                    label: Text(
+                      'Regresar al panel',
+                      style: GoogleFonts.dmSerifDisplay(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               Row(
                 children: [
@@ -211,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: const Icon(Icons.arrow_back, size: 16),
                       label: Text(
                         'Volver al menú',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -233,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: const Icon(Icons.logout, size: 16),
                       label: Text(
                         'Cerrar sesión',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -257,7 +316,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(width: 6),
         Text(
           texto,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.dmSerifDisplay(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: Colors.black54,
@@ -277,7 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Text(
         valor,
-        style: GoogleFonts.poppins(fontSize: 13.5, color: Colors.black54),
+        style: GoogleFonts.dmSerifDisplay(fontSize: 13.5, color: Colors.black54),
       ),
     );
   }
@@ -286,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return TextField(
       controller: controller,
       enabled: _editando,
-      style: GoogleFonts.poppins(fontSize: 13.5, color: Colors.black87),
+      style: GoogleFonts.dmSerifDisplay(fontSize: 13.5, color: Colors.black87),
       decoration: InputDecoration(
         filled: true,
         fillColor: const Color(0xFFF2F2F2),

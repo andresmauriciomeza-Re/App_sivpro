@@ -5,6 +5,7 @@ import '../widgets/bottom_nav.dart';
 import 'menu_screen.dart';
 import 'category_products_screen.dart';
 import '../../shared/menu_item.dart';
+import '../../auth/auth_service.dart';
 
 // ============================================================
 // PALETA Y CONSTANTES DE DISEÃ‘O
@@ -222,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hola, ${widget.userName}',
+                      'Hola, ${AuthService.instance.currentName ?? widget.userName}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 26,

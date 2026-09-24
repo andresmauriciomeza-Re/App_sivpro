@@ -68,7 +68,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                   ),
                   Text(
                     'Volver al menú',
-                    style: GoogleFonts.montserrat(
+                    style: GoogleFonts.dmSerifDisplay(
                       fontSize: 20,
                       color: Colors.black87,
                     ),
@@ -80,7 +80,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 _descripcion,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.dmSerifDisplay(
                   fontSize: 13,
                   color: Colors.black87,
                   height: 1.4,
@@ -93,7 +93,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                   ? Center(
                       child: Text(
                         'Todavía no hay productos en esta categoría.',
-                        style: GoogleFonts.poppins(color: Colors.black45),
+                        style: GoogleFonts.dmSerifDisplay(color: Colors.black45),
                       ),
                     )
                   : GridView.builder(
@@ -186,7 +186,7 @@ class _ProductGridCard extends StatelessWidget {
                       item.nombre,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
                         color: Colors.black87,
@@ -197,7 +197,7 @@ class _ProductGridCard extends StatelessWidget {
                       item.descripcion,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.dmSerifDisplay(
                         fontSize: 11.5,
                         color: Colors.black87,
                       ),
@@ -208,7 +208,7 @@ class _ProductGridCard extends StatelessWidget {
                       children: [
                         Text(
                           item.precioTexto,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
                             color: Colors.black87,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../theme/app_colors.dart';
 import '../services/employee_profile_service.dart';
 import 'employee_profile_screen.dart';
 import '../../shared/page_transitions.dart';
@@ -44,14 +45,14 @@ class EmployeeMoreScreen extends StatelessWidget {
                     Center(
                       child: Text(
                         'La Sirena Pizza – S.I.V.PRO',
-                        style: GoogleFonts.poppins(color: muted, fontSize: 16),
+                        style: GoogleFonts.dmSerifDisplay(color: muted, fontSize: 16),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Center(
                       child: Text(
                         'Versión 2.1.4',
-                        style: GoogleFonts.robotoMono(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: muted,
                           fontSize: 15,
                         ),
@@ -72,19 +73,19 @@ class EmployeeMoreScreen extends StatelessWidget {
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: muted, size: 29),
+            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 29),
           ),
           Expanded(
             child: Text(
               'La Sirena Pizza',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: red,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -99,7 +100,7 @@ class EmployeeMoreScreen extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               profile.initials,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.dmSerifDisplay(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -134,7 +135,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     profile.initials,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.dmSerifDisplay(
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
@@ -148,7 +149,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                     children: [
                       Text(
                         profile.fullName,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: ink,
                           fontSize: 23,
                           fontWeight: FontWeight.w700,
@@ -156,7 +157,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                       ),
                       Text(
                         'Empleado',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.dmSerifDisplay(
                           color: muted,
                           fontSize: 17,
                         ),
@@ -173,7 +174,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'S.I.V.PRO',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.dmSerifDisplay(
                             color: muted,
                             fontSize: 14,
                           ),
@@ -189,7 +190,12 @@ class EmployeeMoreScreen extends StatelessWidget {
             icon: Icons.person_outline,
             title: 'Perfil',
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const EmployeeProfileScreen()),
+              MaterialPageRoute(
+                settings: const RouteSettings(
+                  name: kEmployeeProfileDetailRoute,
+                ),
+                builder: (_) => const EmployeeProfileScreen(),
+              ),
             ),
           ),
           InkWell(
@@ -206,7 +212,7 @@ class EmployeeMoreScreen extends StatelessWidget {
                   const SizedBox(width: 25),
                   Text(
                     'Cerrar sesión',
-                    style: GoogleFonts.poppins(color: red, fontSize: 22),
+                    style: GoogleFonts.dmSerifDisplay(color: red, fontSize: 22),
                   ),
                 ],
               ),
@@ -237,7 +243,7 @@ class EmployeeMoreScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.poppins(color: ink, fontSize: 20),
+                style: GoogleFonts.dmSerifDisplay(color: ink, fontSize: 20),
               ),
             ),
             const Icon(Icons.chevron_right, color: muted, size: 30),
@@ -250,10 +256,10 @@ class EmployeeMoreScreen extends StatelessWidget {
   Widget _bottomNavigation(BuildContext context) {
     const items = [
       (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
+      (Icons.people_outline, 'Clientes'),
       (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.more_horiz, 'Más'),
+      (Icons.sync_alt, 'Devoluciones'),
+      (Icons.person_outline, 'Perfil'),
     ];
     return SizedBox(
       height: 80,
@@ -282,14 +288,14 @@ class EmployeeMoreScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              index == 4 ? Icons.more_horiz : items[index].$1,
+                              items[index].$1,
                               color: index == 4 ? red : muted,
                               size: 19,
                             ),
                             const SizedBox(height: 1),
                             Text(
                               items[index].$2,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.dmSerifDisplay(
                                 color: index == 4 ? red : muted,
                                 fontSize: 10,
                                 height: 1,
