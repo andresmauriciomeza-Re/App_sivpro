@@ -27,7 +27,7 @@ class ProductionSummaryCard extends StatelessWidget {
         children: [
           Text(
             'Resumen de Hoy',
-            style: GoogleFonts.dmSerifDisplay(
+            style: Theme.of(context).textTheme.headlineSmall!.copyWith(
               color: _ink,
               fontSize: 24,
               fontWeight: FontWeight.w700,

@@ -3,13 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
+import '../../shared/profile_body.dart';
 import '../../shared/search.dart';
 import '../../theme/app_colors.dart';
 import '../widgets/production_summary_card.dart';
 
 part 'purchases/admin_profile.dart';
 part 'purchases/clients.dart';
-part 'purchases/more_options.dart';
 part 'purchases/production.dart';
 part 'purchases/products.dart';
 part 'purchases/providers.dart';
@@ -57,7 +57,7 @@ void navigateToBottomModule(BuildContext context, int index) {
     1 => const PurchasesScreen(),
     2 => const _ProductionScreen(),
     3 => const SalesScreen(),
-    4 => const MoreOptionsScreen(),
+    4 => const ProfileScreen(),
     _ => const PurchasesScreen(),
   };
 
@@ -273,7 +273,7 @@ class _ModuleCard extends StatelessWidget {
               const Spacer(),
               Text(
                 title,
-                style: GoogleFonts.dmSerifDisplay(
+                style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                   color: PurchasesScreen.ink,
                   fontSize: 28,
                   fontWeight: FontWeight.w700,

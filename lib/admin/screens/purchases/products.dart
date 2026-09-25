@@ -219,7 +219,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                   children: [
                     Text(
                       product.name,
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
                         color: Colors.black,
                         fontSize: 23,
                         fontWeight: FontWeight.w700,

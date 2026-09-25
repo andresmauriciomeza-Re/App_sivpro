@@ -79,7 +79,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       children: [
                         Text(
                           'Actividad reciente',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             color: ink,
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -214,7 +214,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Text(
                 'Ventas',
-                style: GoogleFonts.dmSerifDisplay(
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
                   color: ink,
                   fontSize: 20,
                   fontWeight: FontWeight.w700,

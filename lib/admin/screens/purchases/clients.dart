@@ -717,7 +717,7 @@ class _ClientDetailScreen extends StatelessWidget {
                           Text(
                             client.name,
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                               color: PurchasesScreen.ink,
                               fontSize: 26,
                               fontWeight: FontWeight.w700,
