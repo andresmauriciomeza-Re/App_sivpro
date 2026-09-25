@@ -146,8 +146,6 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildBreadcrumb(),
-                    const SizedBox(height: 4),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -368,21 +366,6 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBreadcrumb() {
-    return Row(
-      children: [
-        const Icon(Icons.home_outlined, color: Color(0xFF91A0B8), size: 17),
-        const SizedBox(width: 5),
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 14)),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 7),
-          child: Icon(Icons.chevron_right, color: muted, size: 17),
-        ),
-        Text('clientes', style: GoogleFonts.poppins(color: ink, fontSize: 14)),
-      ],
     );
   }
 

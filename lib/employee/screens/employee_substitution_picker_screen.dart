@@ -40,8 +40,6 @@ class _EmployeeSubstitutionPickerScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _breadcrumb(),
-                    const SizedBox(height: 22),
                     Text(
                       'Producto de sustitución',
                       style: GoogleFonts.montserrat(
@@ -92,28 +90,6 @@ class _EmployeeSubstitutionPickerScreenState
     return AppHeader(
       title: 'La Sirena Pizza',
       initials: getInitials('María González'),
-    );
-  }
-
-  Widget _breadcrumb() {
-    return Row(
-      children: [
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 16)),
-        const SizedBox(width: 36),
-        Text(
-          'devoluciones',
-          style: GoogleFonts.poppins(color: muted, fontSize: 16),
-        ),
-        const SizedBox(width: 36),
-        Text(
-          'canje',
-          style: GoogleFonts.poppins(
-            color: ink,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
     );
   }
 

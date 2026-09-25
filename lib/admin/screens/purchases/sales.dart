@@ -68,69 +68,6 @@ class SalesScreen extends StatelessWidget {
 
                     children: [
 
-                      Row(
-
-                        children: [
-
-                          GestureDetector(
-
-                            onTap: () => Navigator.of(context)
-                                .popUntil((route) => route.isFirst),
-
-                            child: Text(
-
-                              'Inicio',
-
-                              style: GoogleFonts.poppins(
-
-                                color: PurchasesScreen.muted,
-
-                                fontSize: 16,
-
-                              ),
-
-                            ),
-
-                          ),
-
-                          const Padding(
-
-                            padding: EdgeInsets.symmetric(horizontal: 9),
-
-                            child: Icon(
-
-                              Icons.chevron_right,
-
-                              color: PurchasesScreen.muted,
-
-                              size: 22,
-
-                            ),
-
-                          ),
-
-                          Text(
-
-                            'Ventas',
-
-                            style: GoogleFonts.poppins(
-
-                              color: PurchasesScreen.red,
-
-                              fontSize: 16,
-
-                              fontWeight: FontWeight.w700,
-
-                            ),
-
-                          ),
-
-                        ],
-
-                      ),
-
-                      const SizedBox(height: 14),
-
                       Text(
 
                         'Gestión de Ventas',
@@ -759,10 +696,6 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
 
                   children: [
 
-                    _buildBreadcrumb(),
-
-                    const SizedBox(height: 20),
-
                     Text(
 
                       'Gestión Ventas',
@@ -868,55 +801,6 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
     );
 
   }
-
-
-
-  Widget _buildBreadcrumb() {
-
-    return Row(
-
-      children: [
-
-        GestureDetector(
-
-          onTap: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
-
-          child: Text('Inicio', style: _breadcrumbStyle(PurchasesScreen.muted)),
-
-        ),
-
-        const Icon(Icons.chevron_right, color: PurchasesScreen.muted, size: 20),
-
-        Text('Ventas', style: _breadcrumbStyle(PurchasesScreen.muted)),
-
-        const Icon(Icons.chevron_right, color: PurchasesScreen.muted, size: 20),
-
-        Text('Gestión Ventas', style: _breadcrumbStyle(PurchasesScreen.ink)),
-
-      ],
-
-    );
-
-  }
-
-
-
-  TextStyle _breadcrumbStyle(Color color) => GoogleFonts.poppins(
-
-        color: color,
-
-        fontSize: 15,
-
-        fontWeight: color == PurchasesScreen.ink
-
-            ? FontWeight.w500
-
-            : FontWeight.w400,
-
-      );
-
-
 
   Widget _buildSearchField() {
 

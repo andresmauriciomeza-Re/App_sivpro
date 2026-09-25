@@ -57,7 +57,7 @@ void navigateToBottomModule(BuildContext context, int index) {
     1 => const PurchasesScreen(),
     2 => const _ProductionScreen(),
     3 => const SalesScreen(),
-    4 => const MoreOptionsScreen(),
+    4 => const ProfileScreen(),
     _ => const PurchasesScreen(),
   };
 

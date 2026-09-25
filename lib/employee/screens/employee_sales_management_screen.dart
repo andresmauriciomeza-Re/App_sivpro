@@ -156,8 +156,6 @@ class _EmployeeSalesManagementScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildBreadcrumb(),
-                    const SizedBox(height: 14),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -227,21 +225,6 @@ class _EmployeeSalesManagementScreenState
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
       initials: getInitials('María González'),
-    );
-  }
-
-  Widget _buildBreadcrumb() {
-    return Row(
-      children: [
-        const Icon(Icons.home_outlined, color: muted, size: 17),
-        const SizedBox(width: 5),
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 13)),
-        const Icon(Icons.chevron_right, color: muted, size: 18),
-        Text(
-          'ventas-pedidos',
-          style: GoogleFonts.poppins(color: ink, fontSize: 13),
-        ),
-      ],
     );
   }
 

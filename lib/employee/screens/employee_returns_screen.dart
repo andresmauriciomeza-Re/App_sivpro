@@ -83,8 +83,6 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _breadcrumb(),
-                        const SizedBox(height: 28),
                         Text(
                           'Devoluciones',
                           style: GoogleFonts.montserrat(
@@ -172,21 +170,6 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
       initials: getInitials('María González'),
-    );
-  }
-
-  Widget _breadcrumb() {
-    return Row(
-      children: [
-        const Icon(Icons.home_outlined, color: Color(0xFFA49A97), size: 20),
-        const SizedBox(width: 6),
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 15)),
-        const Icon(Icons.chevron_right, color: Color(0xFFA49A97), size: 22),
-        Text(
-          'devoluciones',
-          style: GoogleFonts.poppins(color: ink, fontSize: 15),
-        ),
-      ],
     );
   }
 
@@ -688,8 +671,6 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _breadcrumb(),
-                    const SizedBox(height: 22),
                     _returnSummary(),
                     const SizedBox(height: 22),
                     Text(
@@ -754,28 +735,6 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
       initials: getInitials('María González'),
-    );
-  }
-
-  Widget _breadcrumb() {
-    return Row(
-      children: [
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 16)),
-        const SizedBox(width: 36),
-        Text(
-          'devoluciones',
-          style: GoogleFonts.poppins(color: muted, fontSize: 16),
-        ),
-        const SizedBox(width: 36),
-        Text(
-          'gestionar',
-          style: GoogleFonts.poppins(
-            color: ink,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
     );
   }
 
