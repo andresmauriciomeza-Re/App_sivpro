@@ -39,8 +39,6 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _breadcrumb(),
-                    const SizedBox(height: 22),
                     Text(
                       'Canje por producto',
                       style: GoogleFonts.montserrat(
@@ -80,28 +78,6 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
       initials: getInitials('María González'),
-    );
-  }
-
-  Widget _breadcrumb() {
-    return Row(
-      children: [
-        Text('Inicio', style: GoogleFonts.poppins(color: muted, fontSize: 16)),
-        const SizedBox(width: 36),
-        Text(
-          'devoluciones',
-          style: GoogleFonts.poppins(color: muted, fontSize: 16),
-        ),
-        const SizedBox(width: 36),
-        Text(
-          'gestionar',
-          style: GoogleFonts.poppins(
-            color: ink,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
     );
   }
 

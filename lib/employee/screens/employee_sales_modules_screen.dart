@@ -31,30 +31,6 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Inicio',
-                          style: GoogleFonts.poppins(
-                            color: muted,
-                            fontSize: 10,
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(
-                            Icons.chevron_right,
-                            color: muted,
-                            size: 13,
-                          ),
-                        ),
-                        Text(
-                          'Ventas',
-                          style: GoogleFonts.poppins(color: red, fontSize: 10),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
                     Text(
                       'Ventas',
                       style: GoogleFonts.montserrat(
