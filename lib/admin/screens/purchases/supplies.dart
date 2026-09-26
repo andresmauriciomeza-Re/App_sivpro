@@ -1,7 +1,15 @@
 part of '../purchases_screen.dart';
 
-class _SupplyManagementScreen extends StatelessWidget {
+class _SupplyManagementScreen extends StatefulWidget {
   const _SupplyManagementScreen();
+
+  @override
+  State<_SupplyManagementScreen> createState() =>
+      _SupplyManagementScreenState();
+}
+
+class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
+  String _query = '';
 
   static const _supplies = [
     _Supply(
@@ -116,6 +124,17 @@ class _SupplyManagementScreen extends StatelessWidget {
         .where((supply) => supply.status == _SupplyStatus.empty)
         .length;
 
+    final filteredSupplies = _supplies
+        .where(
+          (supply) => matchesSearchQuery(_query, [
+            supply.id,
+            supply.categoryId,
+            supply.name,
+            supply.category,
+          ]),
+        )
+        .toList();
+
     return Scaffold(
       backgroundColor: PurchasesScreen.page,
       body: SafeArea(
@@ -165,11 +184,30 @@ class _SupplyManagementScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20),
+                    AppSearchField(
+                      hint: 'Buscar por ID, nombre o categoría...',
+                      onChanged: (value) => setState(() => _query = value),
+                    ),
                     const SizedBox(height: 28),
-                    for (final supply in _supplies) ...[
-                      _buildSupplyCard(context, supply),
-                      const SizedBox(height: 16),
-                    ],
+                    if (filteredSupplies.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 28),
+                        child: Center(
+                          child: Text(
+                            'No se encontraron insumos',
+                            style: GoogleFonts.poppins(
+                              color: PurchasesScreen.muted,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      for (final supply in filteredSupplies) ...[
+                        _buildSupplyCard(context, supply),
+                        const SizedBox(height: 16),
+                      ],
                   ],
                 ),
               ),
