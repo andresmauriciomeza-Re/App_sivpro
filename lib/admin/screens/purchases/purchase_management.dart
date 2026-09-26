@@ -187,23 +187,9 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                       ),
                     ),
                     const SizedBox(height: 25),
-                    TextField(
+                    AppSearchField(
+                      hint: 'Buscar por proveedor o N° de factura...',
                       onChanged: (value) => setState(() => _query = value),
-                      decoration: InputDecoration(
-                        hintText: 'Buscar por proveedor o N° de factura...',
-                        hintStyle: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: PurchasesScreen.ink,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFFFFBFA),
-                        border: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFE8DDDB)),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 24),
                     ...filtered.map(_buildPurchaseCard),
@@ -500,9 +486,10 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,

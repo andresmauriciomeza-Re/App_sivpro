@@ -230,10 +230,11 @@ class MoreOptionsScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     size: 27,
                     color: i == 4 ? _red : _muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,

@@ -370,56 +370,16 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
   }
 
   Widget _buildSearch() {
-    final hasText = _searchController.text.isNotEmpty;
-    return TextField(
+    return AppSearchField(
       controller: _searchController,
+      hint: 'Buscar por nombre, correo o estado...',
       onChanged: (_) => setState(() => _visibleClients = _pageSize),
-      style: GoogleFonts.poppins(color: ink, fontSize: 13),
-      decoration: InputDecoration(
-        hintText: 'Buscar por nombre, correo o estado...',
-        hintStyle: GoogleFonts.poppins(
-          color: const Color(0xFF91A3C0),
-          fontSize: 13,
-        ),
-        prefixIcon: const Icon(
-          Icons.search,
-          color: Color(0xFF8DA0BE),
-          size: 23,
-        ),
-        prefixIconConstraints: const BoxConstraints(
-          minWidth: 40,
-          minHeight: 23,
-        ),
-        suffixIcon: hasText
-            ? IconButton(
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() => _visibleClients = _pageSize);
-                },
-                icon: const Icon(
-                  Icons.close,
-                  color: Color(0xFF91A3C0),
-                  size: 20,
-                ),
-                tooltip: 'Limpiar búsqueda',
-              )
-            : null,
-        contentPadding: const EdgeInsets.symmetric(vertical: 15),
-        filled: true,
-        fillColor: Colors.white,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE6E1DF)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: red),
-        ),
-      ),
+      showClearButton: true,
     );
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
+
     const items = [
       (Icons.home_outlined, 'Inicio'),
       (Icons.people_outline, 'Clientes'),

@@ -56,22 +56,27 @@ bool matchesSearchQuery(String query, Iterable<String> fields) {
   return false;
 }
 
-/// Widget de búsqueda reutilizable con el estilo de la barra de Gestión
-/// Ventas: caja blanca, borde fino gris claro, lupa a la izquierda y botón
-/// de limpiar (X) cuando hay texto.
+/// Campo de búsqueda con el estilo unificado de la app: el de la barra de
+/// búsqueda de "Gestión Ventas" (lib/admin/screens/purchases/sales.dart).
+///
+/// Caja crema clara, borde fino rosado que se pone rojo al enfocar, lupa
+/// oscura a la izquierda, esquinas redondeadas y, opcionalmente, un botón para
+/// limpiar la consulta.
 class AppSearchField extends StatefulWidget {
   const AppSearchField({
     super.key,
-    required this.controller,
     required this.hint,
+    this.controller,
     this.onChanged,
-    this.borderRadius = 20,
+    this.showClearButton = false,
   });
 
-  final TextEditingController controller;
   final String hint;
+  final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
-  final double borderRadius;
+
+  /// Muestra la "X" para limpiar la consulta. Requiere `controller`.
+  final bool showClearButton;
 
   @override
   State<AppSearchField> createState() => _AppSearchFieldState();
@@ -83,35 +88,42 @@ class _AppSearchFieldState extends State<AppSearchField> {
   @override
   void initState() {
     super.initState();
-    _hasText = widget.controller.text.isNotEmpty;
-    widget.controller.addListener(_onControllerChanged);
+    _hasText = widget.controller?.text.isNotEmpty ?? false;
+    widget.controller?.addListener(_onControllerChanged);
   }
 
   @override
   void dispose() {
-    widget.controller.removeListener(_onControllerChanged);
+    widget.controller?.removeListener(_onControllerChanged);
     super.dispose();
   }
 
   void _onControllerChanged() {
-    final hasText = widget.controller.text.isNotEmpty;
+    final hasText = widget.controller?.text.isNotEmpty ?? false;
     if (hasText != _hasText) setState(() => _hasText = hasText);
   }
 
   void _clear() {
-    widget.controller.clear();
+    widget.controller?.clear();
     widget.onChanged?.call('');
   }
 
+  OutlineInputBorder _border(Color color) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(20),
+    borderSide: BorderSide(color: color),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final showClear = widget.showClearButton && widget.controller != null;
+
     return TextField(
       controller: widget.controller,
       onChanged: widget.onChanged,
       style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.search, color: AppColors.muted, size: 24),
-        suffixIcon: _hasText
+        prefixIcon: const Icon(Icons.search, color: AppColors.ink, size: 28),
+        suffixIcon: showClear && _hasText
             ? IconButton(
                 onPressed: _clear,
                 icon: const Icon(Icons.close, color: AppColors.muted, size: 20),
@@ -119,23 +131,12 @@ class _AppSearchFieldState extends State<AppSearchField> {
               )
             : null,
         hintText: widget.hint,
-        hintStyle: GoogleFonts.poppins(
-          color: AppColors.muted,
-          fontSize: 15,
-        ),
+        hintStyle: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.searchFieldFill,
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        enabledBorder: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(widget.borderRadius),
-          borderSide: const BorderSide(color: AppColors.fieldBorder),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(widget.borderRadius),
-          borderSide: const BorderSide(color: AppColors.red),
-        ),
+        enabledBorder: _border(AppColors.cardBorder),
+        focusedBorder: _border(AppColors.red),
       ),
     );
   }

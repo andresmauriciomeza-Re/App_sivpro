@@ -49,8 +49,8 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
             final source = _filter == 'pendientes'
                 ? pendientes
                 : _filter == 'resueltas'
-                    ? resueltas
-                    : todos;
+                ? resueltas
+                : todos;
             final resultados = source
                 .where(
                   (r) => matchesSearchQuery(_query, [
@@ -70,10 +70,12 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
                   ]),
                 )
                 .toList();
-            final filteredPendientes =
-                resultados.where((r) => r.status == 'pendiente').toList();
-            final filteredResueltas =
-                resultados.where((r) => r.status == 'resuelta').toList();
+            final filteredPendientes = resultados
+                .where((r) => r.status == 'pendiente')
+                .toList();
+            final filteredResueltas = resultados
+                .where((r) => r.status == 'resuelta')
+                .toList();
             return Column(
               children: [
                 _header(context),
@@ -95,6 +97,7 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
                           controller: _searchController,
                           hint: 'Buscar devoluciones...',
                           onChanged: (value) => setState(() => _query = value),
+                          showClearButton: true,
                         ),
                         const SizedBox(height: 14),
                         Row(
@@ -377,7 +380,10 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
     );
   }
 
-  Future<void> _showManageDialog(BuildContext context, ReturnRecord item) async {
+  Future<void> _showManageDialog(
+    BuildContext context,
+    ReturnRecord item,
+  ) async {
     final resolved = await Navigator.of(context).push<String>(
       MaterialPageRoute<String>(
         builder: (_) => _ReturnManagementScreen(item: item),
