@@ -3,18 +3,37 @@ import '../../auth/login_screen.dart';
 import '../../auth/auth_service.dart';
 import '../../shared/initials.dart';
 
+/// Registro de una contratación del empleado.
+class EmployeeContract {
+  final String position;
+  final String type;
+  final DateTime startDate;
+  final DateTime? endDate;
+
+  const EmployeeContract({
+    required this.position,
+    required this.type,
+    required this.startDate,
+    this.endDate,
+  });
+
+  bool get isCurrent => endDate == null;
+}
+
 /// Información del empleado que inició sesión (estado local en memoria).
 class EmployeeProfile {
   final String fullName;
   final String documentNumber;
   final String email;
   final String phone;
+  final List<EmployeeContract> contracts;
 
   const EmployeeProfile({
     required this.fullName,
     required this.documentNumber,
     required this.email,
     required this.phone,
+    this.contracts = const [],
   });
 
   EmployeeProfile copyWith({
@@ -22,12 +41,14 @@ class EmployeeProfile {
     String? documentNumber,
     String? email,
     String? phone,
+    List<EmployeeContract>? contracts,
   }) {
     return EmployeeProfile(
       fullName: fullName ?? this.fullName,
       documentNumber: documentNumber ?? this.documentNumber,
       email: email ?? this.email,
       phone: phone ?? this.phone,
+      contracts: contracts ?? this.contracts,
     );
   }
 
@@ -42,11 +63,24 @@ class EmployeeProfileService {
   EmployeeProfileService._();
   static final EmployeeProfileService instance = EmployeeProfileService._();
 
-  EmployeeProfile _profile = const EmployeeProfile(
+  EmployeeProfile _profile = EmployeeProfile(
     fullName: 'María González',
     documentNumber: '1035467890',
     email: 'maria.gonzalez@gmail.com',
     phone: '3001234567',
+    contracts: [
+      EmployeeContract(
+        position: 'Auxiliar de cocina',
+        type: 'Empleado',
+        startDate: DateTime(2022, 2, 14),
+        endDate: DateTime(2023, 11, 30),
+      ),
+      EmployeeContract(
+        position: 'Domiciliario',
+        type: 'Usuario',
+        startDate: DateTime(2024, 5, 2),
+      ),
+    ],
   );
 
   EmployeeProfile get profile => _profile;

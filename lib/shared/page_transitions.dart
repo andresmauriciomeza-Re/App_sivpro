@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../employee/screens/employee_more_screen.dart';
+import '../employee/screens/employee_profile_screen.dart';
 import '../employee/screens/employee_clients_screen.dart';
 import '../employee/screens/employee_sales_management_screen.dart';
 import '../employee/screens/employee_returns_screen.dart';
@@ -19,16 +19,12 @@ const String kDevolucionesRoute = '/devoluciones-empleado';
 /// Nombre de ruta de la raíz de la sección Perfil (rol Empleado).
 const String kPerfilRoute = '/perfil-empleado';
 
-/// Nombre de ruta del detalle del perfil del empleado (abierto desde la
-/// pantalla "Perfil" del rol Empleado).
-const String kEmployeeProfileDetailRoute = '/perfil-detalle-empleado';
-
 /// Comportamiento de la barra inferior en las pantallas del rol Empleado.
 /// - Inicio: lleva al dashboard (raíz del stack).
 /// - Clientes: abre la pantalla de Clientes.
 /// - Ventas: abre la Gestión de ventas.
 /// - Devoluciones: abre el listado de Devoluciones.
-/// - Perfil: abre la pantalla "Más"/Perfil.
+/// - Perfil: abre directamente "Mi Perfil".
 /// Cada sección se trae a foco si ya está en la pila o se abre encima de la
 /// raíz, para que no se acumulen pantallas ni se rompa la flecha de volver.
 void handleEmployeeBottomNav(BuildContext context, int index) {
@@ -50,7 +46,7 @@ void handleEmployeeBottomNav(BuildContext context, int index) {
       _openSection(context, kDevolucionesRoute, const EmployeeReturnsScreen());
       break;
     case 4:
-      _openSection(context, kPerfilRoute, const EmployeeMoreScreen());
+      _openSection(context, kPerfilRoute, const EmployeeProfileScreen());
       break;
     default:
       ScaffoldMessenger.of(context).showSnackBar(

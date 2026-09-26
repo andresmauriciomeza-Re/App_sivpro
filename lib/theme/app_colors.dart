@@ -18,6 +18,9 @@ abstract final class AppColors {
   static const Color fieldBorder = Color(0xFFE2E0DE);
   static const Color fieldFill = Color(0xFFF5F4F3);
 
+  /// Relleno del campo de búsqueda unificado (el de la barra de Gestión Ventas).
+  static const Color searchFieldFill = Color(0xFFFFFDFD);
+
   static const Color tableHeaderFill = Color(0xFFF2F0EF);
   static const Color buttonFill = Color(0xFFE8E6E4);
 
@@ -67,6 +70,9 @@ abstract final class AppColors {
 
   /// Relleno de las cajas de campo de Mi Perfil (en reposo o en edición).
   static const Color profileFieldFill = Color(0xFFF0F0F0);
+
+  /// Relleno de las cajas de campo de Mi Perfil mientras se edita.
+  static const Color profileFieldFillActive = Color(0xFFFFFEFE);
 
   /// Texto gris más claro de los campos no editables de Mi Perfil.
   static const Color profileFieldDisabledText = Color(0xFFB6AEAC);

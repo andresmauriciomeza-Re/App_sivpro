@@ -35,7 +35,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           if (onBack != null) ...[
             IconButton(
               onPressed: onBack,
-              icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 27),
+              icon: const Icon(Icons.arrow_back, color: AppColors.ink, size: 27),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
@@ -46,8 +46,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.dmSerifDisplay(
-                color: AppColors.red,
+              style: GoogleFonts.montserrat(
+                color: AppColors.ink,
                 fontSize: 24,
               ),
             ),
@@ -65,7 +65,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               ),
               child: Text(
                 initials!,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,

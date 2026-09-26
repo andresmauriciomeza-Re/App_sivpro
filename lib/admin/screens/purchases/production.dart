@@ -4,18 +4,81 @@ class _ProductionOrdersScreen extends StatefulWidget {
   const _ProductionOrdersScreen();
 
   @override
-  State<_ProductionOrdersScreen> createState() => _ProductionOrdersScreenState();
+  State<_ProductionOrdersScreen> createState() =>
+      _ProductionOrdersScreenState();
 }
 
 class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
   String _query = '';
 
-  static const _orders = [
-    _ProductionOrder('ORD-001', 'REC-001', 'Margarita Clásica', '2024-01-15', '19:00', 20, 'Completada'),
-    _ProductionOrder('ORD-002', 'REC-002', 'Pepperoni Premium', '2024-01-15', '20:30', 15, 'En Proceso'),
-    _ProductionOrder('ORD-003', 'REC-003', 'Cuatro Quesos', '2024-01-16', '18:00', 10, 'Pendiente'),
-    _ProductionOrder('ORD-004', 'REC-004', 'Especial La Sirena', '2024-01-16', '21:00', 0, 'Cancelada'),
-    _ProductionOrder('ORD-005', 'REC-005', 'Vegetariana', '2024-01-17', '17:30', 12, 'Pendiente'),
+  /// `productId` es el producto de "Gestión Producto" que esta orden produce:
+  /// al completarse la orden, su cantidad producida se suma a ese stock.
+  static final List<_ProductionOrder> _orders = [
+    _ProductionOrder(
+      'ORD-001',
+      'REC-001',
+      'Margarita Clásica',
+      '2024-01-15',
+      '19:00',
+      20,
+      'Completada',
+      'PROD-001',
+      const [
+        _ProductionStatusChange('Completada', '15/01/2024 19:42'),
+        _ProductionStatusChange('En Proceso', '15/01/2024 18:20'),
+        _ProductionStatusChange('Pendiente', '15/01/2024 17:05'),
+      ],
+    ),
+    _ProductionOrder(
+      'ORD-002',
+      'REC-002',
+      'Pepperoni Premium',
+      '2024-01-15',
+      '20:30',
+      15,
+      'En Proceso',
+      'PROD-002',
+      const [
+        _ProductionStatusChange('En Proceso', '15/01/2024 19:10'),
+        _ProductionStatusChange('Pendiente', '15/01/2024 18:02'),
+      ],
+    ),
+    _ProductionOrder(
+      'ORD-003',
+      'REC-003',
+      'Cuatro Quesos',
+      '2024-01-16',
+      '18:00',
+      10,
+      'Pendiente',
+      'PROD-003',
+      const [_ProductionStatusChange('Pendiente', '15/01/2024 16:40')],
+    ),
+    _ProductionOrder(
+      'ORD-004',
+      'REC-004',
+      'Especial La Sirena',
+      '2024-01-16',
+      '21:00',
+      0,
+      'Cancelada',
+      'PROD-004',
+      const [
+        _ProductionStatusChange('Cancelada', '15/01/2024 14:25'),
+        _ProductionStatusChange('Pendiente', '15/01/2024 13:55'),
+      ],
+    ),
+    _ProductionOrder(
+      'ORD-005',
+      'REC-005',
+      'Vegetariana',
+      '2024-01-17',
+      '17:30',
+      12,
+      'Pendiente',
+      'PROD-005',
+      const [_ProductionStatusChange('Pendiente', '15/01/2024 17:20')],
+    ),
   ];
 
   @override
@@ -42,7 +105,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                   children: [
                     Text(
                       'Orden Producción',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -50,34 +113,15 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                     ),
                     Text(
                       '${_orders.length} órdenes registradas',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 17,
                       ),
                     ),
                     const SizedBox(height: 26),
-                    TextField(
+                    AppSearchField(
+                      hint: 'Buscar por ID orden o receta...',
                       onChanged: (value) => setState(() => _query = value),
-                      decoration: InputDecoration(
-                        hintText: 'Buscar por ID orden o receta...',
-                        hintStyle: GoogleFonts.dmSerifDisplay(
-                          color: PurchasesScreen.ink,
-                          fontSize: 16,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: PurchasesScreen.ink,
-                          size: 28,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF9F5F4),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFE8C7C4)),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: PurchasesScreen.red),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 38),
                     for (final order in filtered) ...[
@@ -138,7 +182,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       const SizedBox(height: 5),
                       Text(
                         order.id,
-                        style: GoogleFonts.dmSerifDisplay(
+                        style: GoogleFonts.poppins(
                           color: PurchasesScreen.ink,
                           fontSize: 19,
                           fontWeight: FontWeight.w700,
@@ -154,7 +198,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                     const SizedBox(height: 5),
                     Text(
                       '${order.quantity}',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.ink,
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
@@ -182,7 +226,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                         const SizedBox(height: 7),
                         Text(
                           order.recipeId,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.ink,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -190,7 +234,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                         ),
                         Text(
                           order.recipe,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.muted,
                             fontSize: 15,
                           ),
@@ -206,14 +250,14 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                         const SizedBox(height: 7),
                         Text(
                           '▣  ${order.date}',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.ink,
                             fontSize: 15,
                           ),
                         ),
                         Text(
                           '◷  ${order.time}',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.ink,
                             fontSize: 15,
                           ),
@@ -246,13 +290,14 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       children: [
                         Text(
                           order.status,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: statusColor,
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        if (!isCancelled) const Icon(Icons.expand_more, size: 18),
+                        if (!isCancelled)
+                          const Icon(Icons.expand_more, size: 18),
                       ],
                     ),
                   ),
@@ -261,26 +306,16 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                 GestureDetector(
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => _ProductionOrderDetailScreen(order: order),
+                      builder: (_) =>
+                          _ProductionOrderDetailScreen(order: order),
                     ),
                   ),
                   child: _orderAction(Icons.visibility_outlined),
                 ),
                 GestureDetector(
-                  onTap: isCancelled
-                      ? null
-                      : () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  _ProductionOrderEditScreen(order: order),
-                            ),
-                          ),
-                  child: _orderAction(Icons.edit_outlined, disabled: isCancelled),
-                ),
-                GestureDetector(
-                  onTap: isCancelled ? null : () => _showDeleteOrderDialog(order),
+                  onTap: isCancelled ? null : () => _openEditOrder(order),
                   child: _orderAction(
-                    Icons.delete_outline,
+                    Icons.edit_outlined,
                     disabled: isCancelled,
                   ),
                 ),
@@ -295,7 +330,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
   Widget _orderLabel(String text) {
     return Text(
       text,
-      style: GoogleFonts.dmSerifDisplay(
+      style: GoogleFonts.poppins(
         color: PurchasesScreen.muted,
         fontSize: 11,
         letterSpacing: 0.8,
@@ -324,161 +359,225 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
 
         return StatefulBuilder(
           builder: (context, setState) => Dialog(
-        backgroundColor: PurchasesScreen.page,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Cambiar estado de la orden',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.dmSerifDisplay(
-                  color: PurchasesScreen.ink,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: selectedStatus,
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFFD4F7E9),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: PurchasesScreen.red),
-                    borderRadius: BorderRadius.zero,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: PurchasesScreen.red),
-                    borderRadius: BorderRadius.zero,
-                  ),
-                ),
-                items: [
-                  for (final status in statuses)
-                    DropdownMenuItem<String>(
-                      value: status,
-                      child: Text(
-                        status,
-                        style: GoogleFonts.dmSerifDisplay(
-                          color: const Color(0xFF087A65),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                ],
-                onChanged: (status) {
-                  if (status != null) {
-                    setState(() => selectedStatus = status);
-                  }
-                },
-              ),
-              if (selectedStatus != order.status) ...[
-                const SizedBox(height: 18),
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFF4C7),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.warning_amber_rounded,
-                    color: Color(0xFFFF9800),
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'La orden ${order.id} pasará de:',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSerifDisplay(
-                    color: PurchasesScreen.muted,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(child: _statusPill(order.status)),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Icon(Icons.arrow_forward, size: 24),
-                    ),
-                    Expanded(child: _statusPill(selectedStatus)),
-                  ],
-                ),
-              ],
-              const SizedBox(height: 22),
-              Row(
+            backgroundColor: PurchasesScreen.page,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: PurchasesScreen.red,
-                        side: const BorderSide(color: PurchasesScreen.red),
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        'Cancelar',
-                        style: GoogleFonts.dmSerifDisplay(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                  Text(
+                    'Cambiar estado de la orden',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.montserrat(
+                      color: PurchasesScreen.ink,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: selectedStatus == order.status
-                          ? null
-                          : () => Navigator.of(dialogContext).pop(selectedStatus),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: PurchasesScreen.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedStatus,
+                    isExpanded: true,
+                    icon: const Icon(Icons.keyboard_arrow_down),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFD4F7E9),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
                       ),
-                      child: Text(
-                        'Confirmar',
-                        style: GoogleFonts.dmSerifDisplay(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: PurchasesScreen.red,
                         ),
+                        borderRadius: BorderRadius.zero,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: PurchasesScreen.red,
+                        ),
+                        borderRadius: BorderRadius.zero,
                       ),
                     ),
+                    items: [
+                      for (final status in statuses)
+                        DropdownMenuItem<String>(
+                          value: status,
+                          child: Text(
+                            status,
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF087A65),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                    ],
+                    onChanged: (status) {
+                      if (status != null) {
+                        setState(() => selectedStatus = status);
+                      }
+                    },
+                  ),
+                  if (selectedStatus != order.status) ...[
+                    const SizedBox(height: 18),
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFF4C7),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.warning_amber_rounded,
+                        color: Color(0xFFFF9800),
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'La orden ${order.id} pasará de:',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: PurchasesScreen.muted,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _statusPill(order.status)),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Icon(Icons.arrow_forward, size: 24),
+                        ),
+                        Expanded(child: _statusPill(selectedStatus)),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: PurchasesScreen.red,
+                            side: const BorderSide(color: PurchasesScreen.red),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancelar',
+                            style: GoogleFonts.poppins(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: selectedStatus == order.status
+                              ? null
+                              : () => Navigator.of(
+                                  dialogContext,
+                                ).pop(selectedStatus),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: PurchasesScreen.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Confirmar',
+                            style: GoogleFonts.poppins(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
           ),
         );
       },
     );
 
     if (mounted && nextStatus != null && nextStatus != order.status) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${order.id} cambió a "$nextStatus".')),
+      _applyOrderUpdate(
+        order,
+        order.copyWith(status: nextStatus),
+        '${order.id} cambió a "$nextStatus".',
       );
     }
+  }
+
+  /// Guarda la orden actualizada y, si pasó a "Completada", suma la cantidad
+  /// producida al stock del producto en "Gestión Producto".
+  void _applyOrderUpdate(
+    _ProductionOrder previous,
+    _ProductionOrder updated,
+    String successMessage,
+  ) {
+    // Cada transición de estado queda fechada en el historial de la orden.
+    final conHistorial = updated.withStatusChange(updated.status);
+    final index = _orders.indexWhere((item) => item.id == previous.id);
+    if (index >= 0) _orders[index] = conHistorial;
+    setState(() {});
+
+    final stock = _sumarStockProducido(previous, conHistorial);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          stock == null ? successMessage : '$successMessage $stock',
+        ),
+      ),
+    );
+  }
+
+  /// Suma la cantidad producida al stock del producto y devuelve el detalle del
+  /// ajuste, o `null` si el stock no tenía que cambiar.
+  ///
+  /// Solo suma en la transición a "Completada", así una orden que ya estaba
+  /// completada no duplica stock.
+  String? _sumarStockProducido(
+    _ProductionOrder previous,
+    _ProductionOrder updated,
+  ) {
+    if (previous.status == updated.status) return null;
+    if (updated.status != 'Completada') return null;
+
+    final repositorio = ProductsRepository.instance;
+    final stockAntes = repositorio.stockOf(updated.productId);
+    final stockDespues = repositorio.addStock(
+      updated.productId,
+      updated.quantity,
+    );
+    if (stockDespues == null) return null;
+    return 'Stock de ${updated.recipe}: $stockAntes → $stockDespues und.';
+  }
+
+  Future<void> _openEditOrder(_ProductionOrder order) async {
+    final updated = await Navigator.of(context).push<_ProductionOrder>(
+      MaterialPageRoute(
+        builder: (_) => _ProductionOrderEditScreen(order: order),
+      ),
+    );
+    if (updated == null || !mounted) return;
+
+    _applyOrderUpdate(order, updated, '${order.id} actualizado correctamente.');
   }
 
   Widget _statusPill(String status) {
@@ -492,47 +591,13 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
       child: Text(
         status,
         textAlign: TextAlign.center,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: _statusColor(status),
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
     );
-  }
-
-  Future<void> _showDeleteOrderDialog(_ProductionOrder order) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: Colors.black54,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminar orden'),
-        content: Text(
-          '¿Seguro que deseas eliminar la orden ${order.id}? '
-          'Esta acción no se puede deshacer.',
-        ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: PurchasesScreen.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
-    );
-
-    if (mounted && confirmed == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${order.id} eliminada correctamente.')),
-      );
-    }
   }
 
   Color _statusColor(String status) {
@@ -584,22 +649,19 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
-                    color: i == 2
-                        ? PurchasesScreen.red
-                        : PurchasesScreen.muted,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
+                    color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
                       fontSize: 12,
-                      fontWeight: i == 2
-                          ? FontWeight.w700
-                          : FontWeight.w400,
+                      fontWeight: i == 2 ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
                 ],
@@ -620,7 +682,9 @@ class _ProductionOrder {
     this.time,
     this.quantity,
     this.status,
-  );
+    this.productId, [
+    this.statusHistory = const [],
+  ]);
 
   final String id;
   final String recipeId;
@@ -629,6 +693,61 @@ class _ProductionOrder {
   final String time;
   final int quantity;
   final String status;
+
+  /// Producto de "Gestión Producto" que esta orden produce (PROD-001, ...).
+  final String productId;
+
+  /// Transiciones de estado de la orden, de la más reciente a la más antigua.
+  final List<_ProductionStatusChange> statusHistory;
+
+  _ProductionOrder copyWith({
+    String? date,
+    String? time,
+    int? quantity,
+    String? status,
+    List<_ProductionStatusChange>? statusHistory,
+  }) => _ProductionOrder(
+    id,
+    recipeId,
+    recipe,
+    date ?? this.date,
+    time ?? this.time,
+    quantity ?? this.quantity,
+    status ?? this.status,
+    productId,
+    statusHistory ?? this.statusHistory,
+  );
+
+  /// Copia la orden con [status] y su transición fechada en el historial. Si el
+  /// estado no cambia devuelve la misma orden para no duplicar historial.
+  _ProductionOrder withStatusChange(String status) {
+    if (status == this.status) return this;
+    return copyWith(
+      status: status,
+      statusHistory: [_ProductionStatusChange.now(status), ...statusHistory],
+    );
+  }
+}
+
+/// Cambio de estado de una orden, con la fecha en que ocurrió la transición.
+class _ProductionStatusChange {
+  const _ProductionStatusChange(this.status, this.date);
+
+  final String status;
+  final String date;
+
+  /// Transición generada en este momento, con fecha y hora de hoy.
+  factory _ProductionStatusChange.now(String status) {
+    final momento = DateTime.now();
+    final dia = momento.day.toString().padLeft(2, '0');
+    final mes = momento.month.toString().padLeft(2, '0');
+    final hora = momento.hour.toString().padLeft(2, '0');
+    final minuto = momento.minute.toString().padLeft(2, '0');
+    return _ProductionStatusChange(
+      status,
+      '$dia/$mes/${momento.year} $hora:$minuto',
+    );
+  }
 }
 
 class _ProductionOrderDetailScreen extends StatelessWidget {
@@ -660,7 +779,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                           onTap: () => Navigator.of(context).pop(),
                           child: Text(
                             '←  Volver a Producción',
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.page,
                               fontSize: 18,
                             ),
@@ -671,7 +790,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                     const SizedBox(height: 38),
                     Text(
                       'Detalle',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
                         fontSize: 38,
                         fontWeight: FontWeight.w700,
@@ -689,7 +808,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           order.id,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.ink,
                             fontSize: 27,
                             fontWeight: FontWeight.w700,
@@ -722,7 +841,10 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                           ),
                           _detailRow('Fecha Entrega', order.date),
                           _detailRow('Hora Entrega', order.time),
-                          _detailRow('Inicio de Producción', _startTime(order.time)),
+                          _detailRow(
+                            'Inicio de Producción',
+                            _startTime(order.time),
+                          ),
                           _detailRow(
                             'Cantidad Producida',
                             '${order.quantity} und.',
@@ -734,7 +856,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     'Estado Orden',
-                                    style: GoogleFonts.dmSerifDisplay(
+                                    style: GoogleFonts.poppins(
                                       color: PurchasesScreen.muted,
                                       fontSize: 18,
                                     ),
@@ -751,7 +873,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                                   ),
                                   child: Text(
                                     order.status,
-                                    style: GoogleFonts.dmSerifDisplay(
+                                    style: GoogleFonts.poppins(
                                       color: statusColor,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
@@ -773,7 +895,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'Observación',
-                                  style: GoogleFonts.dmSerifDisplay(
+                                  style: GoogleFonts.poppins(
                                     color: PurchasesScreen.muted,
                                     fontSize: 18,
                                   ),
@@ -783,7 +905,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                                   order.status == 'Completada'
                                       ? 'Turno mañana sin novedades.'
                                       : 'Pendiente de actualización.',
-                                  style: GoogleFonts.dmSerifDisplay(
+                                  style: GoogleFonts.poppins(
                                     color: PurchasesScreen.ink,
                                     fontSize: 17,
                                   ),
@@ -791,6 +913,8 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                               ],
                             ),
                           ),
+                          const SizedBox(height: 18),
+                          _statusHistory(order.statusHistory),
                         ],
                       ),
                     ),
@@ -809,7 +933,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'Cerrar',
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
                           ),
@@ -835,6 +959,80 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
     );
   }
 
+  /// Historial de cambios de estado, con la fecha de cada transición.
+  Widget _statusHistory(List<_ProductionStatusChange> history) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F4F3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Historial de Estados',
+            style: GoogleFonts.poppins(
+              color: PurchasesScreen.muted,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (history.isEmpty)
+            Text(
+              'Sin cambios de estado registrados.',
+              style: GoogleFonts.poppins(
+                color: PurchasesScreen.ink,
+                fontSize: 17,
+              ),
+            )
+          else
+            for (var i = 0; i < history.length; i++) ...[
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _statusBackground(history[i].status),
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: Text(
+                      history[i].status,
+                      style: GoogleFonts.poppins(
+                        color: _statusColor(history[i].status),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      history[i].date,
+                      textAlign: TextAlign.right,
+                      style: GoogleFonts.poppins(
+                        color: PurchasesScreen.muted,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (i != history.length - 1)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(color: Color(0xFFE1D8D6), height: 1),
+                ),
+            ],
+        ],
+      ),
+    );
+  }
+
   Widget _detailRow(String label, String value, {bool mono = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -847,7 +1045,7 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.dmSerifDisplay(
+              style: GoogleFonts.poppins(
                 color: PurchasesScreen.muted,
                 fontSize: 18,
               ),
@@ -859,12 +1057,12 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               style: mono
-                  ? GoogleFonts.dmSerifDisplay(
+                  ? GoogleFonts.poppins(
                       color: PurchasesScreen.ink,
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     )
-                  : GoogleFonts.dmSerifDisplay(
+                  : GoogleFonts.poppins(
                       color: PurchasesScreen.ink,
                       fontSize: 18,
                     ),
@@ -931,22 +1129,19 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
-                    color: i == 2
-                        ? PurchasesScreen.red
-                        : PurchasesScreen.muted,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
+                    color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
                       fontSize: 12,
-                      fontWeight: i == 2
-                          ? FontWeight.w700
-                          : FontWeight.w400,
+                      fontWeight: i == 2 ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
                 ],
@@ -981,8 +1176,9 @@ class _ProductionOrderEditScreenState
     super.initState();
     _dateController = TextEditingController(text: widget.order.date);
     _timeController = TextEditingController(text: widget.order.time);
-    _quantityController =
-        TextEditingController(text: '${widget.order.quantity}');
+    _quantityController = TextEditingController(
+      text: '${widget.order.quantity}',
+    );
     _observationController = TextEditingController(
       text: widget.order.status == 'Completada'
           ? 'Turno mañana sin novedades.'
@@ -1017,7 +1213,7 @@ class _ProductionOrderEditScreenState
                   children: [
                     Text(
                       'Editar',
-                      style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.ink,
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
@@ -1035,7 +1231,7 @@ class _ProductionOrderEditScreenState
                         const SizedBox(width: 10),
                         Text(
                           widget.order.id,
-                          style: GoogleFonts.dmSerifDisplay(
+                          style: GoogleFonts.poppins(
                             color: PurchasesScreen.ink,
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
@@ -1065,7 +1261,10 @@ class _ProductionOrderEditScreenState
                             Icons.access_time,
                           ),
                           _editLabel('FECHA DE ENTREGA *'),
-                          _textField(_dateController, Icons.calendar_today_outlined),
+                          _textField(
+                            _dateController,
+                            Icons.calendar_today_outlined,
+                          ),
                           _editLabel('HORA DE ENTREGA (HH:MM) *'),
                           _textField(_timeController, Icons.access_time),
                           _editLabel('CANTIDAD PRODUCIDA'),
@@ -1080,7 +1279,7 @@ class _ProductionOrderEditScreenState
                           TextField(
                             controller: _observationController,
                             maxLines: 4,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 17,
                             ),
@@ -1092,28 +1291,20 @@ class _ProductionOrderEditScreenState
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '${widget.order.id} actualizado correctamente.',
-                                    ),
-                                  ),
-                                );
-                              },
+                              onPressed: _guardarOrden,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: PurchasesScreen.red,
                                 foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 15),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               child: Text(
                                 'Guardar',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   fontSize: 19,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1127,15 +1318,16 @@ class _ProductionOrderEditScreenState
                               onPressed: () => Navigator.of(context).pop(),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: PurchasesScreen.ink,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 15),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               child: Text(
                                 'Cancelar',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   fontSize: 19,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1164,12 +1356,26 @@ class _ProductionOrderEditScreenState
     );
   }
 
+  /// Devuelve la orden ya actualizada para que "Orden Producción" la guarde y
+  /// sume el stock si quedó "Completada".
+  void _guardarOrden() {
+    final quantity = int.tryParse(_quantityController.text.trim());
+    Navigator.of(context).pop(
+      widget.order.copyWith(
+        date: _dateController.text.trim(),
+        time: _timeController.text.trim(),
+        quantity: quantity != null && quantity >= 0 ? quantity : null,
+        status: _status,
+      ),
+    );
+  }
+
   Widget _editLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 18, bottom: 8),
       child: Text(
         text,
-        style: GoogleFonts.dmSerifDisplay(
+        style: GoogleFonts.poppins(
           color: PurchasesScreen.muted,
           fontSize: 13,
           fontWeight: FontWeight.w700,
@@ -1184,7 +1390,7 @@ class _ProductionOrderEditScreenState
       readOnly: true,
       controller: TextEditingController(text: value),
       decoration: _fieldDecoration(icon),
-      style: GoogleFonts.dmSerifDisplay(color: PurchasesScreen.ink, fontSize: 17),
+      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 17),
     );
   }
 
@@ -1197,13 +1403,15 @@ class _ProductionOrderEditScreenState
       controller: controller,
       keyboardType: keyboardType,
       decoration: _fieldDecoration(icon),
-      style: GoogleFonts.dmSerifDisplay(color: PurchasesScreen.ink, fontSize: 17),
+      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 17),
     );
   }
 
   InputDecoration _fieldDecoration(IconData? icon) {
     return InputDecoration(
-      prefixIcon: icon == null ? null : Icon(icon, color: PurchasesScreen.muted),
+      prefixIcon: icon == null
+          ? null
+          : Icon(icon, color: PurchasesScreen.muted),
       filled: true,
       fillColor: const Color(0xFFF7F3F2),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
@@ -1261,15 +1469,14 @@ class _ProductionOrderEditScreenState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
-                    color: i == 2
-                        ? PurchasesScreen.red
-                        : PurchasesScreen.muted,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
+                    color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
@@ -1299,27 +1506,27 @@ class _ProductionScreen extends StatelessWidget {
             _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Gestión de Producción',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: PurchasesScreen.ink,
-                        fontSize: 34,
+                        fontSize: 26,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Seleccione el módulo que desea gestionar.',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
-                        fontSize: 20,
+                        fontSize: 15,
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 24),
                     _productionCard(
                       context: context,
                       icon: Icons.assignment_outlined,
@@ -1380,7 +1587,7 @@ class _ProductionScreen extends StatelessWidget {
       child: Container(
         width: double.infinity,
         clipBehavior: Clip.antiAlias,
-        padding: const EdgeInsets.fromLTRB(36, 36, 30, 32),
+        padding: const EdgeInsets.fromLTRB(25, 25, 21, 22),
         decoration: BoxDecoration(
           color: PurchasesScreen.page,
           borderRadius: BorderRadius.circular(17),
@@ -1410,16 +1617,12 @@ class _ProductionScreen extends StatelessWidget {
                     color: const Color(0xFFEDE9E8),
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  child: Icon(
-                    icon,
-                    color: PurchasesScreen.ink,
-                    size: 46,
-                  ),
+                  child: Icon(icon, color: PurchasesScreen.ink, size: 46),
                 ),
                 const SizedBox(height: 28),
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                  style: GoogleFonts.poppins(
                     color: PurchasesScreen.ink,
                     fontSize: 26,
                     fontWeight: FontWeight.w700,
@@ -1428,7 +1631,7 @@ class _ProductionScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   description,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.poppins(
                     color: PurchasesScreen.muted,
                     fontSize: 18,
                     height: 1.45,
@@ -1465,22 +1668,19 @@ class _ProductionScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
-                    color: i == 2
-                        ? PurchasesScreen.red
-                        : PurchasesScreen.muted,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
+                    color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 2
                           ? PurchasesScreen.red
                           : PurchasesScreen.muted,
                       fontSize: 12,
-                      fontWeight: i == 2
-                          ? FontWeight.w700
-                          : FontWeight.w400,
+                      fontWeight: i == 2 ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
                 ],
@@ -1491,4 +1691,3 @@ class _ProductionScreen extends StatelessWidget {
     );
   }
 }
-

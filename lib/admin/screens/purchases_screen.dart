@@ -3,15 +3,18 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
-import '../../shared/profile_body.dart';
 import '../../shared/search.dart';
 import '../../theme/app_colors.dart';
+import '../services/products_repository.dart';
+import '../services/sales_repository.dart';
 import '../widgets/production_summary_card.dart';
+import '../widgets/sales_pending_badge.dart';
 
 part 'purchases/admin_profile.dart';
 part 'purchases/clients.dart';
 part 'purchases/production.dart';
 part 'purchases/products.dart';
+part 'purchases/more_options.dart';
 part 'purchases/providers.dart';
 part 'purchases/purchase_management.dart';
 part 'purchases/sales.dart';
@@ -92,27 +95,27 @@ class PurchasesScreen extends StatelessWidget {
             _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Compras',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.montserrat(
                         color: ink,
-                        fontSize: 34,
+                        fontSize: 26,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Seleccione un módulo para administrar',
-                      style: GoogleFonts.dmSerifDisplay(
+                      style: GoogleFonts.poppins(
                         color: muted,
-                        fontSize: 20,
+                        fontSize: 15,
                       ),
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 24),
                     _ModuleCard(
                       icon: Icons.shopping_bag_outlined,
                       title: 'Compras',
@@ -190,15 +193,16 @@ class PurchasesScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 1 ? red : muted,
                     size: 27,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   const SizedBox(height: 3),
                   Text(
                     items[i].$2,
-                    style: GoogleFonts.dmSerifDisplay(
+                    style: GoogleFonts.poppins(
                       color: i == 1 ? red : muted,
                       fontSize: 12,
                       fontWeight: i == 1 ? FontWeight.w700 : FontWeight.w400,
@@ -233,7 +237,7 @@ class _ModuleCard extends StatelessWidget {
       child: Container(
       height: 288,
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(36, 36, 26, 28),
+      padding: const EdgeInsets.fromLTRB(25, 25, 18, 20),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: PurchasesScreen.page,
@@ -273,7 +277,7 @@ class _ModuleCard extends StatelessWidget {
               const Spacer(),
               Text(
                 title,
-                style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.ink,
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -282,7 +286,7 @@ class _ModuleCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 description,
-                style: GoogleFonts.dmSerifDisplay(
+                style: GoogleFonts.poppins(
                   color: PurchasesScreen.muted,
                   fontSize: 19,
                   height: 1.35,

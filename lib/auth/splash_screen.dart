@@ -751,7 +751,7 @@ class _SplashScreenState extends State<SplashScreen>
                               child: Text(
                                 textAlign: TextAlign.center,
                                 'Sabores que enamoran\ndesde 1994',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.montserrat(
                                   color: const Color(0xFF1A1A1A),
                                   fontSize: 30,
                                   fontWeight: FontWeight.w400,
@@ -764,7 +764,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                             Text(
                               'Tradición  ·  Calidad  ·  Pasión',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: const Color(0xFF1A1A1A),
                                 fontSize: 14,
                                 letterSpacing: 1.8,
@@ -827,7 +827,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   children: [
                                     Text(
                                       'Comenzar',
-                                      style: GoogleFonts.dmSerifDisplay(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
                                       ),

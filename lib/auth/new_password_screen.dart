@@ -44,7 +44,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   InputDecoration _dec(String hint, VoidCallback toggle, bool obscure) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.dmSerifDisplay(color: Colors.black38),
+      hintStyle: GoogleFonts.poppins(color: Colors.black38),
       filled: true,
       fillColor: campoGris,
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
@@ -79,7 +79,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
           const SizedBox(width: 10),
           Text(
             label,
-            style: GoogleFonts.dmSerifDisplay(
+            style: GoogleFonts.poppins(
               color: passed ? Colors.black87 : Colors.black45,
               fontSize: 13,
             ),
@@ -110,7 +110,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                 ),
                 Text(
                   'Nueva contraseña',
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -147,7 +147,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           Text(
                             'Nueva contraseña',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.montserrat(
                               color: Colors.black87,
                               fontSize: 28,
                               fontWeight: FontWeight.w400,
@@ -157,7 +157,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           Text(
                             'Crea una contraseña segura para tu cuenta.',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: Colors.black54,
                               fontSize: 15,
                             ),
@@ -168,7 +168,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Nueva contraseña',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: Colors.black87,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
@@ -179,7 +179,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           TextField(
                             controller: _passwordController,
                             obscureText: _obscure1,
-                            style: GoogleFonts.dmSerifDisplay(color: Colors.black87),
+                            style: GoogleFonts.poppins(color: Colors.black87),
                             decoration: _dec(
                               'Mínimo 6 caracteres',
                               () => setState(() => _obscure1 = !_obscure1),
@@ -192,7 +192,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Confirmar contraseña',
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: Colors.black87,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
@@ -203,7 +203,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           TextField(
                             controller: _confirmController,
                             obscureText: _obscure2,
-                            style: GoogleFonts.dmSerifDisplay(color: Colors.black87),
+                            style: GoogleFonts.poppins(color: Colors.black87),
                             decoration: _dec(
                               'Repite tu contraseña',
                               () => setState(() => _obscure2 = !_obscure2),
@@ -250,7 +250,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                               ),
                               child: Text(
                                 'Cambiar contraseña',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
                                 ),
