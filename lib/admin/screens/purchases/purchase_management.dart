@@ -12,19 +12,150 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   String _query = '';
 
   static const _purchases = [
-    _Purchase('COM-001', 'Distribuidora La Cosecha', '2024-01-10', '\$119.000', 'Enviado', 1),
-    _Purchase('COM-002', 'Carnes Premium Ltda.', '2024-01-12', '\$178.500', 'En Proceso', 1),
-    _Purchase('COM-003', 'Quesos del Norte S.A.S.', '2024-01-14', '\$59.500', 'Enviado', 1),
-    _Purchase('COM-004', 'Distribuidora La Cosecha', '2024-01-15', '\$238.000', 'Anulado', 1),
-    _Purchase('COM-005', 'Bebidas y Más', '2024-01-16', '\$89.250', 'En Proceso', 1),
+    _Purchase(
+      'Distribuidora La Cosecha',
+      '2024-01-10',
+      'FAC-001',
+      '\$119.000',
+      'Recibido',
+      [
+        _SupplyItem(
+          name: 'Harina de trigo',
+          quantity: '100',
+          unit: 'kg',
+          unitPrice: '\$1.200',
+          subtotal: '\$120.000',
+        ),
+        _SupplyItem(
+          name: 'Aceite vegetal',
+          quantity: '20',
+          unit: 'L',
+          unitPrice: '\$8.500',
+          subtotal: '\$170.000',
+        ),
+        _SupplyItem(
+          name: 'Tomate',
+          quantity: '50',
+          unit: 'kg',
+          unitPrice: '\$900',
+          subtotal: '\$45.000',
+        ),
+      ],
+    ),
+    _Purchase(
+      'Carnes Premium Ltda.',
+      '2024-01-12',
+      'FAC-002',
+      '\$178.500',
+      'Recibido',
+      [
+        _SupplyItem(
+          name: 'Pollo entero',
+          quantity: '80',
+          unit: 'kg',
+          unitPrice: '\$2.100',
+          subtotal: '\$168.000',
+        ),
+        _SupplyItem(
+          name: 'Cerdo',
+          quantity: '30',
+          unit: 'kg',
+          unitPrice: '\$4.500',
+          subtotal: '\$135.000',
+        ),
+        _SupplyItem(
+          name: 'Tocino',
+          quantity: '10',
+          unit: 'kg',
+          unitPrice: '\$6.000',
+          subtotal: '\$60.000',
+        ),
+      ],
+    ),
+    _Purchase(
+      'Quesos del Norte S.A.S.',
+      '2024-01-14',
+      'FAC-003',
+      '\$59.500',
+      'Recibido',
+      [
+        _SupplyItem(
+          name: 'Queso mozzarella',
+          quantity: '25',
+          unit: 'kg',
+          unitPrice: '\$3.200',
+          subtotal: '\$80.000',
+        ),
+        _SupplyItem(
+          name: 'Queso parmesano',
+          quantity: '10',
+          unit: 'kg',
+          unitPrice: '\$7.500',
+          subtotal: '\$75.000',
+        ),
+      ],
+    ),
+    _Purchase(
+      'Distribuidora La Cosecha',
+      '2024-01-15',
+      'FAC-004',
+      '\$238.000',
+      'Anulado',
+      [
+        _SupplyItem(
+          name: 'Harina de trigo',
+          quantity: '200',
+          unit: 'kg',
+          unitPrice: '\$1.200',
+          subtotal: '\$240.000',
+        ),
+        _SupplyItem(
+          name: 'Levadura',
+          quantity: '5',
+          unit: 'kg',
+          unitPrice: '\$15.000',
+          subtotal: '\$75.000',
+        ),
+        _SupplyItem(
+          name: 'Azúcar',
+          quantity: '50',
+          unit: 'kg',
+          unitPrice: '\$1.800',
+          subtotal: '\$90.000',
+        ),
+      ],
+    ),
+    _Purchase('Bebidas y Más', '2024-01-16', 'FAC-005', '\$89.250', 'Anulado', [
+      _SupplyItem(
+        name: 'Gaseosa cola',
+        quantity: '120',
+        unit: 'un',
+        unitPrice: '\$1.500',
+        subtotal: '\$180.000',
+      ),
+      _SupplyItem(
+        name: 'Jugo natural',
+        quantity: '60',
+        unit: 'un',
+        unitPrice: '\$1.200',
+        subtotal: '\$72.000',
+      ),
+      _SupplyItem(
+        name: 'Agua mineral',
+        quantity: '100',
+        unit: 'un',
+        unitPrice: '\$800',
+        subtotal: '\$80.000',
+      ),
+    ]),
   ];
 
   @override
   Widget build(BuildContext context) {
     final filtered = _purchases.where((purchase) {
       final query = _query.toLowerCase();
-      return purchase.id.toLowerCase().contains(query) ||
-          purchase.provider.toLowerCase().contains(query);
+      return purchase.provider.toLowerCase().contains(query) ||
+          purchase.invoiceNumber.toLowerCase().contains(query);
     }).toList();
 
     return Scaffold(
@@ -59,9 +190,14 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                     TextField(
                       onChanged: (value) => setState(() => _query = value),
                       decoration: InputDecoration(
-                        hintText: 'Buscar por ID o proveedor...',
-                        hintStyle: GoogleFonts.poppins(color: PurchasesScreen.ink),
-                        prefixIcon: const Icon(Icons.search, color: PurchasesScreen.ink),
+                        hintText: 'Buscar por proveedor o N° de factura...',
+                        hintStyle: GoogleFonts.poppins(
+                          color: PurchasesScreen.ink,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: PurchasesScreen.ink,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFFFFBFA),
                         border: const OutlineInputBorder(
@@ -91,17 +227,6 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   }
 
   Widget _buildPurchaseCard(_Purchase purchase) {
-    final statusColor = purchase.status == 'Enviado'
-        ? const Color(0xFF2E7D32)
-        : purchase.status == 'Anulado'
-            ? const Color(0xFFD32F2F)
-            : const Color(0xFFE67E00);
-    final statusBackground = purchase.status == 'Enviado'
-        ? const Color(0xFFE4F4E7)
-        : purchase.status == 'Anulado'
-            ? const Color(0xFFFFE3E6)
-            : const Color(0xFFFFF0D8);
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
@@ -110,7 +235,11 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE8DDDB)),
         boxShadow: const [
-          BoxShadow(color: Color(0x0A000000), blurRadius: 3, offset: Offset(0, 1)),
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 3,
+            offset: Offset(0, 1),
+          ),
         ],
       ),
       child: Column(
@@ -119,87 +248,93 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _label('ID COMPRA'),
-                  Row(
-                    children: [
-                      Text(
-                        purchase.id,
-                        style: GoogleFonts.poppins(fontSize: 18),
+              Expanded(
+                child: Text(
+                  purchase.provider,
+                  style: GoogleFonts.poppins(
+                    color: PurchasesScreen.ink,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _StatusDropdown(
+                currentStatus: purchase.status,
+                onStatusChanged: (newStatus) {
+                  _showChangeStatusDialog(context, purchase, newStatus);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _label('FECHA DE FACTURA'),
+                    Text(
+                      purchase.date,
+                      style: GoogleFonts.poppins(
+                        color: PurchasesScreen.ink,
+                        fontSize: 14,
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () => _showChangeStatusDialog(context, purchase, 'Recibido'),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: statusBackground,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Text(
-                    '${purchase.status} ⌄',
-                    style: GoogleFonts.poppins(color: statusColor, fontSize: 12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [_label('PROVEEDOR'), Text(purchase.provider)],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [_label('FECHA'), Text(purchase.date)],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Divider(color: Color(0xFFE8DDDB)),
-          Row(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _label('TOTAL'),
-                  Text(
-                    purchase.total,
-                    style: GoogleFonts.poppins(
-                      color: PurchasesScreen.red,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () => showDialog<void>(
-                  context: context,
-                  builder: (_) => _PurchaseDetailScreen(purchase: purchase),
+                  ],
                 ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _label('N° DE FACTURA'),
+                    Text(
+                      purchase.invoiceNumber,
+                      style: GoogleFonts.poppins(
+                        color: PurchasesScreen.ink,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  purchase.total,
+                  style: GoogleFonts.poppins(
+                    color: PurchasesScreen.red,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => _navigateToDetail(context, purchase),
                 icon: const Icon(
                   Icons.visibility_outlined,
                   color: PurchasesScreen.muted,
                 ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  void _navigateToDetail(BuildContext context, _Purchase purchase) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _PurchaseDetailScreen(purchase: purchase),
       ),
     );
   }
@@ -258,7 +393,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                         text: '¿Deseas cambiar el estado de la compra\n',
                       ),
                       TextSpan(
-                        text: purchase.id,
+                        text: purchase.invoiceNumber,
                         style: const TextStyle(
                           color: PurchasesScreen.ink,
                           fontWeight: FontWeight.w700,
@@ -327,20 +462,20 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${purchase.id} cambió a "$targetStatus" correctamente.',
+          '${purchase.invoiceNumber} cambió a "$targetStatus" correctamente.',
         ),
       ),
     );
   }
 
   Widget _label(String text) => Text(
-        text,
-        style: GoogleFonts.poppins(
-          color: PurchasesScreen.muted,
-          fontSize: 11,
-          letterSpacing: 0.3,
-        ),
-      );
+    text,
+    style: GoogleFonts.poppins(
+      color: PurchasesScreen.muted,
+      fontSize: 11,
+      letterSpacing: 0.3,
+    ),
+  );
 
   Widget _buildBottomNavigation(BuildContext context) {
     const items = [
@@ -365,8 +500,19 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(items[i].$1, color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted),
-                  Text(items[i].$2, style: GoogleFonts.poppins(color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted, fontSize: 12)),
+                  Icon(
+                    items[i].$1,
+                    color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
+                  ),
+                  Text(
+                    items[i].$2,
+                    style: GoogleFonts.poppins(
+                      color: i == 1
+                          ? PurchasesScreen.red
+                          : PurchasesScreen.muted,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -376,16 +522,149 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   }
 }
 
-class _Purchase {
-  const _Purchase(this.id, this.provider, this.date, this.total, this.status,
-      [this.itemCount = 1]);
+class _SupplyItem {
+  const _SupplyItem({
+    required this.name,
+    required this.quantity,
+    required this.unit,
+    required this.unitPrice,
+    required this.subtotal,
+  });
 
-  final String id;
+  final String name;
+  final String quantity;
+  final String unit;
+  final String unitPrice;
+  final String subtotal;
+}
+
+class _Purchase {
+  const _Purchase(
+    this.provider,
+    this.date,
+    this.invoiceNumber,
+    this.total,
+    this.status,
+    this.supplies,
+  );
+
   final String provider;
   final String date;
+  final String invoiceNumber;
   final String total;
   final String status;
-  final int itemCount;
+  final List<_SupplyItem> supplies;
+}
+
+class _StatusDropdown extends StatelessWidget {
+  const _StatusDropdown({
+    required this.currentStatus,
+    required this.onStatusChanged,
+  });
+
+  final String currentStatus;
+  final ValueChanged<String> onStatusChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isReceived = currentStatus == 'Recibido';
+    final statusColor = isReceived
+        ? const Color(0xFF2E7D32)
+        : const Color(0xFFD32F2F);
+    final statusBackground = isReceived
+        ? const Color(0xFFE4F4E7)
+        : const Color(0xFFFFE3E6);
+
+    return PopupMenuButton<String>(
+      onSelected: onStatusChanged,
+      offset: const Offset(0, 40),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: Color(0xFFE8DDDB)),
+      ),
+      itemBuilder: (context) => [
+        PopupMenuItem<String>(
+          value: 'Recibido',
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE4F4E7),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  'Recibido',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF2E7D32),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (currentStatus == 'Recibido')
+                const Icon(Icons.check, color: Color(0xFF2E7D32), size: 18),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'Anulado',
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFE3E6),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  'Anulado',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFFD32F2F),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (currentStatus == 'Anulado')
+                const Icon(Icons.check, color: Color(0xFFD32F2F), size: 18),
+            ],
+          ),
+        ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: statusBackground,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              currentStatus,
+              style: GoogleFonts.poppins(
+                color: statusColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.arrow_drop_down, color: statusColor, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _PurchaseDetailScreen extends StatelessWidget {
@@ -395,113 +674,87 @@ class _PurchaseDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isReceived = purchase.status == 'Recibido';
-    final statusColor = purchase.status == 'Enviado'
-        ? AppColors.bannerGreenFg
-        : purchase.status == 'Anulado'
-            ? const Color(0xFFD32F2F)
-            : const Color(0xFFE67E00);
-    final statusBackground = purchase.status == 'Enviado'
-        ? AppColors.bannerGreenBg
-        : purchase.status == 'Anulado'
-            ? const Color(0xFFFFE3E6)
-            : const Color(0xFFFFF0D8);
+    final statusColor = purchase.status == 'Recibido'
+        ? const Color(0xFF2E7D32)
+        : const Color(0xFFD32F2F);
+    final statusBackground = purchase.status == 'Recibido'
+        ? const Color(0xFFE4F4E7)
+        : const Color(0xFFFFE3E6);
 
-    return Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 520),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return Scaffold(
+      backgroundColor: AppColors.page,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.ink),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(context, statusColor, statusBackground),
-            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildBanner(isReceived),
-                    const SizedBox(height: 16),
-                    _readOnlyField('N° Orden de Compra', purchase.id),
-                    const SizedBox(height: 14),
-                    _readOnlyField('N° Factura', '—'),
-                    const SizedBox(height: 14),
-                    _readOnlyField('Fecha de factura', '—'),
-                    const SizedBox(height: 14),
-                    _readOnlyField('Valor total', purchase.total),
-                  ],
-                ),
+            const Text(
+              'Detalle de Compra',
+              style: TextStyle(
+                color: AppColors.ink,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
-            _buildFooter(context),
+            Text(
+              purchase.provider,
+              style: GoogleFonts.montserrat(
+                color: AppColors.muted,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: statusBackground,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              purchase.status,
+              style: GoogleFonts.poppins(
+                color: statusColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildBanner(),
+            const SizedBox(height: 20),
+            _readOnlyField('N° Factura', purchase.invoiceNumber),
+            const SizedBox(height: 14),
+            _readOnlyField('Fecha de factura', purchase.date),
+            const SizedBox(height: 14),
+            _readOnlyField('Proveedor', purchase.provider),
+            const SizedBox(height: 14),
+            _readOnlyField('Valor total', purchase.total),
+            const SizedBox(height: 24),
+            _buildSuppliesList(purchase),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-    Color statusColor,
-    Color statusBackground,
-  ) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Detalle de Compra',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.ink,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Gestión ${purchase.id} · ${purchase.provider}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.montserrat(
-                    color: AppColors.muted,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          _statusChip(purchase.status, statusColor, statusBackground),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close, color: AppColors.muted),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBanner(bool isReceived) {
-    final bg = isReceived ? AppColors.bannerGreenBg : AppColors.bannerBlueBg;
-    final borderColor =
-        isReceived ? AppColors.bannerGreenBorder : AppColors.bannerBlueBorder;
-    final fg = isReceived ? AppColors.bannerGreenFg : AppColors.bannerBlueFg;
-    final message = isReceived
-        ? 'Factura registrada. Esta gestión ya no puede modificarse.'
-        : 'Esta gestión proviene de la Orden de Compra ${purchase.id}. '
-            'Las cantidades solicitadas son de solo lectura.';
+  Widget _buildBanner() {
+    final bg = AppColors.bannerGreenBg;
+    final borderColor = AppColors.bannerGreenBorder;
+    final fg = AppColors.bannerGreenFg;
 
     return Container(
       width: double.infinity,
@@ -518,14 +771,8 @@ class _PurchaseDetailScreen extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              message,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.poppins(
-                color: fg,
-                fontSize: 13,
-                height: 1.35,
-              ),
+              'Factura registrada. Esta gestión ya no puede modificarse.',
+              style: GoogleFonts.poppins(color: fg, fontSize: 13, height: 1.35),
             ),
           ),
         ],
@@ -558,171 +805,99 @@ class _PurchaseDetailScreen extends StatelessWidget {
           ),
           child: Text(
             value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(
-              color: AppColors.ink,
-              fontSize: 15,
-            ),
+            style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
           ),
         ),
       ],
     );
   }
 
-  // ignore: unused_element
-  Widget _buildSuppliesCards() {
-    const insumos = [
-      ('INS-001', 'Harina de trigo', '100', '0', 'kg', '\$ 3.500'),
-      ('INS-006', 'Levadura', '5000', '0', 'g', '\$ 80'),
-    ];
+  Widget _buildSuppliesList(_Purchase purchase) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < insumos.length; i++) ...[
-          if (i > 0) const SizedBox(height: 12),
-          _SupplyCard(insumo: insumos[i]),
-        ],
+        Text(
+          'Insumos solicitados',
+          style: GoogleFonts.montserrat(
+            color: AppColors.ink,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.headerDivider),
+          ),
+          child: Column(
+            children: [
+              for (var i = 0; i < purchase.supplies.length; i++) ...[
+                if (i > 0)
+                  const Divider(height: 1, color: AppColors.headerDivider),
+                _buildSupplyCard(purchase.supplies[i]),
+              ],
+              const Divider(height: 1, color: AppColors.headerDivider),
+              _buildTotalFooter(purchase.total),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  // ignore: unused_element
-  Widget _buildLotesCard(bool isReceived) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
-      decoration: BoxDecoration(
-        color: AppColors.page,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.headerDivider),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Usar lotes',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.ink,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Registra fecha de vencimiento por insumo (calculada automáticamente: recepción + 7 días)',
-                  style: GoogleFonts.poppins(
-                    color: AppColors.muted,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: isReceived,
-            onChanged: isReceived ? (_) {} : null,
-            activeThumbColor: AppColors.red,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFooter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
-      child: SizedBox(
-        width: double.infinity,
-        height: 48,
-        child: OutlinedButton(
-          onPressed: () => Navigator.of(context).pop(),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.ink,
-            side: const BorderSide(color: AppColors.fieldBorder),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-          ),
-          child: Text(
-            'Cerrar',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _statusChip(String text, Color color, Color background) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Text(text, style: GoogleFonts.poppins(color: color, fontSize: 12)),
-    );
-  }
-}
-
-class _SupplyCard extends StatelessWidget {
-  const _SupplyCard({required this.insumo});
-
-  final (String, String, String, String, String, String) insumo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.headerDivider),
-      ),
+  Widget _buildSupplyCard(_SupplyItem item) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  insumo.$2,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    color: AppColors.ink,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Text(
+                    item.name,
+                    style: GoogleFonts.poppins(
+                      color: AppColors.ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
               Text(
-                insumo.$1,
+                item.subtotal,
                 style: GoogleFonts.poppins(
-                  color: AppColors.muted,
-                  fontSize: 12,
+                  color: AppColors.ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _cell('Solicitado', insumo.$3),
-              _cell('Recibido', insumo.$4),
-              _cell('Unidad', insumo.$5),
-              _cell('P. unit.', insumo.$6),
+              Text(
+                '${item.quantity} ${item.unit}',
+                style: GoogleFonts.poppins(
+                  color: AppColors.muted,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                '${item.unitPrice} c/u',
+                style: GoogleFonts.poppins(
+                  color: AppColors.muted,
+                  fontSize: 13,
+                ),
+              ),
             ],
           ),
         ],
@@ -730,28 +905,33 @@ class _SupplyCard extends StatelessWidget {
     );
   }
 
-  Widget _cell(String label, String value) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTotalFooter(String total) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: const BoxDecoration(
+        color: AppColors.fieldFill,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(14),
+          bottomRight: Radius.circular(14),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            'Total',
             style: GoogleFonts.poppins(
               color: AppColors.ink,
               fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            total,
+            style: GoogleFonts.poppins(
+              color: PurchasesScreen.red,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
