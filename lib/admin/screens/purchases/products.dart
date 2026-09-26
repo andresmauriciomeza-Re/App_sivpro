@@ -1,21 +1,121 @@
 part of '../purchases_screen.dart';
 
+/// Insumo asignado a un producto dentro de su ficha técnica.
+class _ProductFichaInsumo {
+  const _ProductFichaInsumo({
+    required this.insumoId,
+    required this.name,
+    required this.cantidad,
+    required this.medida,
+  });
+
+  final String insumoId;
+  final String name;
+  final String cantidad;
+  final String medida;
+}
+
+/// Ficha técnica del producto (versión 1).
+class _ProductFichaTecnica {
+  const _ProductFichaTecnica({
+    required this.id,
+    required this.prepTime,
+    required this.porciones,
+    required this.insumos,
+    required this.pasos,
+  });
+
+  final String id;
+  final String prepTime;
+  final String porciones;
+  final List<_ProductFichaInsumo> insumos;
+  final List<String> pasos;
+}
+
 class _Product {
   const _Product({
     required this.id,
     required this.name,
     required this.category,
     required this.price,
-    required this.stock,
     required this.imagePath,
+    this.estado = 'Activo',
+    this.unit = 'und',
+    this.fichaTecnica,
   });
 
   final String id;
   final String name;
   final String category;
   final int price;
-  final int stock;
   final String imagePath;
+
+  /// 'Activo' o 'Inactivo'.
+  final String estado;
+
+  /// Unidad de venta (und, kg, l).
+  final String unit;
+
+  /// Ficha técnica opcional del producto.
+  final _ProductFichaTecnica? fichaTecnica;
+
+  bool get isActive => estado == 'Activo';
+
+  /// El stock no vive en el modelo: `ProductsRepository` es la fuente de verdad
+  /// (lo actualiza la producción y también el campo "Stock disponible").
+  int get stock => ProductsRepository.instance.stockOf(id);
+
+  /// Copia con los datos editados desde "Editar Producto" (el stock se guarda
+  /// aparte, en el repositorio).
+  _Product copyWith({
+    String? name,
+    String? category,
+    int? price,
+    String? imagePath,
+    String? estado,
+    String? unit,
+    _ProductFichaTecnica? fichaTecnica,
+  }) => _Product(
+    id: id,
+    name: name ?? this.name,
+    category: category ?? this.category,
+    price: price ?? this.price,
+    imagePath: imagePath ?? this.imagePath,
+    estado: estado ?? this.estado,
+    unit: unit ?? this.unit,
+    fichaTecnica: fichaTecnica ?? this.fichaTecnica,
+  );
+}
+
+/// Las imágenes pueden venir de un asset (datos mock) o de una URL pegada por el
+/// usuario al crear el producto.
+bool _isNetworkImage(String path) {
+  return path.startsWith('http://') || path.startsWith('https://');
+}
+
+Widget _productImageFallback(
+  BuildContext context,
+  Object error,
+  StackTrace? stackTrace,
+) {
+  return Container(
+    color: const Color(0xFFE8B66A),
+    alignment: Alignment.center,
+    child: const Text(
+      'Pizza',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+  );
+}
+
+Widget _productImage(String path, {BoxFit fit = BoxFit.cover}) {
+  return _isNetworkImage(path)
+      ? Image.network(path, fit: fit, errorBuilder: _productImageFallback)
+      : Image.asset(path, fit: fit, errorBuilder: _productImageFallback);
 }
 
 class _ProductManagementScreen extends StatefulWidget {
@@ -28,51 +128,95 @@ class _ProductManagementScreen extends StatefulWidget {
 
 class _ProductManagementScreenState extends State<_ProductManagementScreen> {
   String _query = '';
-  final _products = const [
-    _Product(
+  final List<_Product> _products = [
+    const _Product(
       id: 'PROD-001',
       name: 'Margarita Clásica',
       category: 'CAT-001 - Pizzas Clásicas',
       price: 24000,
-      stock: 50,
       imagePath: 'assets/images/products/pizza.jpg',
+      estado: 'Activo',
+      fichaTecnica: _ProductFichaTecnica(
+        id: 'REC-001',
+        prepTime: '12',
+        porciones: '1',
+        insumos: [
+          _ProductFichaInsumo(
+            insumoId: 'INS-004',
+            name: 'Masa Pre-elaborada',
+            cantidad: '1',
+            medida: 'und',
+          ),
+          _ProductFichaInsumo(
+            insumoId: 'INS-008',
+            name: 'Salsa de tomate',
+            cantidad: '150',
+            medida: 'ml',
+          ),
+          _ProductFichaInsumo(
+            insumoId: 'INS-007',
+            name: 'Queso mozzarella',
+            cantidad: '120',
+            medida: 'g',
+          ),
+          _ProductFichaInsumo(
+            insumoId: 'INS-010',
+            name: 'Orégano seco',
+            cantidad: '5',
+            medida: 'g',
+          ),
+        ],
+        pasos: [
+          'Desengrasar la mesa y extender la masa pre-elaborada.',
+          'Añadir la salsa de tomate dejando un borde de 2 cm.',
+          'Distribuir el queso mozzarella y el orégano seco.',
+          'Hornear a 400 °C durante 12 minutos.',
+        ],
+      ),
     ),
-    _Product(
+    const _Product(
       id: 'PROD-002',
       name: 'Pepperoni Premium',
       category: 'CAT-001 - Pizzas Clásicas',
       price: 28000,
-      stock: 40,
       imagePath: 'assets/images/products/pizza.jpg',
+      estado: 'Activo',
     ),
-    _Product(
+    const _Product(
       id: 'PROD-003',
       name: 'Cuatro Quesos',
       category: 'CAT-002 - Pizzas Especiales',
       price: 30000,
-      stock: 30,
       imagePath: 'assets/images/products/pizza.jpg',
+      estado: 'Activo',
     ),
-    _Product(
+    const _Product(
       id: 'PROD-004',
       name: 'Especial La Sirena',
       category: 'CAT-002 - Pizzas Especiales',
       price: 32000,
-      stock: 25,
       imagePath: 'assets/images/products/pizza.jpg',
+      estado: 'Activo',
     ),
-    _Product(
+    const _Product(
       id: 'PROD-005',
       name: 'Veggie Mediterránea',
       category: 'CAT-003 - Pizzas Vegetarianas',
       price: 26000,
-      stock: 20,
       imagePath: 'assets/images/products/pizza.jpg',
+      estado: 'Inactivo',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: ProductsRepository.instance,
+      builder: (context, _) => _buildProductList(context),
+    );
+  }
+
+  Widget _buildProductList(BuildContext context) {
     final filteredProducts = _products
         .where(
           (product) => matchesSearchQuery(_query, [
@@ -117,7 +261,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                       hint: 'Buscar por ID, nombre o categoría...',
                       onChanged: (value) => setState(() => _query = value),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 26),
                     for (final product in filteredProducts) ...[
                       _productCard(product),
                       const SizedBox(height: 22),
@@ -130,6 +274,31 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _openDetailProduct(_Product product) async {
+    final actualizado = await Navigator.of(context).push<_Product>(
+      MaterialPageRoute(builder: (_) => _ProductDetailScreen(product: product)),
+    );
+    if (actualizado == null || !mounted) return;
+
+    final index = _products.indexWhere((item) => item.id == product.id);
+    if (index >= 0) _products[index] = actualizado;
+    setState(() {});
+  }
+
+  Future<void> _openEditProduct(_Product product) async {
+    final actualizado = await Navigator.of(context).push<_Product>(
+      MaterialPageRoute(builder: (_) => _ProductEditScreen(product: product)),
+    );
+    if (actualizado == null || !mounted) return;
+
+    final index = _products.indexWhere((item) => item.id == product.id);
+    if (index >= 0) _products[index] = actualizado;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${product.id} actualizado correctamente.')),
     );
   }
 
@@ -162,22 +331,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                 ),
-                child: Image.asset(
-                  product.imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: const Color(0xFFE8B66A),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      'Pizza',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
+                child: _productImage(product.imagePath),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -196,8 +350,10 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                     Wrap(
                       spacing: 10,
                       runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         _productTag(product.id),
+                        _estadoBadge(product),
                         Text(
                           product.category,
                           style: GoogleFonts.poppins(
@@ -228,11 +384,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
               ),
               const Spacer(),
               IconButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => _ProductDetailScreen(product: product),
-                  ),
-                ),
+                onPressed: () => _openDetailProduct(product),
                 icon: const Icon(
                   Icons.visibility_outlined,
                   color: PurchasesScreen.muted,
@@ -240,22 +392,10 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                 ),
               ),
               IconButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => _ProductEditScreen(product: product),
-                  ),
-                ),
+                onPressed: () => _openEditProduct(product),
                 icon: const Icon(
                   Icons.edit_outlined,
                   color: PurchasesScreen.muted,
-                  size: 29,
-                ),
-              ),
-              IconButton(
-                onPressed: () => _showDeleteProductDialog(product),
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: PurchasesScreen.red,
                   size: 29,
                 ),
               ),
@@ -307,146 +447,31 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
     );
   }
 
+  /// Pill de estado: verde "Activo" / rojo "Inactivo".
+  Widget _estadoBadge(_Product product) {
+    final isActive = product.isActive;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: isActive ? const Color(0xFFE3F2E5) : const Color(0xFFFFE8EB),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        product.estado,
+        style: GoogleFonts.poppins(
+          color: isActive ? const Color(0xFF3D824B) : PurchasesScreen.red,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
           RegExp(r'(?=(\d{3})+(?!\d))'),
           (match) => '.',
         );
-  }
-
-  Future<void> _showDeleteProductDialog(_Product product) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: Colors.black54,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: PurchasesScreen.page,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(25, 28, 25, 26),
-              child: Column(
-                children: [
-                  Container(
-                    width: 86,
-                    height: 86,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFFD9D6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.warning_amber_rounded,
-                      color: PurchasesScreen.red,
-                      size: 52,
-                    ),
-                  ),
-                  const SizedBox(height: 26),
-                  Text(
-                    'Eliminar producto',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.montserrat(
-                      color: Colors.black,
-                      fontSize: 31,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 17),
-                  Text.rich(
-                    TextSpan(
-                      style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
-                        fontSize: 18,
-                        height: 1.45,
-                      ),
-                      children: [
-                        const TextSpan(
-                          text: '¿Seguro que deseas eliminar el producto ',
-                        ),
-                        TextSpan(
-                          text: '${product.id}?',
-                          style: GoogleFonts.poppins(
-                            color: PurchasesScreen.ink,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const TextSpan(
-                          text: ' Esta acción no se puede deshacer.',
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1, color: Color(0xFFE5BDB9)),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 28, 28, 28),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 68,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: PurchasesScreen.red,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                      ),
-                      child: Text(
-                        'Sí, confirmar',
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 68,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        side: const BorderSide(
-                          color: PurchasesScreen.muted,
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                      ),
-                      child: Text(
-                        'Cancelar',
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (mounted && confirmed == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${product.id} eliminado correctamente.')),
-      );
-    }
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
@@ -495,13 +520,36 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
   }
 }
 
-class _ProductDetailScreen extends StatelessWidget {
+class _ProductDetailScreen extends StatefulWidget {
   const _ProductDetailScreen({required this.product});
 
   final _Product product;
 
   @override
+  State<_ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<_ProductDetailScreen> {
+  late _Product _product;
+
+  @override
+  void initState() {
+    super.initState();
+    _product = widget.product;
+  }
+
+  /// Abre "Editar Producto" y refleja en el detalle lo que se guarde allí.
+  Future<void> _openEdit() async {
+    final actualizado = await Navigator.of(context).push<_Product>(
+      MaterialPageRoute(builder: (_) => _ProductEditScreen(product: _product)),
+    );
+    if (actualizado == null || !mounted) return;
+    setState(() => _product = actualizado);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final product = _product;
     final categoryParts = product.category.split(' - ');
     final categoryId = categoryParts.first;
     final categoryName = categoryParts.length > 1
@@ -577,6 +625,20 @@ class _ProductDetailScreen extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 190,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: _productImage(
+                              product.imagePath,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
                       _detailSection(
                         'ID CATEGORÍA',
                         '$categoryId  -  $categoryName',
@@ -601,7 +663,7 @@ class _ProductDetailScreen extends StatelessWidget {
                             Expanded(
                               child: _detailValueColumn(
                                 'UNIDAD DE VENTA',
-                                'und',
+                                product.unit,
                                 GoogleFonts.poppins(
                                   color: PurchasesScreen.ink,
                                   fontSize: 20,
@@ -621,6 +683,7 @@ class _ProductDetailScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      _buildFichaTecnica(product.fichaTecnica),
                     ],
                   ),
                 ),
@@ -628,33 +691,159 @@ class _ProductDetailScreen extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 72,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: PurchasesScreen.red,
-                    side: const BorderSide(
-                      color: PurchasesScreen.red,
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 72,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(_product),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: PurchasesScreen.red,
+                          side: const BorderSide(
+                            color: PurchasesScreen.red,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                        ),
+                        child: Text(
+                          'Cerrar',
+                          style: GoogleFonts.poppins(
+                            fontSize: 25,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    'Cerrar',
-                    style: GoogleFonts.poppins(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w700,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: SizedBox(
+                      height: 72,
+                      child: ElevatedButton.icon(
+                        onPressed: _openEdit,
+                        icon: const Icon(
+                          Icons.edit_outlined,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                        label: Text(
+                          'Editar',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: PurchasesScreen.red,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Ficha técnica del producto o el aviso de que todavía no tiene una.
+  Widget _buildFichaTecnica(_ProductFichaTecnica? ficha) {
+    if (ficha == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 25),
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: Color(0xFFE5BDB9))),
+        ),
+        child: Text(
+          'Sin ficha técnica registrada',
+          style: GoogleFonts.poppins(
+            color: PurchasesScreen.muted,
+            fontSize: 17,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _detailSection(
+          'FICHA TÉCNICA',
+          ficha.id,
+          icon: Icons.menu_book_outlined,
+          valueStyle: GoogleFonts.poppins(
+            color: PurchasesScreen.ink,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        _detailSection('TIEMPO DE PREPARACIÓN', '${ficha.prepTime} min'),
+        _detailSection('PORCIONES', ficha.porciones),
+        _fichaListSection('INSUMOS', [
+          for (final insumo in ficha.insumos)
+            '${insumo.name} — ${insumo.cantidad} ${insumo.medida}',
+        ]),
+        _fichaListSection('PASOS DE PREPARACIÓN', [
+          for (var i = 0; i < ficha.pasos.length; i++)
+            '${i + 1}. ${ficha.pasos[i]}',
+        ]),
+      ],
+    );
+  }
+
+  /// Lista de valores de la ficha técnica (insumos o pasos de preparación).
+  Widget _fichaListSection(String label, List<String> items) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 23),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE5BDB9))),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: PurchasesScreen.muted,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 9),
+          if (items.isEmpty)
+            Text(
+              'Sin registros',
+              style: GoogleFonts.poppins(
+                color: PurchasesScreen.muted,
+                fontSize: 17,
+              ),
+            )
+          else
+            for (final item in items)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  item,
+                  style: GoogleFonts.poppins(
+                    color: PurchasesScreen.ink,
+                    fontSize: 17,
+                  ),
+                ),
+              ),
+        ],
       ),
     );
   }
@@ -774,14 +963,26 @@ class _ProductEditScreen extends StatefulWidget {
 
 class _ProductEditScreenState extends State<_ProductEditScreen> {
   late final TextEditingController _nameController;
+  late final TextEditingController _imageUrlController;
   late final TextEditingController _priceController;
   late final TextEditingController _stockController;
   late String _category;
+  late String _estado;
+  late String _unit;
+  late _ProductFichaTecnica? _ficha;
+
+  static const _estados = ['Activo', 'Inactivo'];
+  static const _unidades = ['und', 'kg', 'l'];
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.product.name);
+    _imageUrlController = TextEditingController(
+      text: _isNetworkImage(widget.product.imagePath)
+          ? widget.product.imagePath
+          : '',
+    );
     _priceController = TextEditingController(
       text: widget.product.price.toString(),
     );
@@ -789,11 +990,15 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       text: widget.product.stock.toString(),
     );
     _category = widget.product.category;
+    _estado = widget.product.estado;
+    _unit = widget.product.unit;
+    _ficha = widget.product.fichaTecnica;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _imageUrlController.dispose();
     _priceController.dispose();
     _stockController.dispose();
     super.dispose();
@@ -861,9 +1066,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _textField(
-                              TextEditingController(
-                                text: 'https://image...',
-                              ),
+                              _imageUrlController,
                               hintText: 'URL de imagen',
                             ),
                           ),
@@ -872,13 +1075,15 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                       const SizedBox(height: 18),
                       Stack(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              widget.product.imagePath,
-                              width: double.infinity,
-                              height: 190,
-                              fit: BoxFit.cover,
+                          SizedBox(
+                            width: double.infinity,
+                            height: 190,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: _productImage(
+                                widget.product.imagePath,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                           Positioned(
@@ -926,9 +1131,13 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                               children: [
                                 _fieldLabel('Unidad de venta'),
                                 _dropdownField(
-                                  value: 'und',
-                                  items: const ['und', 'kg', 'l'],
-                                  onChanged: (_) {},
+                                  value: _unit,
+                                  items: _unidades,
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setState(() => _unit = value);
+                                    }
+                                  },
                                 ),
                               ],
                             ),
@@ -948,6 +1157,26 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 26),
+                      _fieldLabel('Estado del producto'),
+                      _dropdownField(
+                        value: _estado,
+                        items: _estados,
+                        onChanged: (value) {
+                          if (value != null) setState(() => _estado = value);
+                        },
+                      ),
+                      if (_ficha != null) ...[
+                        const SizedBox(height: 30),
+                        const Divider(color: Color(0xFFE5BDB9), height: 1),
+                        const SizedBox(height: 24),
+                        _fichaTitle(_ficha!.id),
+                        const SizedBox(height: 18),
+                        _ProductFichaTecnicaEditor(
+                          ficha: _ficha!,
+                          onChanged: (ficha) => setState(() => _ficha = ficha),
+                        ),
+                      ],
                       const SizedBox(height: 34),
                       Row(
                         children: [
@@ -1147,13 +1376,70 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     );
   }
 
+  Widget _fichaTitle(String fichaId) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'FICHA TÉCNICA',
+          style: GoogleFonts.poppins(
+            color: PurchasesScreen.muted,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFE8EB),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            fichaId,
+            style: GoogleFonts.poppins(
+              color: PurchasesScreen.red,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _avisar(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
+  /// Guarda los cambios y devuelve el producto actualizado a la lista.
   void _saveProduct() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${widget.product.id} actualizado correctamente.'),
+    final nombre = _nameController.text.trim();
+    if (nombre.isEmpty) {
+      _avisar('El nombre del producto es obligatorio.');
+      return;
+    }
+
+    // Ajuste manual del stock: la producción completada sigue sumando por
+    // separado sobre este valor.
+    final stock = int.tryParse(_stockController.text.trim());
+    if (stock != null) {
+      ProductsRepository.instance.setStock(widget.product.id, stock);
+    }
+
+    final url = _imageUrlController.text.trim();
+    Navigator.of(context).pop(
+      widget.product.copyWith(
+        name: nombre,
+        category: _category,
+        price: int.tryParse(_priceController.text.trim()),
+        imagePath: url.isEmpty ? null : url,
+        estado: _estado,
+        unit: _unit,
+        fichaTecnica: _ficha,
       ),
     );
-    Navigator.of(context).pop();
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
@@ -1202,3 +1488,547 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
   }
 }
 
+/// Editor de la ficha técnica de un producto (tiempo de preparación,
+/// porciones, insumos y pasos de preparación).
+///
+/// Solo se muestra cuando el producto ya tiene una ficha técnica registrada y
+/// avisa cada cambio al formulario de edición que lo contiene.
+class _ProductFichaTecnicaEditor extends StatefulWidget {
+  const _ProductFichaTecnicaEditor({
+    required this.ficha,
+    required this.onChanged,
+  });
+
+  final _ProductFichaTecnica ficha;
+  final ValueChanged<_ProductFichaTecnica> onChanged;
+
+  @override
+  State<_ProductFichaTecnicaEditor> createState() =>
+      _ProductFichaTecnicaEditorState();
+}
+
+class _ProductFichaTecnicaEditorState
+    extends State<_ProductFichaTecnicaEditor> {
+  static const _medidas = ['kg', 'g', 'l', 'ml', 'und'];
+
+  late final TextEditingController _prepTimeController;
+  late final TextEditingController _porcionesController;
+  final _insumoSearchController = TextEditingController();
+  final _cantidadController = TextEditingController();
+  final _pasoController = TextEditingController();
+  final List<_ProductFichaInsumo> _insumos = [];
+  final List<String> _pasos = [];
+  String _medida = 'kg';
+  String? _insumoSeleccionadoId;
+
+  @override
+  void initState() {
+    super.initState();
+    _prepTimeController = TextEditingController(text: widget.ficha.prepTime);
+    _porcionesController = TextEditingController(text: widget.ficha.porciones);
+    _insumos.addAll(widget.ficha.insumos);
+    _pasos.addAll(widget.ficha.pasos);
+  }
+
+  @override
+  void dispose() {
+    _prepTimeController.dispose();
+    _porcionesController.dispose();
+    _insumoSearchController.dispose();
+    _cantidadController.dispose();
+    _pasoController.dispose();
+    super.dispose();
+  }
+
+  /// Catálogo de insumos de la pantalla de Insumos (misma biblioteca).
+  List<_Supply> get _insumosCatalogo => _SupplyManagementScreenState._supplies;
+
+  List<_Supply> get _insumosCoincidentes {
+    final query = _insumoSearchController.text;
+    return _insumosCatalogo
+        .where(
+          (supply) => matchesSearchQuery(query, [
+            supply.id,
+            supply.categoryId,
+            supply.name,
+            supply.category,
+          ]),
+        )
+        .toList();
+  }
+
+  bool get _mostrarResultadosInsumo =>
+      _insumoSearchController.text.trim().isNotEmpty;
+
+  _Supply? get _insumoSeleccionado {
+    for (final supply in _insumosCatalogo) {
+      if (supply.id == _insumoSeleccionadoId) return supply;
+    }
+    return null;
+  }
+
+  /// Propaga al formulario la ficha con los valores actuales.
+  void _notificar() {
+    widget.onChanged(
+      _ProductFichaTecnica(
+        id: widget.ficha.id,
+        prepTime: _prepTimeController.text.trim(),
+        porciones: _porcionesController.text.trim(),
+        insumos: List.unmodifiable(_insumos),
+        pasos: List.unmodifiable(_pasos),
+      ),
+    );
+  }
+
+  void _onInsumoSearchChanged(String value) {
+    final resultados = _insumosCoincidentes;
+    setState(() {
+      _insumoSeleccionadoId = resultados.isEmpty ? null : resultados.first.id;
+    });
+  }
+
+  void _seleccionarInsumo(_Supply supply) {
+    setState(() {
+      _insumoSeleccionadoId = supply.id;
+      _medida = _medidas.contains(supply.unit) ? supply.unit : _medidas.first;
+    });
+  }
+
+  void _agregarInsumo() {
+    final insumo = _insumoSeleccionado;
+    if (insumo == null) {
+      _avisar('Busca y selecciona un insumo de la lista.');
+      return;
+    }
+    final cantidad = int.tryParse(_cantidadController.text.trim()) ?? 0;
+    if (cantidad <= 0) {
+      _avisar('Ingresa una cantidad válida para el insumo.');
+      return;
+    }
+    setState(() {
+      _insumos.add(
+        _ProductFichaInsumo(
+          insumoId: insumo.id,
+          name: insumo.name,
+          cantidad: '$cantidad',
+          medida: _medida,
+        ),
+      );
+      _cantidadController.clear();
+    });
+    _notificar();
+  }
+
+  void _eliminarInsumo(int index) {
+    setState(() => _insumos.removeAt(index));
+    _notificar();
+  }
+
+  void _agregarPaso() {
+    final paso = _pasoController.text.trim();
+    if (paso.isEmpty) {
+      _avisar('Describe un paso de la elaboración.');
+      return;
+    }
+    setState(() {
+      _pasos.add(paso);
+      _pasoController.clear();
+    });
+    _notificar();
+  }
+
+  void _eliminarPaso(int index) {
+    setState(() => _pasos.removeAt(index));
+    _notificar();
+  }
+
+  void _avisar(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label('Tiempo de preparación (min)'),
+        _textField(
+          _prepTimeController,
+          keyboardType: TextInputType.number,
+          onChanged: (_) => _notificar(),
+        ),
+        const SizedBox(height: 20),
+        _label('Porciones'),
+        _textField(
+          _porcionesController,
+          keyboardType: TextInputType.number,
+          onChanged: (_) => _notificar(),
+        ),
+        const SizedBox(height: 20),
+        _label('Insumos'),
+        const SizedBox(height: 10),
+        _buildInsumosList(),
+        const SizedBox(height: 12),
+        _buildInsumoAddRow(),
+        const SizedBox(height: 20),
+        _label('Preparación (pasos de elaboración)'),
+        const SizedBox(height: 10),
+        _buildPasosList(),
+        const SizedBox(height: 12),
+        _buildPasoAddRow(),
+      ],
+    );
+  }
+
+  Widget _buildInsumosList() {
+    if (_insumos.isEmpty) {
+      return _emptyHint('Sin insumos agregados');
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < _insumos.length; i++)
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE5BDB9)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${_insumos[i].name} — ${_insumos[i].cantidad} '
+                    '${_insumos[i].medida}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      color: PurchasesScreen.ink,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => _eliminarInsumo(i),
+                  icon: const Icon(
+                    Icons.close,
+                    color: PurchasesScreen.muted,
+                    size: 20,
+                  ),
+                  tooltip: 'Quitar insumo',
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildInsumoAddRow() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppSearchField(
+          controller: _insumoSearchController,
+          hint: 'Buscar insumo...',
+          onChanged: _onInsumoSearchChanged,
+          showClearButton: true,
+        ),
+        if (_mostrarResultadosInsumo) ...[
+          const SizedBox(height: 8),
+          _buildInsumoResults(),
+        ],
+        const SizedBox(height: 12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _label('Cantidad'),
+                  _textField(
+                    _cantidadController,
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _label('Medida'),
+                  _dropdownField(
+                    value: _medida,
+                    items: _medidas,
+                    onChanged: (value) {
+                      if (value != null) setState(() => _medida = value);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: _roundAddButton(_agregarInsumo),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInsumoResults() {
+    final resultados = _insumosCoincidentes;
+    if (resultados.isEmpty) {
+      return _emptyHint('No se encontraron insumos');
+    }
+    final visibles = resultados.take(4).toList();
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE5BDB9)),
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < visibles.length; i++)
+            InkWell(
+              onTap: () => _seleccionarInsumo(visibles[i]),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: i == visibles.length - 1
+                          ? Colors.transparent
+                          : const Color(0xFFF0E2E0),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${visibles[i].id} · ${visibles[i].name}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          color: PurchasesScreen.ink,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    if (visibles[i].id == _insumoSeleccionadoId)
+                      const Icon(
+                        Icons.check_circle,
+                        color: PurchasesScreen.red,
+                        size: 20,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasosList() {
+    if (_pasos.isEmpty) {
+      return _emptyHint('Sin pasos agregados');
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < _pasos.length; i++)
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE5BDB9)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${i + 1}.',
+                  style: GoogleFonts.poppins(
+                    color: PurchasesScreen.red,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _pasos[i],
+                    style: GoogleFonts.poppins(
+                      color: PurchasesScreen.ink,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => _eliminarPaso(i),
+                  icon: const Icon(
+                    Icons.close,
+                    color: PurchasesScreen.muted,
+                    size: 20,
+                  ),
+                  tooltip: 'Quitar paso',
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPasoAddRow() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _textField(
+            _pasoController,
+            hintText: 'Describe un paso de la elaboración...',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: _roundAddButton(_agregarPaso),
+        ),
+      ],
+    );
+  }
+
+  Widget _roundAddButton(VoidCallback onPressed) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: const BoxDecoration(
+        color: PurchasesScreen.red,
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: const Icon(Icons.add, color: Colors.white, size: 28),
+        tooltip: 'Agregar',
+      ),
+    );
+  }
+
+  Widget _emptyHint(String text) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE5BDB9)),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.poppins(color: PurchasesScreen.muted, fontSize: 14),
+      ),
+    );
+  }
+
+  Widget _label(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(color: PurchasesScreen.muted, fontSize: 15),
+      ),
+    );
+  }
+
+  Widget _textField(
+    TextEditingController controller, {
+    TextInputType? keyboardType,
+    String? hintText,
+    ValueChanged<String>? onChanged,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      onChanged: onChanged,
+      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 16),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: GoogleFonts.poppins(
+          color: PurchasesScreen.muted,
+          fontSize: 15,
+        ),
+        filled: true,
+        fillColor: const Color(0xFFF7F8F9),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 15,
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _dropdownField({
+    required String? value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      key: ValueKey<String?>('$value'),
+      initialValue: value,
+      isExpanded: true,
+      onChanged: onChanged,
+      icon: const Icon(Icons.keyboard_arrow_down),
+      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 15),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: const Color(0xFFF7F8F9),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 15,
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
+        ),
+      ),
+      items: [
+        for (final item in items)
+          DropdownMenuItem<String>(
+            value: item,
+            child: Text(
+              item,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
+    );
+  }
+}
