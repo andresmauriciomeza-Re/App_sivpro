@@ -1233,3 +1233,594 @@ class _ClientStatusSwitch extends StatelessWidget {
     );
   }
 }
+class _ClientDetailScreen extends StatelessWidget {
+  const _ClientDetailScreen({required this.client});
+
+  final _Client client;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: PurchasesScreen.page,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildAppHeader(context),
+            Container(
+              height: 58,
+              color: AppColors.page,
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.red,
+                      size: 27,
+                    ),
+                  ),
+                  Text(
+                    'Detalle Cliente',
+                    style: GoogleFonts.dmSerifDisplay(
+                      color: AppColors.red,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 36,
+                      ),
+                      decoration: BoxDecoration(
+                        color: PurchasesScreen.page,
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 59,
+                            backgroundColor: client.color,
+                            child: Text(
+                              client.initials,
+                              style: GoogleFonts.dmSerifDisplay(
+                                color: Colors.white,
+                                fontSize: 42,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            client.name,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                              color: PurchasesScreen.ink,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            client.id,
+                            style: GoogleFonts.dmSerifDisplay(
+                              color: PurchasesScreen.muted,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: PurchasesScreen.page,
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                      child: Column(
+                        children: [
+                          _detailClientRow('Correo', client.email),
+                          _detailClientRow(
+                            'Pedidos totales',
+                            '${client.orders}',
+                            valueStyle: GoogleFonts.dmSerifDisplay(
+                              color: PurchasesScreen.ink,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          _detailClientRow(
+                            'Estado',
+                            client.active ? 'Activo' : 'Inactivo',
+                            valueWidget: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                                vertical: 7,
+                              ),
+                              decoration: BoxDecoration(
+                                color: client.active
+                                    ? const Color(0xFFE2F4E5)
+                                    : const Color(0xFFF1EAEA),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Text(
+                                client.active ? 'Activo' : 'Inactivo',
+                                style: GoogleFonts.dmSerifDisplay(
+                                  color: client.active
+                                      ? const Color(0xFF278044)
+                                      : PurchasesScreen.muted,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 72,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: PurchasesScreen.page,
+                          foregroundColor: Colors.black,
+                          side: BorderSide.none,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Cerrar',
+                          style: GoogleFonts.dmSerifDisplay(
+                            fontSize: 25,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+}
+
+class _ClientEditScreen extends StatefulWidget {
+    const _ClientEditScreen({required this.client});
+
+    final _Client client;
+
+    @override
+    State<_ClientEditScreen> createState() => _ClientEditScreenState();
+  }
+
+class _ClientEditScreenState extends State<_ClientEditScreen> {
+    late final TextEditingController _nameController;
+    late final TextEditingController _emailController;
+    late final TextEditingController _ordersController;
+    late bool _active;
+
+    @override
+    void initState() {
+      super.initState();
+      _nameController = TextEditingController(text: widget.client.name);
+      _emailController = TextEditingController(text: widget.client.email);
+      _ordersController = TextEditingController(
+        text: '${widget.client.orders}',
+      );
+      _active = widget.client.active;
+    }
+
+    @override
+    void dispose() {
+      _nameController.dispose();
+      _emailController.dispose();
+      _ordersController.dispose();
+      super.dispose();
+    }
+
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        backgroundColor: PurchasesScreen.page,
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.arrow_back,
+                              color: AppColors.red,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Volver a Clientes',
+                              style: GoogleFonts.dmSerifDisplay(
+                                color: AppColors.red,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'Editar Cliente',
+                        style: GoogleFonts.dmSerifDisplay(
+                          color: PurchasesScreen.ink,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'ID: ${widget.client.id}',
+                        style: GoogleFonts.dmSerifDisplay(
+                          color: PurchasesScreen.muted,
+                          fontSize: 17,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+                        decoration: BoxDecoration(
+                          color: PurchasesScreen.page,
+                          borderRadius: BorderRadius.circular(17),
+                          border: Border.all(color: const Color(0xFFE0D9D7)),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x10000000),
+                              blurRadius: 8,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _fieldLabel('Nombre completo'),
+                            _textField(_nameController),
+                            const SizedBox(height: 24),
+                            _fieldLabel('Correo'),
+                            _textField(
+                              _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            const SizedBox(height: 24),
+                            _fieldLabel('Pedidos'),
+                            _lockedField(_ordersController),
+                            const SizedBox(height: 24),
+                            _fieldLabel('Estado'),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _dropdownField(),
+                                ),
+                                const SizedBox(width: 20),
+                                Icon(
+                                  Icons.sync,
+                                  color: PurchasesScreen.red,
+                                  size: 30,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 30),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: PurchasesScreen.red,
+                                  side: const BorderSide(
+                                    color: PurchasesScreen.red,
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancelar',
+                                  style: GoogleFonts.dmSerifDisplay(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: ElevatedButton(
+                                onPressed: _saveClient,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: PurchasesScreen.red,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Guardar cambios',
+                                  style: GoogleFonts.dmSerifDisplay(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              _buildBottomNavigation(context),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Widget _buildHeader(BuildContext context) {
+      return AppHeader(
+        title: 'La Sirena Pizza',
+        onBack: () => Navigator.of(context).pop(),
+        initials: getInitials('Gloria Inés Vargas'),
+      );
+    }
+
+    Widget _fieldLabel(String label) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Text(
+          label,
+          style: GoogleFonts.dmSerifDisplay(
+            color: PurchasesScreen.ink,
+            fontSize: 20,
+          ),
+        ),
+      );
+    }
+
+    Widget _textField(
+      TextEditingController controller, {
+      TextInputType? keyboardType,
+    }) {
+      return TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: GoogleFonts.dmSerifDisplay(
+          color: PurchasesScreen.ink,
+          fontSize: 20,
+        ),
+        decoration: const InputDecoration(
+          filled: true,
+          fillColor: Color(0xFFF7F8F9),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 16,
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
+          ),
+        ),
+      );
+    }
+
+    Widget _lockedField(TextEditingController controller) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: controller,
+            enabled: false,
+            style: GoogleFonts.dmSerifDisplay(
+              color: PurchasesScreen.muted,
+              fontSize: 20,
+            ),
+            decoration: const InputDecoration(
+              filled: true,
+              fillColor: Color(0xFFF7F8F9),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 16,
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'No se puede modificar',
+            style: GoogleFonts.dmSerifDisplay(
+              color: PurchasesScreen.muted,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget _dropdownField() {
+      return DropdownButtonFormField<String>(
+        initialValue: _active ? 'Activo' : 'Inactivo',
+        isExpanded: true,
+        onChanged: (value) {
+          if (value != null) {
+            setState(() => _active = value == 'Activo');
+          }
+        },
+        icon: const Icon(Icons.keyboard_arrow_down),
+        style: GoogleFonts.dmSerifDisplay(
+          color: PurchasesScreen.ink,
+          fontSize: 20,
+        ),
+        decoration: const InputDecoration(
+          filled: true,
+          fillColor: Color(0xFFF7F8F9),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 16,
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
+          ),
+        ),
+        items: const [
+          DropdownMenuItem(value: 'Activo', child: Text('Activo')),
+          DropdownMenuItem(value: 'Inactivo', child: Text('Inactivo')),
+        ],
+      );
+    }
+
+    void _saveClient() {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${widget.client.id} actualizado correctamente.'),
+        ),
+      );
+      Navigator.of(context).pop();
+    }
+
+    Widget _buildBottomNavigation(BuildContext context) {
+      const items = [
+        (Icons.home_outlined, 'Inicio'),
+        (Icons.shopping_cart_outlined, 'Compras'),
+        (Icons.factory_outlined, 'Producción'),
+        (Icons.receipt_long_outlined, 'Ventas'),
+        (Icons.person_outline, 'Mi Perfil'),
+      ];
+      return Container(
+        padding: const EdgeInsets.only(top: 8, bottom: 8),
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            for (var i = 0; i < items.length; i++)
+              GestureDetector(
+                onTap: () => navigateToBottomModule(context, i),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      items[i].$1,
+                      color: i == 4 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    ),
+                    Text(
+                      items[i].$2,
+                      style: GoogleFonts.dmSerifDisplay(
+                        color: i == 4
+                            ? PurchasesScreen.red
+                            : PurchasesScreen.muted,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+  }
+
+extension _ClientDetailHelpers on _ClientDetailScreen {
+  Widget _detailClientRow(
+    String label,
+    String value, {
+    TextStyle? valueStyle,
+    Widget? valueWidget,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE0D9D7))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: GoogleFonts.dmSerifDisplay(
+                color: PurchasesScreen.muted,
+                fontSize: 18,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 3,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: valueWidget ??
+                  Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: valueStyle ??
+                        GoogleFonts.dmSerifDisplay(
+                          color: PurchasesScreen.ink,
+                          fontSize: 16,
+                        ),
+                    ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppHeader(BuildContext context) {
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
+    );
+  }
+}
+

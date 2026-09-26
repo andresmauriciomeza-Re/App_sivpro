@@ -1528,6 +1528,7 @@ class _ProductionScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     _productionCard(
+                      context: context,
                       icon: Icons.assignment_outlined,
                       title: 'Orden Producción',
                       description:
@@ -1541,6 +1542,7 @@ class _ProductionScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     _productionCard(
+                      context: context,
                       icon: Icons.inventory_2_outlined,
                       title: 'Productos',
                       description:
@@ -1573,6 +1575,7 @@ class _ProductionScreen extends StatelessWidget {
   }
 
   Widget _productionCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String description,

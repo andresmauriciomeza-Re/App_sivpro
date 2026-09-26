@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
+import '../../shared/page_transitions.dart';
 import '../../theme/app_colors.dart';
 import '../services/employee_profile_service.dart';
-import '../../shared/page_transitions.dart';
 
-/// Perfil del Empleado (estilo compacto similar al perfil del Cliente, con los
-/// campos Nombre, Documento, Correo y Teléfono editables en modo edición).
+/// Perfil del Empleado con edición de datos, historial de contrataciones y
+/// navegación propia del rol Empleado.
 class EmployeeProfileScreen extends StatefulWidget {
   const EmployeeProfileScreen({super.key});
 
@@ -240,7 +240,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             label: Text(_editing ? 'Guardar' : 'Editar'),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.ink,
-              side: const BorderSide(color: AppColors.pillBorder),
+              side: const BorderSide(color: AppColors.cardBorder),
               shape: const StadiumBorder(),
               minimumSize: const Size(0, 36),
               padding: const EdgeInsets.symmetric(horizontal: 14),

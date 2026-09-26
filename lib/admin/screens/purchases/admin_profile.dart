@@ -468,6 +468,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: GoogleFonts.poppins(
                       color: i == 4 ? AppColors.red : AppColors.muted,
                       fontSize: 10,
+                      fontWeight: i == 4 ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
                 ],

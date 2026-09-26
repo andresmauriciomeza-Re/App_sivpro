@@ -48,6 +48,8 @@ abstract final class AppColors {
   static const Color badgeGreenBg = Color(0xFFE5FAF0);
   static const Color badgeGreenFg = Color(0xFF008C5A);
 
+  static const Color profileChipBg = Color(0xFFF5EDEC); // ajusta el tono a tu gusto
+
   /// Track encendido del switch de estado de cliente (verde).
   static const Color switchTrackActive = Color(0xFF2E9E5B);
 
@@ -63,29 +65,23 @@ abstract final class AppColors {
   static const Color returnChipResolvedBg = Color(0xFFE2F3E5);
   static const Color returnChipResolvedFg = Color(0xFF16813A);
 
-  /// Borde suave de las tarjetas de Perfil (Más opciones y detalle de perfil).
+  /// Borde suave de las tarjetas de Perfil (Mi Perfil y detalle de perfil).
   static const Color profileCardBorder = Color(0xFFE5DFDD);
 
-  /// Divisor interno de la tarjeta de Perfil (detalle).
-  static const Color profileDivider = Color(0xFFEDE8E7);
+  /// Relleno de las cajas de campo de Mi Perfil (en reposo o en edición).
+  static const Color profileFieldFill = Color(0xFFF0F0F0);
 
-  /// Relleno de las cajas de campo del Perfil (no editables o en reposo).
-  static const Color profileFieldFill = Color(0xFFF2F2F2);
-
-  /// Relleno de las cajas de campo del Perfil mientras se edita.
+  /// Relleno de las cajas de campo de Mi Perfil mientras se edita.
   static const Color profileFieldFillActive = Color(0xFFFFFEFE);
+
+  /// Texto gris más claro de los campos no editables de Mi Perfil.
+  static const Color profileFieldDisabledText = Color(0xFFB6AEAC);
 
   /// Texto de los labels de campo del Perfil.
   static const Color profileLabel = Color(0xFF5B514F);
 
   /// Íconos de los labels de campo del Perfil.
   static const Color profileLabelIcon = Color(0xFF968D8B);
-
-  /// Fondo de la etiqueta "S.I.V.PRO" en la tarjeta de Más opciones.
-  static const Color profileChipBg = Color(0xFFE6E2E1);
-
-  /// Borde gris claro del botón "Editar" en píldora.
-  static const Color pillBorder = Color(0xFFE0DDDB);
 
   /// Fondo suave del botón secundario "Volver al inicio".
   static const Color buttonSoftBg = Color(0xFFF7F6F6);

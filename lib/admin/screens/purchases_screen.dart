@@ -12,9 +12,9 @@ import '../widgets/sales_pending_badge.dart';
 
 part 'purchases/admin_profile.dart';
 part 'purchases/clients.dart';
-part 'purchases/more_options.dart';
 part 'purchases/production.dart';
 part 'purchases/products.dart';
+part 'purchases/more_options.dart';
 part 'purchases/providers.dart';
 part 'purchases/purchase_management.dart';
 part 'purchases/sales.dart';
