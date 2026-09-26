@@ -390,14 +390,14 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: AppColors.red, size: 27),
+            icon: const Icon(Icons.arrow_back, color: Colors.black, size: 27),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 28),
           Text(
             'La Sirena Pizza',
-            style: GoogleFonts.montserrat(color: red, fontSize: 24),
+            style: GoogleFonts.montserrat(color: Colors.black, fontSize: 24),
           ),
           const Spacer(),
           Container(

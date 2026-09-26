@@ -420,7 +420,7 @@ class _SalesHeaderBar extends StatelessWidget {
                 child: const Icon(
                   Icons.arrow_back,
 
-                  color: PurchasesScreen.red,
+                  color: Colors.black,
 
                   size: 27,
                 ),
@@ -441,7 +441,7 @@ class _SalesHeaderBar extends StatelessWidget {
                 textAlign: TextAlign.center,
 
                 style: GoogleFonts.montserrat(
-                  color: PurchasesScreen.red,
+                  color: Colors.black,
 
                   fontSize: 24,
 
@@ -541,8 +541,6 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
             child: Column(
               children: [
                 _buildHeader(context),
-
-                _buildBreadcrumb(),
 
                 Expanded(
                   child: SingleChildScrollView(
@@ -703,48 +701,6 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
       onBack: () => Navigator.of(context).pop(),
 
       initials: getInitials('Gloria Inés Vargas'),
-    );
-  }
-
-  Widget _buildBreadcrumb() {
-    return Container(
-      width: double.infinity,
-
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
-
-        border: Border(bottom: BorderSide(color: Color(0xFFF0E2E0))),
-      ),
-
-      child: Row(
-        children: [
-          _breadcrumbItem('Inicio', bold: false),
-
-          const Icon(Icons.chevron_right, color: Color(0xFFB7A5A2), size: 20),
-
-          _breadcrumbItem('Ventas', bold: false),
-
-          const Icon(Icons.chevron_right, color: Color(0xFFB7A5A2), size: 20),
-
-          _breadcrumbItem('Gestión Ventas', bold: true),
-        ],
-      ),
-    );
-  }
-
-  Widget _breadcrumbItem(String label, {required bool bold}) {
-    return Text(
-      label,
-
-      style: GoogleFonts.poppins(
-        color: bold ? PurchasesScreen.muted : const Color(0xFF9C8986),
-
-        fontSize: 14,
-
-        fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
-      ),
     );
   }
 

@@ -162,6 +162,8 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                     const SizedBox(height: 12),
                     _fieldsCard(context),
                     const SizedBox(height: 14),
+                    _contractsHistory(profile),
+                    const SizedBox(height: 14),
                     _actions(),
                   ],
                 ),
@@ -352,6 +354,130 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         ),
       ],
     );
+  }
+
+  Widget _contractsHistory(EmployeeProfile profile) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.profileCardBorder),
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        leading: const Icon(
+          Icons.business_center_outlined,
+          color: AppColors.profileLabelIcon,
+          size: 20,
+        ),
+        title: Text(
+          'Historial de contrataciones',
+          style: GoogleFonts.poppins(
+            color: AppColors.profileLabel,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        children: profile.contracts.isEmpty
+            ? [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'No hay contrataciones registradas.',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.muted,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ]
+            : profile.contracts.map(_contractCard).toList(),
+      ),
+    );
+  }
+
+  Widget _contractCard(EmployeeContract contract) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.profileFieldFill,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.profileCardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  contract.position,
+                  style: GoogleFonts.poppins(
+                    color: AppColors.ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (contract.isCurrent)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'ACTUAL',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.red,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            contract.type,
+            style: GoogleFonts.poppins(
+              color: AppColors.muted,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '${_formatDate(contract.startDate)} → ${contract.isCurrent ? 'Continúa activo' : _formatDate(contract.endDate!)}',
+            style: GoogleFonts.poppins(
+              color: AppColors.ink,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
   }
 
   Widget _actions() {
