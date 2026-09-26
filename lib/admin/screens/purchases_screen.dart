@@ -5,6 +5,7 @@ import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../shared/search.dart';
 import '../../theme/app_colors.dart';
+import '../services/products_repository.dart';
 import '../services/sales_repository.dart';
 import '../widgets/production_summary_card.dart';
 import '../widgets/sales_pending_badge.dart';
