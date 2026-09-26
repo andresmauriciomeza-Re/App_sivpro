@@ -20,6 +20,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       'ventas@lacosecha.com',
       'Calle 45 # 12-34, Zona Industrial',
       true,
+      'Carlos Mendoza',
     ),
     _Provider(
       'PROV-002',
@@ -29,6 +30,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       'pedidos@buenpastor.co',
       'Cra 22 # 8-15, Centro',
       true,
+      'Ana María Ruiz',
     ),
     _Provider(
       'PROV-003',
@@ -38,6 +40,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       'contacto@empaquesnorte.com',
       'Autopista Norte Km 5, Bodega 4',
       false,
+      null,
     ),
     _Provider(
       'PROV-004',
@@ -47,6 +50,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       'proveedores@harinas.com',
       'Av. Boyacá # 72-10',
       true,
+      'Luis Fernando Torres',
     ),
   ];
 
@@ -206,7 +210,12 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _providerInfo('EMAIL', provider.email)),
-              Expanded(child: _providerInfo('ASESOR COMERCIAL', '—')),
+              Expanded(
+                child: _providerInfo(
+                  'ASESOR COMERCIAL',
+                  provider.advisor ?? '',
+                ),
+              ),
             ],
           ),
           const Padding(
@@ -228,8 +237,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
   }
 
   Color _avatarColorFor(String id) {
-    final hash =
-        id.codeUnits.fold<int>(0, (acc, code) => acc + code);
+    final hash = id.codeUnits.fold<int>(0, (acc, code) => acc + code);
     return AppColors.avatarPalette[hash % AppColors.avatarPalette.length];
   }
 
@@ -263,15 +271,15 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
         padding: EdgeInsets.zero,
         onPressed: icon == Icons.visibility_outlined
             ? () => showDialog<void>(
-                  context: context,
-                  builder: (_) => _ProviderDetailScreen(provider: provider),
-                )
+                context: context,
+                builder: (_) => _ProviderDetailScreen(provider: provider),
+              )
             : icon == Icons.edit_outlined
-                ? () => showDialog<void>(
-                      context: context,
-                      builder: (_) => _ProviderEditScreen(provider: provider),
-                    )
-                : () => _showDeleteProviderDialog(provider),
+            ? () => showDialog<void>(
+                context: context,
+                builder: (_) => _ProviderEditScreen(provider: provider),
+              )
+            : () => _showDeleteProviderDialog(provider),
         icon: Icon(icon, size: 25, color: AppColors.cardIcon),
       ),
     );
@@ -293,10 +301,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.poppins(
-            color: PurchasesScreen.ink,
-            fontSize: 16,
-          ),
+          style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 16),
         ),
       ],
     );
@@ -362,9 +367,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                           decoration: BoxDecoration(
                             color: const Color(0xFFF0EEED),
                             borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: const Color(0xFFE8C7C4),
-                            ),
+                            border: Border.all(color: const Color(0xFFE8C7C4)),
                           ),
                           child: Text(
                             provider.id,
@@ -473,7 +476,9 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                   Text(
                     items[i].$2,
                     style: GoogleFonts.poppins(
-                      color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
+                      color: i == 1
+                          ? PurchasesScreen.red
+                          : PurchasesScreen.muted,
                       fontSize: 12,
                     ),
                   ),
@@ -494,8 +499,9 @@ class _Provider {
     this.phone,
     this.email,
     this.address,
-    this.active,
-  );
+    this.active, [
+    this.advisor,
+  ]);
 
   final String id;
   final String nit;
@@ -504,6 +510,7 @@ class _Provider {
   final String email;
   final String address;
   final bool active;
+  final String? advisor;
 }
 
 class _ProviderDetailScreen extends StatelessWidget {
@@ -524,7 +531,11 @@ class _ProviderDetailScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(context),
-            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
+            const Divider(
+              color: AppColors.headerDivider,
+              height: 1,
+              thickness: 1,
+            ),
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
@@ -535,19 +546,34 @@ class _ProviderDetailScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _FieldPair(
                       left: _ReadOnlyField(label: 'NIT', value: provider.nit),
-                      right: _ReadOnlyField(label: 'Nombre', value: provider.name),
+                      right: _ReadOnlyField(
+                        label: 'Nombre',
+                        value: provider.name,
+                      ),
                     ),
                     const SizedBox(height: 28),
                     const _SectionTitle('Contacto'),
                     const SizedBox(height: 16),
                     _FieldPair(
-                      left: const _ReadOnlyField(label: 'Asesor Comercial', value: '—'),
-                      right: _ReadOnlyField(label: 'Teléfono', value: provider.phone),
+                      left: _ReadOnlyField(
+                        label: 'Asesor Comercial',
+                        value: provider.advisor ?? '',
+                      ),
+                      right: _ReadOnlyField(
+                        label: 'Teléfono',
+                        value: provider.phone,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _FieldPair(
-                      left: _ReadOnlyField(label: 'Email', value: provider.email),
-                      right: _ReadOnlyField(label: 'Dirección', value: provider.address),
+                      left: _ReadOnlyField(
+                        label: 'Email',
+                        value: provider.email,
+                      ),
+                      right: _ReadOnlyField(
+                        label: 'Dirección',
+                        value: provider.address,
+                      ),
                     ),
                     const SizedBox(height: 28),
                     const _SectionTitle('Configuración'),
@@ -567,7 +593,11 @@ class _ProviderDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
+            const Divider(
+              color: AppColors.headerDivider,
+              height: 1,
+              thickness: 1,
+            ),
             _buildFooter(context),
           ],
         ),
@@ -619,7 +649,10 @@ class _ProviderDetailScreen extends StatelessWidget {
           ),
           child: Text(
             'Cerrar',
-            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700),
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),
@@ -637,6 +670,7 @@ class _ProviderEditScreen extends StatefulWidget {
 }
 
 class _ProviderEditScreenState extends State<_ProviderEditScreen> {
+  late final TextEditingController _advisorController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
   late final TextEditingController _addressController;
@@ -645,6 +679,9 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
   @override
   void initState() {
     super.initState();
+    _advisorController = TextEditingController(
+      text: widget.provider.advisor ?? '',
+    );
     _phoneController = TextEditingController(text: widget.provider.phone);
     _emailController = TextEditingController(text: widget.provider.email);
     _addressController = TextEditingController(text: widget.provider.address);
@@ -653,6 +690,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
 
   @override
   void dispose() {
+    _advisorController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     _addressController.dispose();
@@ -672,7 +710,11 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(context),
-            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
+            const Divider(
+              color: AppColors.headerDivider,
+              height: 1,
+              thickness: 1,
+            ),
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
@@ -682,7 +724,10 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                     const _SectionTitle('Identificación del proveedor'),
                     const SizedBox(height: 16),
                     _FieldPair(
-                      left: _LockedField(label: 'NIT', value: widget.provider.nit),
+                      left: _LockedField(
+                        label: 'NIT',
+                        value: widget.provider.nit,
+                      ),
                       right: _LockedField(
                         label: 'Nombre',
                         value: widget.provider.name,
@@ -690,6 +735,12 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                     ),
                     const SizedBox(height: 28),
                     const _SectionTitle('Contacto'),
+                    const SizedBox(height: 16),
+                    _EditableField(
+                      label: 'Asesor Comercial',
+                      controller: _advisorController,
+                      textInputAction: TextInputAction.next,
+                    ),
                     const SizedBox(height: 16),
                     _FieldPair(
                       left: _EditableField(
@@ -724,7 +775,11 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                 ),
               ),
             ),
-            const Divider(color: AppColors.headerDivider, height: 1, thickness: 1),
+            const Divider(
+              color: AppColors.headerDivider,
+              height: 1,
+              thickness: 1,
+            ),
             _buildFooter(context),
           ],
         ),
@@ -911,11 +966,7 @@ class _FieldPair extends StatelessWidget {
         if (constraints.maxWidth < 380) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              left,
-              const SizedBox(height: 16),
-              right,
-            ],
+            children: [left, const SizedBox(height: 16), right],
           );
         }
         return Row(
@@ -1013,10 +1064,7 @@ class _LockedField extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'No se puede modificar',
-          style: GoogleFonts.poppins(
-            color: AppColors.muted,
-            fontSize: 11,
-          ),
+          style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 11),
         ),
       ],
     );
@@ -1068,7 +1116,10 @@ class _EditableField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: AppColors.fieldBorder, width: 1.5),
+              borderSide: const BorderSide(
+                color: AppColors.fieldBorder,
+                width: 1.5,
+              ),
             ),
           ),
         ),
