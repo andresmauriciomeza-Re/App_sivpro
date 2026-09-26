@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../shared/menu_item.dart';
+import '../../shared/search.dart';
 import 'category_products_screen.dart';
 import '../widgets/bottom_nav.dart';
 
@@ -228,31 +229,10 @@ class _MenuScreenState extends State<MenuScreen> {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: TextField(
+              child: AppSearchField(
                 controller: _searchController,
-                style: GoogleFonts.poppins(fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Buscar pizza...',
-                  hintStyle: GoogleFonts.poppins(
-                    color: Colors.black38,
-                    fontSize: 14,
-                  ),
-                  prefixIcon: const Icon(Icons.search, color: Colors.black45),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          onPressed: _limpiarBusqueda,
-                          tooltip: 'Limpiar búsqueda',
-                          icon: const Icon(Icons.cancel, color: Colors.black45),
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                hint: 'Buscar pizza...',
+                showClearButton: true,
               ),
             ),
             const SizedBox(height: 18),

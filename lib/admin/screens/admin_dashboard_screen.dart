@@ -5,6 +5,7 @@ import '../../client/screens/home_screen.dart' hide AppColors;
 import '../../shared/initials.dart';
 import '../../theme/app_colors.dart';
 import '../widgets/production_summary_card.dart';
+import '../widgets/sales_pending_badge.dart';
 import 'purchases_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -337,7 +338,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(items[i].$1, color: i == 0 ? red : muted, size: 25),
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
+                    color: i == 0 ? red : muted,
+                    size: 25,
+                    showPendingBadge: i == adminSalesNavIndex,
+                  ),
                   const SizedBox(height: 3),
                   Text(
                     items[i].$2,

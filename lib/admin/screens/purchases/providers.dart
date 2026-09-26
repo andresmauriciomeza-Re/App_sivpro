@@ -93,31 +93,9 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                           ),
                         ),
                         const SizedBox(height: 28),
-                        TextField(
+                        AppSearchField(
+                          hint: 'Buscar por ID, nombre o email...',
                           onChanged: (value) => setState(() => _query = value),
-                          decoration: InputDecoration(
-                            hintText: 'Buscar por ID, nombre o email...',
-                            hintStyle: GoogleFonts.poppins(
-                              color: PurchasesScreen.ink,
-                              fontSize: 16,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              color: PurchasesScreen.muted,
-                              size: 28,
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFFF9FBFC),
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 14,
-                            ),
-                            enabledBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            focusedBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: PurchasesScreen.red),
-                            ),
-                          ),
                         ),
                       ],
                     ),
@@ -487,9 +465,10 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,

@@ -5,7 +5,9 @@ import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../shared/search.dart';
 import '../../theme/app_colors.dart';
+import '../services/sales_repository.dart';
 import '../widgets/production_summary_card.dart';
+import '../widgets/sales_pending_badge.dart';
 
 part 'purchases/admin_profile.dart';
 part 'purchases/clients.dart';
@@ -190,10 +192,11 @@ class PurchasesScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 1 ? red : muted,
                     size: 27,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   const SizedBox(height: 3),
                   Text(

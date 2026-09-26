@@ -56,28 +56,9 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       ),
                     ),
                     const SizedBox(height: 26),
-                    TextField(
+                    AppSearchField(
+                      hint: 'Buscar por ID orden o receta...',
                       onChanged: (value) => setState(() => _query = value),
-                      decoration: InputDecoration(
-                        hintText: 'Buscar por ID orden o receta...',
-                        hintStyle: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
-                          fontSize: 16,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: PurchasesScreen.ink,
-                          size: 28,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF9F5F4),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFE8C7C4)),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: PurchasesScreen.red),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 38),
                     for (final order in filtered) ...[
@@ -584,11 +565,12 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 2
                         ? PurchasesScreen.red
                         : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,
@@ -931,11 +913,12 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 2
                         ? PurchasesScreen.red
                         : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,
@@ -1261,11 +1244,12 @@ class _ProductionOrderEditScreenState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 2
                         ? PurchasesScreen.red
                         : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,
@@ -1462,11 +1446,12 @@ class _ProductionScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 2
                         ? PurchasesScreen.red
                         : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,

@@ -113,35 +113,9 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                       ),
                     ),
                     const SizedBox(height: 22),
-                    TextField(
+                    AppSearchField(
+                      hint: 'Buscar por ID, nombre o categoría...',
                       onChanged: (value) => setState(() => _query = value),
-                      decoration: InputDecoration(
-                        hintText: 'Buscar por ID, nombre o categoría...',
-                        hintStyle: GoogleFonts.poppins(
-                          color: const Color(0xFF6E7587),
-                          fontSize: 18,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: PurchasesScreen.muted,
-                          size: 30,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFFFFBFA),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 17,
-                          horizontal: 14,
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFE5BDB9)),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: PurchasesScreen.red,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 22),
                     for (final product in filteredProducts) ...[
@@ -497,9 +471,10 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,
@@ -1203,9 +1178,10 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    items[i].$1,
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
                     color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
                   ),
                   Text(
                     items[i].$2,

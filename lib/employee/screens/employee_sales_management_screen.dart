@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
+import '../../shared/search.dart';
 import 'employee_sale_detail_screen.dart';
 import '../../shared/page_transitions.dart';
 
@@ -229,25 +230,10 @@ class _EmployeeSalesManagementScreenState
   }
 
   Widget _buildSearch() {
-    return TextField(
+    return AppSearchField(
       controller: _searchController,
+      hint: 'Buscar por #, cliente o producto...',
       onChanged: (value) => setState(() => _query = value),
-      decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.search, color: muted),
-        hintText: 'Buscar por #, cliente o producto...',
-        hintStyle: GoogleFonts.poppins(color: ink, fontSize: 15),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Color(0xFFE0E4E9)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: red),
-        ),
-      ),
     );
   }
 
