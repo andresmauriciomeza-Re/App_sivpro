@@ -11,7 +11,7 @@ class ProviderManagementScreen extends StatefulWidget {
 class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
   String _query = '';
 
-  static const _providers = [
+  final List<_Provider> _providers = [
     _Provider(
       'PROV-001',
       '900.123.456-1',
@@ -228,7 +228,6 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
               const Spacer(),
               _providerAction(Icons.visibility_outlined, provider),
               _providerAction(Icons.edit_outlined, provider),
-              _providerAction(Icons.delete_outline, provider),
             ],
           ),
         ],
@@ -242,22 +241,26 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
   }
 
   Widget _statusBadge(_Provider provider) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-      decoration: BoxDecoration(
-        color: provider.active
-            ? AppColors.statusGreenBg
-            : AppColors.statusRedBg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        provider.active ? 'Activo' : 'Inactivo',
-        style: GoogleFonts.poppins(
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => _showChangeStatusDialog(provider),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+        decoration: BoxDecoration(
           color: provider.active
-              ? AppColors.statusGreenFg
-              : AppColors.statusRedFg,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+              ? AppColors.statusGreenBg
+              : AppColors.statusRedBg,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          provider.active ? 'Activo' : 'Inactivo',
+          style: GoogleFonts.poppins(
+            color: provider.active
+                ? AppColors.statusGreenFg
+                : AppColors.statusRedFg,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -270,19 +273,73 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       child: IconButton(
         padding: EdgeInsets.zero,
         onPressed: icon == Icons.visibility_outlined
-            ? () => showDialog<void>(
-                context: context,
-                builder: (_) => _ProviderDetailScreen(provider: provider),
-              )
-            : icon == Icons.edit_outlined
-            ? () => showDialog<void>(
-                context: context,
-                builder: (_) => _ProviderEditScreen(provider: provider),
-              )
-            : () => _showDeleteProviderDialog(provider),
+            ? () => _showProviderSheet(provider, edit: false)
+            : () => _showProviderSheet(provider, edit: true),
         icon: Icon(icon, size: 25, color: AppColors.cardIcon),
       ),
     );
+  }
+
+  Future<void> _showProviderSheet(
+    _Provider provider, {
+    required bool edit,
+  }) async {
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      builder: (_) => edit
+          ? _ProviderEditScreen(provider: provider)
+          : _ProviderDetailScreen(provider: provider),
+    );
+    if (saved == true && mounted) setState(() {});
+  }
+
+  Future<void> _showChangeStatusDialog(_Provider provider) async {
+    final targetStatus = provider.active ? 'Inactivo' : 'Activo';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cambiar estado'),
+        content: const Text('¿Está seguro de cambiar el estado?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('Cambiar a $targetStatus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final previous = provider.active;
+    setState(() => provider.active = !previous);
+    try {
+      await _persistProviderStatus(provider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Estado cambiado a "$targetStatus".')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => provider.active = previous);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo cambiar el estado.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _persistProviderStatus(_Provider provider) async {
+    // Simula la persistencia del endpoint mientras la app funciona sin backend.
+    await Future<void>.delayed(Duration.zero);
   }
 
   Widget _providerInfo(String label, String value) {
@@ -304,144 +361,6 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
           style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 16),
         ),
       ],
-    );
-  }
-
-  Future<void> _showDeleteProviderDialog(_Provider provider) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: Colors.black54,
-      builder: (dialogContext) {
-        return Dialog(
-          backgroundColor: PurchasesScreen.page,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFD8D8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.priority_high_rounded,
-                    color: PurchasesScreen.red,
-                    size: 40,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  'Eliminar proveedor',
-                  style: GoogleFonts.montserrat(
-                    color: PurchasesScreen.ink,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text.rich(
-                  TextSpan(
-                    style: GoogleFonts.poppins(
-                      color: PurchasesScreen.muted,
-                      fontSize: 17,
-                      height: 1.5,
-                    ),
-                    children: [
-                      const TextSpan(
-                        text: '¿Seguro que deseas eliminar al proveedor\n',
-                      ),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF0EEED),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: const Color(0xFFE8C7C4)),
-                          ),
-                          child: Text(
-                            provider.id,
-                            style: GoogleFonts.poppins(
-                              color: PurchasesScreen.ink,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const TextSpan(
-                        text: '? Esta acción no se puede deshacer.',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 28),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PurchasesScreen.red,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                    child: Text(
-                      'Sí, confirmar',
-                      style: GoogleFonts.poppins(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(false),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.black87,
-                      side: const BorderSide(color: Color(0xFFE8C7C4)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                    child: Text(
-                      'Cancelar',
-                      style: GoogleFonts.poppins(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (!mounted || confirmed != true) {
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${provider.id} eliminado correctamente.')),
     );
   }
 
@@ -492,7 +411,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
 }
 
 class _Provider {
-  const _Provider(
+  _Provider(
     this.id,
     this.nit,
     this.name,
@@ -506,11 +425,46 @@ class _Provider {
   final String id;
   final String nit;
   final String name;
-  final String phone;
-  final String email;
-  final String address;
-  final bool active;
-  final String? advisor;
+  String phone;
+  String email;
+  String address;
+  bool active;
+  String? advisor;
+}
+
+class _ProviderSheetFrame extends StatelessWidget {
+  const _ProviderSheetFrame({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * .92,
+      ),
+      child: Material(
+        color: Colors.white,
+        clipBehavior: Clip.antiAlias,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 42,
+              height: 5,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD2CCCA),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            Flexible(child: child),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ProviderDetailScreen extends StatelessWidget {
@@ -520,11 +474,7 @@ class _ProviderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    return _ProviderSheetFrame(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
         child: Column(
@@ -670,6 +620,7 @@ class _ProviderEditScreen extends StatefulWidget {
 }
 
 class _ProviderEditScreenState extends State<_ProviderEditScreen> {
+  final _formKey = GlobalKey<FormState>();
   late final TextEditingController _advisorController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
@@ -682,7 +633,9 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
     _advisorController = TextEditingController(
       text: widget.provider.advisor ?? '',
     );
-    _phoneController = TextEditingController(text: widget.provider.phone);
+    _phoneController = TextEditingController(
+      text: widget.provider.phone.replaceAll(RegExp(r'\D'), ''),
+    );
     _emailController = TextEditingController(text: widget.provider.email);
     _addressController = TextEditingController(text: widget.provider.address);
     _isActive = widget.provider.active;
@@ -699,11 +652,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    return _ProviderSheetFrame(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
         child: Column(
@@ -716,62 +665,77 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
               thickness: 1,
             ),
             Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _SectionTitle('Identificación del proveedor'),
-                    const SizedBox(height: 16),
-                    _FieldPair(
-                      left: _LockedField(
-                        label: 'NIT',
-                        value: widget.provider.nit,
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _SectionTitle('Identificación del proveedor'),
+                      const SizedBox(height: 16),
+                      _FieldPair(
+                        left: _LockedField(
+                          label: 'NIT',
+                          value: widget.provider.nit,
+                        ),
+                        right: _LockedField(
+                          label: 'Nombre',
+                          value: widget.provider.name,
+                        ),
                       ),
-                      right: _LockedField(
-                        label: 'Nombre',
-                        value: widget.provider.name,
+                      const SizedBox(height: 28),
+                      const _SectionTitle('Contacto'),
+                      const SizedBox(height: 16),
+                      _EditableField(
+                        label: 'Asesor Comercial',
+                        controller: _advisorController,
+                        textInputAction: TextInputAction.next,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]'),
+                          ),
+                        ],
+                        validator: _lettersValidator,
                       ),
-                    ),
-                    const SizedBox(height: 28),
-                    const _SectionTitle('Contacto'),
-                    const SizedBox(height: 16),
-                    _EditableField(
-                      label: 'Asesor Comercial',
-                      controller: _advisorController,
-                      textInputAction: TextInputAction.next,
-                    ),
-                    const SizedBox(height: 16),
-                    _FieldPair(
-                      left: _EditableField(
-                        label: 'Teléfono',
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
+                      const SizedBox(height: 16),
+                      _FieldPair(
+                        left: _EditableField(
+                          label: 'Teléfono',
+                          controller: _phoneController,
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: _phoneValidator,
+                        ),
+                        right: _EditableField(
+                          label: 'Email',
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: _emailValidator,
+                        ),
                       ),
-                      right: _EditableField(
-                        label: 'Email',
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
+                      const SizedBox(height: 16),
+                      _EditableField(
+                        label: 'Dirección',
+                        controller: _addressController,
+                        textInputAction: TextInputAction.done,
+                        validator: _requiredValidator,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _EditableField(
-                      label: 'Dirección',
-                      controller: _addressController,
-                      textInputAction: TextInputAction.done,
-                    ),
-                    const SizedBox(height: 28),
-                    const _SectionTitle('Configuración'),
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: FractionallySizedBox(
-                        widthFactor: 0.5,
+                      const SizedBox(height: 28),
+                      const _SectionTitle('Configuración'),
+                      const SizedBox(height: 16),
+                      Align(
                         alignment: Alignment.centerLeft,
-                        child: _buildEstadoField(),
+                        child: FractionallySizedBox(
+                          widthFactor: 0.5,
+                          alignment: Alignment.centerLeft,
+                          child: _buildEstadoField(),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -894,16 +858,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
             child: SizedBox(
               height: 48,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${widget.provider.name} actualizado correctamente.',
-                      ),
-                    ),
-                  );
-                },
+                onPressed: _save,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.red,
                   foregroundColor: Colors.white,
@@ -924,6 +879,49 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
         ],
       ),
     );
+  }
+
+  String? _requiredValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Este campo es obligatorio';
+    }
+    return null;
+  }
+
+  String? _lettersValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    return RegExp(
+          r'^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$',
+        ).hasMatch(value.trim())
+        ? null
+        : 'Solo se permiten letras';
+  }
+
+  String? _phoneValidator(String? value) {
+    final error = _requiredValidator(value);
+    if (error != null) return error;
+    return RegExp(r'^\d+$').hasMatch(value!)
+        ? null
+        : 'Solo se permiten números';
+  }
+
+  String? _emailValidator(String? value) {
+    final error = _requiredValidator(value);
+    if (error != null) return error;
+    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value!)
+        ? null
+        : 'Ingresa un email válido';
+  }
+
+  void _save() {
+    if (!_formKey.currentState!.validate()) return;
+    widget.provider
+      ..advisor = _advisorController.text.trim()
+      ..phone = _phoneController.text
+      ..email = _emailController.text.trim()
+      ..address = _addressController.text.trim()
+      ..active = _isActive;
+    Navigator.of(context).pop(true);
   }
 }
 
@@ -1077,12 +1075,16 @@ class _EditableField extends StatelessWidget {
     required this.controller,
     this.keyboardType,
     this.textInputAction,
+    this.inputFormatters,
+    this.validator,
   });
 
   final String label;
   final TextEditingController controller;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
+  final List<TextInputFormatter>? inputFormatters;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -1102,6 +1104,9 @@ class _EditableField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
+          inputFormatters: inputFormatters,
+          validator: validator,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
           decoration: InputDecoration(
             filled: true,

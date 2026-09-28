@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
 import '../../shared/app_header.dart';
@@ -33,9 +34,7 @@ Future<void> _confirmSignOut(BuildContext context) async {
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          style: FilledButton.styleFrom(
-            backgroundColor: Color(0xFFC9151E),
-          ),
+          style: FilledButton.styleFrom(backgroundColor: Color(0xFFC9151E)),
           child: const Text('Cerrar sesión'),
         ),
       ],
@@ -71,9 +70,9 @@ void navigateToBottomModule(BuildContext context, int index) {
 }
 
 void openSalesManagement(BuildContext context) {
-  Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => const _SalesManagementScreen()),
-  );
+  Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => const _SalesManagementScreen()));
 }
 
 class PurchasesScreen extends StatelessWidget {
@@ -110,10 +109,7 @@ class PurchasesScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Seleccione un módulo para administrar',
-                      style: GoogleFonts.poppins(
-                        color: muted,
-                        fontSize: 15,
-                      ),
+                      style: GoogleFonts.poppins(color: muted, fontSize: 15),
                     ),
                     const SizedBox(height: 24),
                     _ModuleCard(
@@ -235,69 +231,64 @@ class _ModuleCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-      height: 288,
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(25, 25, 18, 20),
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: PurchasesScreen.page,
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: const Color(0xFFE8C7C4), width: 1.5),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -72,
-            right: -58,
-            child: Container(
-              width: 164,
-              height: 164,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF2C9CA),
-                shape: BoxShape.circle,
+        height: 288,
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(25, 25, 18, 20),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: PurchasesScreen.page,
+          borderRadius: BorderRadius.circular(17),
+          border: Border.all(color: const Color(0xFFE8C7C4), width: 1.5),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -72,
+              right: -58,
+              child: Container(
+                width: 164,
+                height: 164,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF2C9CA),
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEDE9E8),
-                  borderRadius: BorderRadius.circular(13),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDE9E8),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(icon, color: Colors.black87, size: 38),
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.black87,
-                  size: 38,
+                const Spacer(),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    color: PurchasesScreen.ink,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Text(
-                title,
-                style: GoogleFonts.poppins(
-                  color: PurchasesScreen.ink,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
+                const SizedBox(height: 6),
+                Text(
+                  description,
+                  style: GoogleFonts.poppins(
+                    color: PurchasesScreen.muted,
+                    fontSize: 19,
+                    height: 1.35,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                description,
-                style: GoogleFonts.poppins(
-                  color: PurchasesScreen.muted,
-                  fontSize: 19,
-                  height: 1.35,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-
