@@ -11,7 +11,7 @@ class PurchaseManagementScreen extends StatefulWidget {
 class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   String _query = '';
 
-  static const _purchases = [
+  final List<_Purchase> _purchases = [
     _Purchase(
       'Distribuidora La Cosecha',
       '2024-01-10',
@@ -248,7 +248,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
               _StatusDropdown(
                 currentStatus: purchase.status,
                 onStatusChanged: (newStatus) {
-                  _showChangeStatusDialog(context, purchase, newStatus);
+                  _showChangeStatusDialog(purchase, newStatus);
                 },
               ),
             ],
@@ -320,13 +320,16 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   void _navigateToDetail(BuildContext context, _Purchase purchase) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => _PurchaseDetailScreen(purchase: purchase),
+        builder: (_) => _PurchaseDetailScreen(
+          purchase: purchase,
+          onStatusChanged: (status) =>
+              _showChangeStatusDialog(purchase, status),
+        ),
       ),
     );
   }
 
   Future<void> _showChangeStatusDialog(
-    BuildContext context,
     _Purchase purchase,
     String targetStatus,
   ) async {
@@ -445,13 +448,30 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${purchase.invoiceNumber} cambió a "$targetStatus" correctamente.',
+    final previousStatus = purchase.status;
+    setState(() => purchase.status = targetStatus);
+    try {
+      await _persistPurchaseStatus(purchase);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${purchase.invoiceNumber} cambió a "$targetStatus" correctamente.',
+          ),
         ),
-      ),
-    );
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => purchase.status = previousStatus);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo cambiar el estado.')),
+      );
+    }
+  }
+
+  Future<void> _persistPurchaseStatus(_Purchase purchase) async {
+    // Simula la persistencia y la regla de anulación del backend en el entorno virtual.
+    await Future<void>.delayed(Duration.zero);
   }
 
   Widget _label(String text) => Text(
@@ -526,7 +546,7 @@ class _SupplyItem {
 }
 
 class _Purchase {
-  const _Purchase(
+  _Purchase(
     this.provider,
     this.date,
     this.invoiceNumber,
@@ -539,7 +559,7 @@ class _Purchase {
   final String date;
   final String invoiceNumber;
   final String total;
-  final String status;
+  String status;
   final List<_SupplyItem> supplies;
 }
 
@@ -654,10 +674,21 @@ class _StatusDropdown extends StatelessWidget {
   }
 }
 
-class _PurchaseDetailScreen extends StatelessWidget {
-  const _PurchaseDetailScreen({required this.purchase});
+class _PurchaseDetailScreen extends StatefulWidget {
+  const _PurchaseDetailScreen({
+    required this.purchase,
+    required this.onStatusChanged,
+  });
 
   final _Purchase purchase;
+  final Future<void> Function(String status) onStatusChanged;
+
+  @override
+  State<_PurchaseDetailScreen> createState() => _PurchaseDetailScreenState();
+}
+
+class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
+  _Purchase get purchase => widget.purchase;
 
   @override
   Widget build(BuildContext context) {
@@ -698,19 +729,36 @@ class _PurchaseDetailScreen extends StatelessWidget {
           ],
         ),
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: statusBackground,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Text(
-              purchase.status,
-              style: GoogleFonts.poppins(
-                color: statusColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+          PopupMenuButton<String>(
+            onSelected: (status) async {
+              await widget.onStatusChanged(status);
+              if (mounted) setState(() {});
+            },
+            color: Colors.white,
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'Recibido', child: Text('Recibido')),
+              const PopupMenuItem(value: 'Anulado', child: Text('Anulado')),
+            ],
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: statusBackground,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    purchase.status,
+                    style: GoogleFonts.poppins(
+                      color: statusColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Icon(Icons.arrow_drop_down, color: statusColor, size: 16),
+                ],
               ),
             ),
           ),
