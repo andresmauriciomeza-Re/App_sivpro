@@ -149,7 +149,8 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
         client.id,
         client.active ? 'Activo' : 'Inactivo',
       ]);
-      final matchesState = _statusFilter == 'Todos los estados' ||
+      final matchesState =
+          _statusFilter == 'Todos los estados' ||
           (_statusFilter == 'Activo' && client.active) ||
           (_statusFilter == 'Inactivo' && !client.active);
       return matchesQuery && matchesState;
@@ -163,8 +164,8 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
       });
     } else {
       filtered.sort(
-        (a, b) => normalizeForSearch(a.name)
-            .compareTo(normalizeForSearch(b.name)),
+        (a, b) =>
+            normalizeForSearch(a.name).compareTo(normalizeForSearch(b.name)),
       );
     }
     return filtered;
@@ -208,174 +209,178 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
                   return false;
                 },
                 child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Clientes',
-                                style: GoogleFonts.montserrat(
-                                  color: ink,
-                                  fontSize: 30,
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Clientes',
+                                  style: GoogleFonts.montserrat(
+                                    color: ink,
+                                    fontSize: 30,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'Usuarios registrados con tipo cliente en La Sirena',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  color: muted,
-                                  fontSize: 14,
+                                Text(
+                                  'Usuarios registrados con tipo cliente en La Sirena',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    color: muted,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.groups_outlined,
-                            value: '${_clients.length}',
-                            label: 'Total clientes',
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.groups_outlined,
+                              value: '${_clients.length}',
+                              label: 'Total clientes',
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.how_to_reg_outlined,
-                            value:
-                                '${_clients.where((c) => c.active).length}',
-                            label: 'Activos',
-                            active: true,
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.how_to_reg_outlined,
+                              value:
+                                  '${_clients.where((c) => c.active).length}',
+                              label: 'Activos',
+                              active: true,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.person_off_outlined,
-                            value:
-                                '${_clients.where((c) => !c.active).length}',
-                            label: 'Inactivos',
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.person_off_outlined,
+                              value:
+                                  '${_clients.where((c) => !c.active).length}',
+                              label: 'Inactivos',
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    _buildSearch(),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: PopupMenuButton<String>(
-                            initialValue: _statusFilter,
-                            onSelected: (value) => setState(() {
-                              _statusFilter = value;
-                              _visibleClients = _pageSize;
-                            }),
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: 'Todos los estados',
-                                child: Text('Todos los estados'),
-                              ),
-                              PopupMenuItem(
-                                value: 'Activo',
-                                child: Text('Activo'),
-                              ),
-                              PopupMenuItem(
-                                value: 'Inactivo',
-                                child: Text('Inactivo'),
-                              ),
-                            ],
-                            child: _FilterButton(label: _statusFilter),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      _buildSearch(),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: PopupMenuButton<String>(
+                              initialValue: _statusFilter,
+                              onSelected: (value) => setState(() {
+                                _statusFilter = value;
+                                _visibleClients = _pageSize;
+                              }),
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'Todos los estados',
+                                  child: Text('Todos los estados'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'Activo',
+                                  child: Text('Activo'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'Inactivo',
+                                  child: Text('Inactivo'),
+                                ),
+                              ],
+                              child: _FilterButton(label: _statusFilter),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: PopupMenuButton<String>(
-                            initialValue: _sortOrder,
-                            onSelected: (value) => setState(() {
-                              _sortOrder = value;
-                              _visibleClients = _pageSize;
-                            }),
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: 'Ordenar por nombre',
-                                child: Text('Ordenar por nombre'),
-                              ),
-                              PopupMenuItem(
-                                value: 'Ordenar por pedidos',
-                                child: Text('Ordenar por pedidos'),
-                              ),
-                            ],
-                            child: _FilterButton(label: _sortOrder),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: PopupMenuButton<String>(
+                              initialValue: _sortOrder,
+                              onSelected: (value) => setState(() {
+                                _sortOrder = value;
+                                _visibleClients = _pageSize;
+                              }),
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'Ordenar por nombre',
+                                  child: Text('Ordenar por nombre'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'Ordenar por pedidos',
+                                  child: Text('Ordenar por pedidos'),
+                                ),
+                              ],
+                              child: _FilterButton(label: _sortOrder),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'LISTADO DE CLIENTES',
-                          style: GoogleFonts.poppins(
-                            color: muted,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'LISTADO DE CLIENTES',
+                            style: GoogleFonts.poppins(
+                              color: muted,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '${_visibleClients >= _filteredClients().length ? _filteredClients().length : _visibleClients} DE ${_filteredClients().length}',
-                          style: GoogleFonts.poppins(
-                            color: muted,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    if (_filteredClients().isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 28),
-                        child: Center(
-                          child: Text(
-                            'No se encontraron clientes',
+                          Text(
+                            '${_visibleClients >= _filteredClients().length ? _filteredClients().length : _visibleClients} DE ${_filteredClients().length}',
                             style: GoogleFonts.poppins(
                               color: muted,
                               fontSize: 14,
                             ),
                           ),
-                        ),
-                      )
-                    else
-                      ..._filteredClients().take(_visibleClients).map(
-                        (client) => _ClientCard(
-                          client: client,
-                          onView: () => _showClientDetail(context, client),
-                          onEdit: () => _showEditClientDialog(context, client),
-                          onToggle: () => _toggleClientActive(client),
-                        ),
+                        ],
                       ),
-                  ],
+                      const SizedBox(height: 14),
+                      if (_filteredClients().isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 28),
+                          child: Center(
+                            child: Text(
+                              'No se encontraron clientes',
+                              style: GoogleFonts.poppins(
+                                color: muted,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ..._filteredClients()
+                            .take(_visibleClients)
+                            .map(
+                              (client) => _ClientCard(
+                                client: client,
+                                onView: () =>
+                                    _showClientDetail(context, client),
+                                onEdit: () =>
+                                    _showEditClientDialog(context, client),
+                                onToggle: () => _toggleClientActive(client),
+                              ),
+                            ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -473,114 +478,10 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
   }
 
   void _showClientDetail(BuildContext context, _Client client) {
-    showDialog<void>(
-      context: context,
-      barrierColor: Colors.black54,
-      builder: (dialogContext) {
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(36, 28, 36, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Detalle Cliente',
-                      style: GoogleFonts.montserrat(
-                        color: ink,
-                        fontSize: 30,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      icon: const Icon(Icons.close, color: Colors.black45),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-                const Divider(height: 30),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 43,
-                      backgroundColor: client.color,
-                      child: Text(
-                        client.initials,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 24),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            client.name,
-                            style: GoogleFonts.poppins(
-                              color: ink,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            client.id,
-                            style: GoogleFonts.poppins(
-                              color: muted,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                _DetailRow(label: 'Correo', value: client.email),
-                _DetailRow(label: 'Pedidos totales', value: '${client.orders}'),
-                _DetailRow(
-                  label: 'Estado',
-                  value: client.active ? 'Activo' : 'Inactivo',
-                ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: FilledButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFF2F2F4),
-                      foregroundColor: ink,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-                    child: Text(
-                      'Cerrar',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _ClientDetailScreen(client: client),
+      ),
     );
   }
 
@@ -802,47 +703,6 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 17),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFEDEDED))),
-      ),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: _ClientManagementScreenState.muted,
-              fontSize: 16,
-            ),
-          ),
-          const Spacer(),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: GoogleFonts.poppins(
-                color: _ClientManagementScreenState.ink,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _DialogField extends StatelessWidget {
   const _DialogField({
     required this.label,
@@ -877,9 +737,7 @@ class _DialogField extends StatelessWidget {
           readOnly: readOnly,
           keyboardType: keyboardType,
           style: GoogleFonts.poppins(
-            color: readOnly
-                ? const Color(0xFF9D9895)
-                : const Color(0xFF353535),
+            color: readOnly ? const Color(0xFF9D9895) : const Color(0xFF353535),
             fontSize: 16,
           ),
           decoration: InputDecoration(
@@ -891,9 +749,7 @@ class _DialogField extends StatelessWidget {
               fontSize: 16,
             ),
             filled: true,
-            fillColor: readOnly
-                ? AppColors.fieldFill
-                : const Color(0xFFFCFCFB),
+            fillColor: readOnly ? AppColors.fieldFill : const Color(0xFFFCFCFB),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 18,
               vertical: 16,
@@ -904,7 +760,9 @@ class _DialogField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: _ClientManagementScreenState.red),
+              borderSide: const BorderSide(
+                color: _ClientManagementScreenState.red,
+              ),
             ),
           ),
         ),
@@ -1233,6 +1091,7 @@ class _ClientStatusSwitch extends StatelessWidget {
     );
   }
 }
+
 class _ClientDetailScreen extends StatelessWidget {
   const _ClientDetailScreen({required this.client});
 
@@ -1245,31 +1104,7 @@ class _ClientDetailScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppHeader(context),
-            Container(
-              height: 58,
-              color: AppColors.page,
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: AppColors.red,
-                      size: 27,
-                    ),
-                  ),
-                  Text(
-                    'Detalle Cliente',
-                    style: GoogleFonts.dmSerifDisplay(
-                      color: AppColors.red,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
@@ -1279,20 +1114,57 @@ class _ClientDetailScreen extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
-                        vertical: 36,
+                        vertical: 22,
                       ),
                       decoration: BoxDecoration(
                         color: PurchasesScreen.page,
-                        borderRadius: BorderRadius.circular(17),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE1D8D6)),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 3,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Column(
                         children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Detalle',
+                                style: GoogleFonts.montserrat(
+                                  color: PurchasesScreen.ink,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                '—',
+                                style: TextStyle(
+                                  color: PurchasesScreen.muted,
+                                  fontSize: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                client.id,
+                                style: GoogleFonts.poppins(
+                                  color: PurchasesScreen.muted,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
                           CircleAvatar(
                             radius: 59,
                             backgroundColor: client.color,
                             child: Text(
                               client.initials,
-                              style: GoogleFonts.dmSerifDisplay(
+                              style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 42,
                                 fontWeight: FontWeight.w700,
@@ -1303,7 +1175,7 @@ class _ClientDetailScreen extends StatelessWidget {
                           Text(
                             client.name,
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 26,
                               fontWeight: FontWeight.w700,
@@ -1312,7 +1184,7 @@ class _ClientDetailScreen extends StatelessWidget {
                           const SizedBox(height: 5),
                           Text(
                             client.id,
-                            style: GoogleFonts.dmSerifDisplay(
+                            style: GoogleFonts.poppins(
                               color: PurchasesScreen.muted,
                               fontSize: 18,
                             ),
@@ -1333,7 +1205,7 @@ class _ClientDetailScreen extends StatelessWidget {
                           _detailClientRow(
                             'Pedidos totales',
                             '${client.orders}',
-                            valueStyle: GoogleFonts.dmSerifDisplay(
+                            valueStyle: GoogleFonts.poppins(
                               color: PurchasesScreen.ink,
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
@@ -1355,7 +1227,7 @@ class _ClientDetailScreen extends StatelessWidget {
                               ),
                               child: Text(
                                 client.active ? 'Activo' : 'Inactivo',
-                                style: GoogleFonts.dmSerifDisplay(
+                                style: GoogleFonts.poppins(
                                   color: client.active
                                       ? const Color(0xFF278044)
                                       : PurchasesScreen.muted,
@@ -1368,404 +1240,421 @@ class _ClientDetailScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 48),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 72,
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: PurchasesScreen.page,
-                          foregroundColor: Colors.black,
-                          side: BorderSide.none,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          'Cerrar',
-                          style: GoogleFonts.dmSerifDisplay(
-                            fontSize: 25,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
             ),
+            _buildBottomNavigation(context),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildHeader(BuildContext context) {
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
+    );
+  }
+
+  Widget _buildBottomNavigation(BuildContext context) {
+    const items = [
+      (Icons.home_outlined, 'Inicio'),
+      (Icons.shopping_cart_outlined, 'Compras'),
+      (Icons.factory_outlined, 'Producción'),
+      (Icons.receipt_long_outlined, 'Ventas'),
+      (Icons.person_outline, 'Mi Perfil'),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      decoration: const BoxDecoration(
+        color: PurchasesScreen.page,
+        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          for (var i = 0; i < items.length; i++)
+            GestureDetector(
+              onTap: () => navigateToBottomModule(context, i),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AdminBottomNavIcon(
+                    icon: items[i].$1,
+                    color: i == 3 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    showPendingBadge: i == adminSalesNavIndex,
+                  ),
+                  Text(
+                    items[i].$2,
+                    style: GoogleFonts.poppins(
+                      color: i == 3
+                          ? PurchasesScreen.red
+                          : PurchasesScreen.muted,
+                      fontSize: 12,
+                      fontWeight: i == 3 ? FontWeight.w700 : FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ClientEditScreen extends StatefulWidget {
-    const _ClientEditScreen({required this.client});
+  const _ClientEditScreen({required this.client});
 
-    final _Client client;
+  final _Client client;
 
-    @override
-    State<_ClientEditScreen> createState() => _ClientEditScreenState();
-  }
+  @override
+  State<_ClientEditScreen> createState() => _ClientEditScreenState();
+}
 
 class _ClientEditScreenState extends State<_ClientEditScreen> {
-    late final TextEditingController _nameController;
-    late final TextEditingController _emailController;
-    late final TextEditingController _ordersController;
-    late bool _active;
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _ordersController;
+  late bool _active;
 
-    @override
-    void initState() {
-      super.initState();
-      _nameController = TextEditingController(text: widget.client.name);
-      _emailController = TextEditingController(text: widget.client.email);
-      _ordersController = TextEditingController(
-        text: '${widget.client.orders}',
-      );
-      _active = widget.client.active;
-    }
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.client.name);
+    _emailController = TextEditingController(text: widget.client.email);
+    _ordersController = TextEditingController(text: '${widget.client.orders}');
+    _active = widget.client.active;
+  }
 
-    @override
-    void dispose() {
-      _nameController.dispose();
-      _emailController.dispose();
-      _ordersController.dispose();
-      super.dispose();
-    }
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _ordersController.dispose();
+    super.dispose();
+  }
 
-    @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        backgroundColor: PurchasesScreen.page,
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              _buildHeader(context),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.arrow_back,
-                              color: AppColors.red,
-                              size: 22,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Volver a Clientes',
-                              style: GoogleFonts.dmSerifDisplay(
-                                color: AppColors.red,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        'Editar Cliente',
-                        style: GoogleFonts.dmSerifDisplay(
-                          color: PurchasesScreen.ink,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'ID: ${widget.client.id}',
-                        style: GoogleFonts.dmSerifDisplay(
-                          color: PurchasesScreen.muted,
-                          fontSize: 17,
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-                        decoration: BoxDecoration(
-                          color: PurchasesScreen.page,
-                          borderRadius: BorderRadius.circular(17),
-                          border: Border.all(color: const Color(0xFFE0D9D7)),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x10000000),
-                              blurRadius: 8,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _fieldLabel('Nombre completo'),
-                            _textField(_nameController),
-                            const SizedBox(height: 24),
-                            _fieldLabel('Correo'),
-                            _textField(
-                              _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                            ),
-                            const SizedBox(height: 24),
-                            _fieldLabel('Pedidos'),
-                            _lockedField(_ordersController),
-                            const SizedBox(height: 24),
-                            _fieldLabel('Estado'),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _dropdownField(),
-                                ),
-                                const SizedBox(width: 20),
-                                Icon(
-                                  Icons.sync,
-                                  color: PurchasesScreen.red,
-                                  size: 30,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 30),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: OutlinedButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: PurchasesScreen.red,
-                                  side: const BorderSide(
-                                    color: PurchasesScreen.red,
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Cancelar',
-                                  style: GoogleFonts.dmSerifDisplay(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: _saveClient,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: PurchasesScreen.red,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Guardar cambios',
-                                  style: GoogleFonts.dmSerifDisplay(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              _buildBottomNavigation(context),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Widget _buildHeader(BuildContext context) {
-      return AppHeader(
-        title: 'La Sirena Pizza',
-        onBack: () => Navigator.of(context).pop(),
-        initials: getInitials('Gloria Inés Vargas'),
-      );
-    }
-
-    Widget _fieldLabel(String label) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Text(
-          label,
-          style: GoogleFonts.dmSerifDisplay(
-            color: PurchasesScreen.ink,
-            fontSize: 20,
-          ),
-        ),
-      );
-    }
-
-    Widget _textField(
-      TextEditingController controller, {
-      TextInputType? keyboardType,
-    }) {
-      return TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: GoogleFonts.dmSerifDisplay(
-          color: PurchasesScreen.ink,
-          fontSize: 20,
-        ),
-        decoration: const InputDecoration(
-          filled: true,
-          fillColor: Color(0xFFF7F8F9),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 16,
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
-          ),
-        ),
-      );
-    }
-
-    Widget _lockedField(TextEditingController controller) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: controller,
-            enabled: false,
-            style: GoogleFonts.dmSerifDisplay(
-              color: PurchasesScreen.muted,
-              fontSize: 20,
-            ),
-            decoration: const InputDecoration(
-              filled: true,
-              fillColor: Color(0xFFF7F8F9),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 16,
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'No se puede modificar',
-            style: GoogleFonts.dmSerifDisplay(
-              color: PurchasesScreen.muted,
-              fontSize: 11,
-            ),
-          ),
-        ],
-      );
-    }
-
-    Widget _dropdownField() {
-      return DropdownButtonFormField<String>(
-        initialValue: _active ? 'Activo' : 'Inactivo',
-        isExpanded: true,
-        onChanged: (value) {
-          if (value != null) {
-            setState(() => _active = value == 'Activo');
-          }
-        },
-        icon: const Icon(Icons.keyboard_arrow_down),
-        style: GoogleFonts.dmSerifDisplay(
-          color: PurchasesScreen.ink,
-          fontSize: 20,
-        ),
-        decoration: const InputDecoration(
-          filled: true,
-          fillColor: Color(0xFFF7F8F9),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 16,
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
-          ),
-        ),
-        items: const [
-          DropdownMenuItem(value: 'Activo', child: Text('Activo')),
-          DropdownMenuItem(value: 'Inactivo', child: Text('Inactivo')),
-        ],
-      );
-    }
-
-    void _saveClient() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${widget.client.id} actualizado correctamente.'),
-        ),
-      );
-      Navigator.of(context).pop();
-    }
-
-    Widget _buildBottomNavigation(BuildContext context) {
-      const items = [
-        (Icons.home_outlined, 'Inicio'),
-        (Icons.shopping_cart_outlined, 'Compras'),
-        (Icons.factory_outlined, 'Producción'),
-        (Icons.receipt_long_outlined, 'Ventas'),
-        (Icons.person_outline, 'Mi Perfil'),
-      ];
-      return Container(
-        padding: const EdgeInsets.only(top: 8, bottom: 8),
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: PurchasesScreen.page,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
           children: [
-            for (var i = 0; i < items.length; i++)
-              GestureDetector(
-                onTap: () => navigateToBottomModule(context, i),
+            _buildHeader(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      items[i].$1,
-                      color: i == 4 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.arrow_back,
+                            color: AppColors.red,
+                            size: 22,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Volver a Clientes',
+                            style: GoogleFonts.dmSerifDisplay(
+                              color: AppColors.red,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: 18),
                     Text(
-                      items[i].$2,
+                      'Editar Cliente',
                       style: GoogleFonts.dmSerifDisplay(
-                        color: i == 4
-                            ? PurchasesScreen.red
-                            : PurchasesScreen.muted,
-                        fontSize: 12,
+                        color: PurchasesScreen.ink,
+                        fontSize: 34,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'ID: ${widget.client.id}',
+                      style: GoogleFonts.dmSerifDisplay(
+                        color: PurchasesScreen.muted,
+                        fontSize: 17,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+                      decoration: BoxDecoration(
+                        color: PurchasesScreen.page,
+                        borderRadius: BorderRadius.circular(17),
+                        border: Border.all(color: const Color(0xFFE0D9D7)),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x10000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _fieldLabel('Nombre completo'),
+                          _textField(_nameController),
+                          const SizedBox(height: 24),
+                          _fieldLabel('Correo'),
+                          _textField(
+                            _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          const SizedBox(height: 24),
+                          _fieldLabel('Pedidos'),
+                          _lockedField(_ordersController),
+                          const SizedBox(height: 24),
+                          _fieldLabel('Estado'),
+                          Row(
+                            children: [
+                              Expanded(child: _dropdownField()),
+                              const SizedBox(width: 20),
+                              Icon(
+                                Icons.sync,
+                                color: PurchasesScreen.red,
+                                size: 30,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 30),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: PurchasesScreen.red,
+                                side: const BorderSide(
+                                  color: PurchasesScreen.red,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
+                              child: Text(
+                                'Cancelar',
+                                style: GoogleFonts.dmSerifDisplay(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: _saveClient,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: PurchasesScreen.red,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
+                              child: Text(
+                                'Guardar cambios',
+                                style: GoogleFonts.dmSerifDisplay(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
+            ),
+            _buildBottomNavigation(context),
           ],
         ),
-      );
-    }
+      ),
+    );
   }
+
+  Widget _buildHeader(BuildContext context) {
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: getInitials('Gloria Inés Vargas'),
+    );
+  }
+
+  Widget _fieldLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text(
+        label,
+        style: GoogleFonts.dmSerifDisplay(
+          color: PurchasesScreen.ink,
+          fontSize: 20,
+        ),
+      ),
+    );
+  }
+
+  Widget _textField(
+    TextEditingController controller, {
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: GoogleFonts.dmSerifDisplay(
+        color: PurchasesScreen.ink,
+        fontSize: 20,
+      ),
+      decoration: const InputDecoration(
+        filled: true,
+        fillColor: Color(0xFFF7F8F9),
+        contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _lockedField(TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          enabled: false,
+          style: GoogleFonts.dmSerifDisplay(
+            color: PurchasesScreen.muted,
+            fontSize: 20,
+          ),
+          decoration: const InputDecoration(
+            filled: true,
+            fillColor: Color(0xFFF7F8F9),
+            contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'No se puede modificar',
+          style: GoogleFonts.dmSerifDisplay(
+            color: PurchasesScreen.muted,
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _dropdownField() {
+    return DropdownButtonFormField<String>(
+      initialValue: _active ? 'Activo' : 'Inactivo',
+      isExpanded: true,
+      onChanged: (value) {
+        if (value != null) {
+          setState(() => _active = value == 'Activo');
+        }
+      },
+      icon: const Icon(Icons.keyboard_arrow_down),
+      style: GoogleFonts.dmSerifDisplay(
+        color: PurchasesScreen.ink,
+        fontSize: 20,
+      ),
+      decoration: const InputDecoration(
+        filled: true,
+        fillColor: Color(0xFFF7F8F9),
+        contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
+        ),
+      ),
+      items: const [
+        DropdownMenuItem(value: 'Activo', child: Text('Activo')),
+        DropdownMenuItem(value: 'Inactivo', child: Text('Inactivo')),
+      ],
+    );
+  }
+
+  void _saveClient() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${widget.client.id} actualizado correctamente.')),
+    );
+    Navigator.of(context).pop();
+  }
+
+  Widget _buildBottomNavigation(BuildContext context) {
+    const items = [
+      (Icons.home_outlined, 'Inicio'),
+      (Icons.shopping_cart_outlined, 'Compras'),
+      (Icons.factory_outlined, 'Producción'),
+      (Icons.receipt_long_outlined, 'Ventas'),
+      (Icons.person_outline, 'Mi Perfil'),
+    ];
+    return Container(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          for (var i = 0; i < items.length; i++)
+            GestureDetector(
+              onTap: () => navigateToBottomModule(context, i),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    items[i].$1,
+                    color: i == 4 ? PurchasesScreen.red : PurchasesScreen.muted,
+                  ),
+                  Text(
+                    items[i].$2,
+                    style: GoogleFonts.dmSerifDisplay(
+                      color: i == 4
+                          ? PurchasesScreen.red
+                          : PurchasesScreen.muted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
 
 extension _ClientDetailHelpers on _ClientDetailScreen {
   Widget _detailClientRow(
@@ -1796,31 +1685,27 @@ extension _ClientDetailHelpers on _ClientDetailScreen {
             flex: 3,
             child: Align(
               alignment: Alignment.centerRight,
-              child: valueWidget ??
-                  Text(
-                    value,
-                    textAlign: TextAlign.right,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: valueStyle ??
-                        GoogleFonts.dmSerifDisplay(
-                          color: PurchasesScreen.ink,
-                          fontSize: 16,
-                        ),
+              child:
+                  valueWidget ??
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      value,
+                      maxLines: 1,
+                      softWrap: false,
+                      style:
+                          valueStyle ??
+                          GoogleFonts.dmSerifDisplay(
+                            color: PurchasesScreen.ink,
+                            fontSize: 16,
+                          ),
                     ),
-              ),
+                  ),
             ),
+          ),
         ],
       ),
     );
   }
-
-  Widget _buildAppHeader(BuildContext context) {
-    return AppHeader(
-      title: 'La Sirena Pizza',
-      onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
-    );
-  }
 }
-

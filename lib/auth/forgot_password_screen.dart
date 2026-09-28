@@ -168,17 +168,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text(
-                              'Volver al inicio de sesión',
-                              style: GoogleFonts.poppins(
-                                color: Colors.black54,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
                           const SizedBox(height: 24),
                         ],
                       ),
