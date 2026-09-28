@@ -1,5 +1,65 @@
 part of '../purchases_screen.dart';
 
+/// Paleta única de los estados de una orden de producción.
+///
+/// La consumen la tarjeta, el modal de cambio de estado, [_statusPill] y la
+/// pantalla de detalle, para que un mismo estado se vea igual en todas partes:
+/// la tarjeta usa [color] con borde tenue, y el modal lo usa con [background]
+/// pastel y borde fuerte.
+class _ProductionStatusStyle {
+  const _ProductionStatusStyle._();
+
+  /// Estados disponibles, en el orden en que se ofrecen al cliente.
+  static const List<String> all = [
+    'Pendiente',
+    'En Proceso',
+    'Completada',
+    'Cancelada',
+  ];
+
+  /// Color del texto y del borde de cada estado.
+  static Color color(String status) {
+    switch (status) {
+      case 'Completada':
+        return const Color(0xFF1E7B34);
+      case 'En Proceso':
+        return const Color(0xFF1E40AF);
+      case 'Pendiente':
+        return const Color(0xFF8A6D00);
+      default:
+        return const Color(0xFFD32F2F);
+    }
+  }
+
+  /// Fondo pastel de cada estado.
+  static Color background(String status) {
+    switch (status) {
+      case 'Completada':
+        return const Color(0xFFD4F7E9);
+      case 'En Proceso':
+        return const Color(0xFFDCE8FF);
+      case 'Pendiente':
+        return const Color(0xFFFFF4C7);
+      default:
+        return const Color(0xFFFFE0E3);
+    }
+  }
+
+  /// Ícono asociado a cada estado.
+  static IconData icon(String status) {
+    switch (status) {
+      case 'Completada':
+        return Icons.check_circle;
+      case 'En Proceso':
+        return Icons.sync;
+      case 'Pendiente':
+        return Icons.pending;
+      default:
+        return Icons.cancel;
+    }
+  }
+}
+
 class _ProductionOrdersScreen extends StatefulWidget {
   const _ProductionOrdersScreen();
 
@@ -10,6 +70,9 @@ class _ProductionOrdersScreen extends StatefulWidget {
 
 class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
   String _query = '';
+
+  /// Evita que un doble toque rápido abra dos veces el modal de estado.
+  bool _abriendoEstadoOrden = false;
 
   /// `productId` es el producto de "Gestión Producto" que esta orden produce:
   /// al completarse la orden, su cantidad producida se suma a ese stock.
@@ -148,8 +211,8 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
   }
 
   Widget _buildOrderCard(_ProductionOrder order) {
-    final statusColor = _statusColor(order.status);
-    final statusBackground = _statusBackground(order.status);
+    final statusColor = _ProductionStatusStyle.color(order.status);
+    final statusBackground = _ProductionStatusStyle.background(order.status);
     final isCancelled = order.status == 'Cancelada';
 
     return Opacity(
@@ -283,7 +346,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                     decoration: BoxDecoration(
                       color: statusBackground,
                       borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: statusColor),
+                      border: Border.all(color: statusColor.withAlpha(80)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -297,7 +360,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                           ),
                         ),
                         if (!isCancelled)
-                          const Icon(Icons.expand_more, size: 18),
+                          Icon(Icons.expand_more, size: 18, color: statusColor),
                       ],
                     ),
                   ),
@@ -349,178 +412,214 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     );
   }
 
-  Future<void> _showChangeOrderStatusDialog(_ProductionOrder order) async {
-    const statuses = ['Pendiente', 'En Proceso', 'Completada', 'Cancelada'];
-    final nextStatus = await showDialog<String>(
-      context: context,
-      barrierColor: Colors.black54,
-      builder: (dialogContext) {
-        var selectedStatus = order.status;
-
-        return StatefulBuilder(
-          builder: (context, setState) => Dialog(
-            backgroundColor: PurchasesScreen.page,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Cambiar estado de la orden',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.montserrat(
-                      color: PurchasesScreen.ink,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedStatus,
-                    isExpanded: true,
-                    icon: const Icon(Icons.keyboard_arrow_down),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFD4F7E9),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: PurchasesScreen.red,
-                        ),
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: PurchasesScreen.red,
-                        ),
-                        borderRadius: BorderRadius.zero,
-                      ),
-                    ),
-                    items: [
-                      for (final status in statuses)
-                        DropdownMenuItem<String>(
-                          value: status,
-                          child: Text(
-                            status,
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFF087A65),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                    ],
-                    onChanged: (status) {
-                      if (status != null) {
-                        setState(() => selectedStatus = status);
-                      }
-                    },
-                  ),
-                  if (selectedStatus != order.status) ...[
-                    const SizedBox(height: 18),
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFFF4C7),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.warning_amber_rounded,
-                        color: Color(0xFFFF9800),
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'La orden ${order.id} pasará de:',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(child: _statusPill(order.status)),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Icon(Icons.arrow_forward, size: 24),
-                        ),
-                        Expanded(child: _statusPill(selectedStatus)),
-                      ],
-                    ),
-                  ],
-                  const SizedBox(height: 22),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(dialogContext).pop(),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: PurchasesScreen.red,
-                            side: const BorderSide(color: PurchasesScreen.red),
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Cancelar',
-                            style: GoogleFonts.poppins(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: selectedStatus == order.status
-                              ? null
-                              : () => Navigator.of(
-                                  dialogContext,
-                                ).pop(selectedStatus),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: PurchasesScreen.red,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Confirmar',
-                            style: GoogleFonts.poppins(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+  /// Fila tocable de una opción de estado dentro del modal: ícono y nombre en
+  /// el color del estado, y un radio a la derecha que marca la elegida.
+  Widget _statusOptionRow({
+    required String status,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final color = _ProductionStatusStyle.color(status);
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected
+              ? _ProductionStatusStyle.background(status)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? color : Colors.black12,
+            width: selected ? 1.6 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(_ProductionStatusStyle.icon(status), color: color, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                status,
+                style: GoogleFonts.poppins(
+                  color: color,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-        );
-      },
+            Icon(
+              selected ? Icons.radio_button_checked : Icons.radio_button_off,
+              color: selected ? color : Colors.black38,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
     );
+  }
 
-    if (mounted && nextStatus != null && nextStatus != order.status) {
-      _applyOrderUpdate(
-        order,
-        order.copyWith(status: nextStatus),
-        '${order.id} cambió a "$nextStatus".',
+  Future<void> _showChangeOrderStatusDialog(_ProductionOrder order) async {
+    if (_abriendoEstadoOrden) return;
+    _abriendoEstadoOrden = true;
+    try {
+      final nextStatus = await showModalBottomSheet<String>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetCtx) {
+          var selectedStatus = order.status;
+
+          return StatefulBuilder(
+            builder: (context, setSheetState) {
+              final changed = selectedStatus != order.status;
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: PurchasesScreen.page,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    12,
+                    24,
+                    24 + MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.black12,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'Cambiar estado de la orden',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.montserrat(
+                          color: PurchasesScreen.ink,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      for (final status in _ProductionStatusStyle.all) ...[
+                        _statusOptionRow(
+                          status: status,
+                          selected: selectedStatus == status,
+                          onTap: () =>
+                              setSheetState(() => selectedStatus = status),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                      if (changed) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'La orden ${order.id} pasará de:',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: PurchasesScreen.muted,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(child: _statusPill(order.status)),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              child: Icon(Icons.arrow_forward, size: 24),
+                            ),
+                            Expanded(child: _statusPill(selectedStatus)),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 22),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(sheetCtx).pop(),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: PurchasesScreen.red,
+                                side: const BorderSide(
+                                  color: PurchasesScreen.red,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 13,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                'Cancelar',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: changed
+                                  ? () => Navigator.of(
+                                      sheetCtx,
+                                    ).pop(selectedStatus)
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: PurchasesScreen.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 13,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                'Confirmar',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
       );
+
+      if (mounted && nextStatus != null && nextStatus != order.status) {
+        _applyOrderUpdate(
+          order,
+          order.copyWith(status: nextStatus),
+          '${order.id} cambió a "$nextStatus".',
+        );
+      }
+    } finally {
+      _abriendoEstadoOrden = false;
     }
   }
 
@@ -584,46 +683,22 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: _statusBackground(status),
+        color: _ProductionStatusStyle.background(status),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _statusColor(status).withAlpha(80)),
+        border: Border.all(
+          color: _ProductionStatusStyle.color(status).withAlpha(80),
+        ),
       ),
       child: Text(
         status,
         textAlign: TextAlign.center,
         style: GoogleFonts.poppins(
-          color: _statusColor(status),
+          color: _ProductionStatusStyle.color(status),
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
     );
-  }
-
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'Completada':
-        return const Color(0xFF2E8B3C);
-      case 'En Proceso':
-        return const Color(0xFF806A68);
-      case 'Pendiente':
-        return const Color(0xFFB84B00);
-      default:
-        return PurchasesScreen.red;
-    }
-  }
-
-  Color _statusBackground(String status) {
-    switch (status) {
-      case 'Completada':
-        return const Color(0xFFB9F5B8);
-      case 'En Proceso':
-        return const Color(0xFFEDE6E4);
-      case 'Pendiente':
-        return const Color(0xFFF8D0A9);
-      default:
-        return const Color(0xFFFFE0E3);
-    }
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
@@ -757,8 +832,8 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _statusColor(order.status);
-    final statusBackground = _statusBackground(order.status);
+    final statusColor = _ProductionStatusStyle.color(order.status);
+    final statusBackground = _ProductionStatusStyle.background(order.status);
 
     return Scaffold(
       backgroundColor: PurchasesScreen.page,
@@ -870,6 +945,9 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color: statusBackground,
                                     borderRadius: BorderRadius.circular(22),
+                                    border: Border.all(
+                                      color: statusColor.withAlpha(80),
+                                    ),
                                   ),
                                   child: Text(
                                     order.status,
@@ -997,13 +1075,15 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: _statusBackground(history[i].status),
+                      color: _ProductionStatusStyle.background(
+                        history[i].status,
+                      ),
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: Text(
                       history[i].status,
                       style: GoogleFonts.poppins(
-                        color: _statusColor(history[i].status),
+                        color: _ProductionStatusStyle.color(history[i].status),
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -1078,32 +1158,6 @@ class _ProductionOrderDetailScreen extends StatelessWidget {
     final hour = int.tryParse(parts.first) ?? 0;
     final startHour = (hour - 1).toString().padLeft(2, '0');
     return '$startHour:${parts.length > 1 ? parts[1] : '00'}';
-  }
-
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'Completada':
-        return const Color(0xFF2E8B3C);
-      case 'En Proceso':
-        return const Color(0xFF806A68);
-      case 'Pendiente':
-        return const Color(0xFFB84B00);
-      default:
-        return PurchasesScreen.red;
-    }
-  }
-
-  Color _statusBackground(String status) {
-    switch (status) {
-      case 'Completada':
-        return const Color(0xFFE3F2E5);
-      case 'En Proceso':
-        return const Color(0xFFEDE6E4);
-      case 'Pendiente':
-        return const Color(0xFFF8D0A9);
-      default:
-        return const Color(0xFFFFE0E3);
-    }
   }
 
   Widget _buildBottomNavigation(BuildContext context) {

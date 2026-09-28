@@ -14,30 +14,31 @@ class PaymentMethodScreen extends StatefulWidget {
 }
 
 class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
-  static const Color splashRojo = Color(0xE6C32828);
-
-  String _metodoSeleccionado = 'Nequi';
+  String? _metodoSeleccionado;
+  bool _abriendoModal = false;
 
   Future<void> _abrirModalTransferencia(String metodo) async {
-    final resultado = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _ModalTransferencia(
-        metodoNombre: metodo,
-        total: CartService.instance.total,
-      ),
-    );
-    if (resultado == true && mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const ReceiptSentScreen()),
-        (route) => false,
+    if (_abriendoModal) return;
+    _abriendoModal = true;
+    try {
+      final resultado = await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _ModalTransferencia(
+          metodoNombre: metodo,
+          total: CartService.instance.total,
+        ),
       );
+      if (resultado == true && mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const ReceiptSentScreen()),
+          (route) => false,
+        );
+      }
+    } finally {
+      _abriendoModal = false;
     }
-  }
-
-  void _confirmarPago() {
-    _abrirModalTransferencia(_metodoSeleccionado);
   }
 
   @override
@@ -194,34 +195,6 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                     ),
                   ),
                 ],
-              ),
-            ),
-
-            const Spacer(),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _confirmarPago,
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: Text(
-                    'Continuar con la compra',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: splashRojo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
               ),
             ),
           ],
