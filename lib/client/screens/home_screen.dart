@@ -8,7 +8,7 @@ import '../../shared/menu_item.dart';
 import '../../auth/auth_service.dart';
 
 // ============================================================
-// PALETA Y CONSTANTES DE DISEÃ‘O
+// PALETA Y CONSTANTES DE DISEÑO
 // Ajusta estos valores si tu marca usa otros tonos exactos.
 // ============================================================
 class AppColors {
@@ -51,7 +51,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
-  // (el Ã­ndice de la barra de navegaciÃ³n ahora lo maneja AppBottomNav)
+  // (el índice de la barra de navegación ahora lo maneja AppBottomNav)
 
   final List<String> _categories = const ['Pizzas', 'Lasañas', 'Favoritas'];
 
@@ -162,95 +162,137 @@ class _HomeScreenState extends State<HomeScreen> {
   // BANNER PRINCIPAL: foto de fondo + saludo personalizado
   // ----------------------------------------------------------
   Widget _buildHeroBanner() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: Stack(
-        children: [
-          SizedBox(
-            height: 190,
-            width: double.infinity,
-            child: Image.asset(
-              'assets/img/Fondo2.jpeg',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  Container(color: AppColors.darkText),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-          // Degradado oscuro para que el texto blanco resalte
-          Container(
-            height: 190,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomLeft,
-                end: Alignment.topRight,
-                colors: [
-                  Colors.black.withValues(alpha: 0.75),
-                  Colors.black.withValues(alpha: 0.15),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            // Capa 1: foto de fondo (degradado de respaldo si falla el asset)
+            SizedBox(
+              height: 190,
+              width: double.infinity,
+              child: Image.asset(
+                'assets/img/pizza1.jpg',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                alignment: const Alignment(0.3, 0),
+                cacheWidth: 736,
+                errorBuilder: (context, error, stackTrace) =>
+                    Container(color: AppColors.darkText),
+              ),
+            ),
+            // Capa 2a: velo vertical (abajo -> arriba) para que el texto se lea
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.75),
+                      Colors.black.withValues(alpha: 0.35),
+                      Colors.black.withValues(alpha: 0.05),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Capa 2b: velo horizontal extra hacia la izquierda, donde va el texto
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.35),
+                      Colors.black.withValues(alpha: 0.15),
+                      Colors.black.withValues(alpha: 0.0),
+                    ],
+                    stops: const [0.0, 0.45, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            // Capa 3: contenido actual (misma posicion, tipografia y colores)
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 18,
+              top: 18,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        width: 0.6,
+                      ),
+                    ),
+                    child: const Text(
+                      'TRADICIÓN ARTESANAL',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hola, ${AuthService.instance.currentName ?? widget.userName}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Que vas a pedir hoy?',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-          ),
-          Positioned(
-            left: 20,
-            right: 20,
-            bottom: 18,
-            top: 18,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white54, width: 0.6),
-                  ),
-                  child: const Text(
-                    'TRADICIÃ“N ARTESANAL',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6,
-                    ),
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hola, ${AuthService.instance.currentName ?? widget.userName}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Que vas a pedir hoy?',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   // ----------------------------------------------------------
-  // ENCABEZADOS DE SECCIÃ“N CON "Ver todas â†’"
+  // ENCABEZADOS DE SECCIÓN CON "Ver todas →"
   // ----------------------------------------------------------
   Widget _buildSectionHeader(String title, {VoidCallback? onTap}) {
     return Row(
@@ -299,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ----------------------------------------------------------
-  // CHIPS DE CATEGORÃAS (Pizzas / LasaÃ±as / Bebidas)
+  // CHIPS DE CATEGORÍAS (Pizzas / Lasañas / Bebidas)
   // ----------------------------------------------------------
   Widget _buildCategoryChips() {
     return SizedBox(
@@ -353,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ----------------------------------------------------------
-  // TARJETA DE INFORMACIÃ“N DEL LOCAL
+  // TARJETA DE INFORMACIÓN DEL LOCAL
   // ----------------------------------------------------------
   Widget _buildRestaurantInfoCard() {
     return Container(
