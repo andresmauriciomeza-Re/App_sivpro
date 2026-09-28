@@ -1,5 +1,6 @@
 // verify_code_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../shared/page_transitions.dart';
 import 'new_password_screen.dart';
@@ -144,6 +145,9 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
                                   maxLength: 1,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
                                   style: GoogleFonts.poppins(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,

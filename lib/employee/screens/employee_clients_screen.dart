@@ -13,7 +13,6 @@ class EmployeeClientsScreen extends StatefulWidget {
 }
 
 class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
-
   static const Color red = Color(0xFFC9151E);
   static const Color ink = Color(0xFF17243A);
   static const Color muted = Color(0xFF617492);
@@ -83,7 +82,8 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
         client.id,
         client.active ? 'Activo' : 'Inactivo',
       ]);
-      final matchesState = _statusFilter == 'Todos los estados' ||
+      final matchesState =
+          _statusFilter == 'Todos los estados' ||
           (_statusFilter == 'Activo' && client.active) ||
           (_statusFilter == 'Inactivo' && !client.active);
       return matchesQuery && matchesState;
@@ -97,8 +97,8 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
       });
     } else {
       filtered.sort(
-        (a, b) => normalizeForSearch(a.name)
-            .compareTo(normalizeForSearch(b.name)),
+        (a, b) =>
+            normalizeForSearch(a.name).compareTo(normalizeForSearch(b.name)),
       );
     }
     return filtered;
@@ -142,190 +142,193 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
                   return false;
                 },
                 child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Clientes',
-                                style: GoogleFonts.montserrat(
-                                  color: ink,
-                                  fontSize: 30,
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Clientes',
+                                  style: GoogleFonts.montserrat(
+                                    color: ink,
+                                    fontSize: 30,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'Usuarios registrados con tipo cliente en La Sirena',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  color: muted,
-                                  fontSize: 14,
+                                Text(
+                                  'Usuarios registrados con tipo cliente en La Sirena',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    color: muted,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        FilledButton.icon(
-                          onPressed: () => _showCreateClientDialog(context),
-                          icon: const Icon(Icons.person_add, size: 19),
-                          label: const Text('Crear cliente'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: red,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 13,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.groups_outlined,
-                            value: '${clients.length}',
-                            label: 'Total clientes',
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.how_to_reg_outlined,
-                            value:
-                                '${clients.where((c) => c.active).length}',
-                            label: 'Activos',
-                            active: true,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.person_off_outlined,
-                            value:
-                                '${clients.where((c) => !c.active).length}',
-                            label: 'Inactivos',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    _buildSearch(),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: PopupMenuButton<String>(
-                            initialValue: _statusFilter,
-                            onSelected: (value) => setState(() {
-                              _statusFilter = value;
-                              _visibleClients = _pageSize;
-                            }),
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: 'Todos los estados',
-                                child: Text('Todos los estados'),
+                          const SizedBox(width: 12),
+                          FilledButton.icon(
+                            onPressed: () => _showCreateClientDialog(context),
+                            icon: const Icon(Icons.person_add, size: 19),
+                            label: const Text('Crear cliente'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: red,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 13,
                               ),
-                              PopupMenuItem(
-                                value: 'Activo',
-                                child: Text('Activo'),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
                               ),
-                              PopupMenuItem(
-                                value: 'Inactivo',
-                                child: Text('Inactivo'),
-                              ),
-                            ],
-                            child: _FilterButton(label: _statusFilter),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: PopupMenuButton<String>(
-                            initialValue: _sortOrder,
-                            onSelected: (value) => setState(() {
-                              _sortOrder = value;
-                              _visibleClients = _pageSize;
-                            }),
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: 'Ordenar por nombre',
-                                child: Text('Ordenar por nombre'),
-                              ),
-                              PopupMenuItem(
-                                value: 'Ordenar por pedidos',
-                                child: Text('Ordenar por pedidos'),
-                              ),
-                            ],
-                            child: _FilterButton(label: _sortOrder),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.groups_outlined,
+                              value: '${clients.length}',
+                              label: 'Total clientes',
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'LISTADO DE CLIENTES',
-                          style: GoogleFonts.poppins(
-                            color: muted,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.how_to_reg_outlined,
+                              value: '${clients.where((c) => c.active).length}',
+                              label: 'Activos',
+                              active: true,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '${_visibleClients >= _filteredClients().length ? _filteredClients().length : _visibleClients} DE ${_filteredClients().length}',
-                          style: GoogleFonts.poppins(
-                            color: muted,
-                            fontSize: 14,
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.person_off_outlined,
+                              value:
+                                  '${clients.where((c) => !c.active).length}',
+                              label: 'Inactivos',
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    if (_filteredClients().isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 28),
-                        child: Center(
-                          child: Text(
-                            'No se encontraron clientes',
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      _buildSearch(),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: PopupMenuButton<String>(
+                              initialValue: _statusFilter,
+                              onSelected: (value) => setState(() {
+                                _statusFilter = value;
+                                _visibleClients = _pageSize;
+                              }),
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'Todos los estados',
+                                  child: Text('Todos los estados'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'Activo',
+                                  child: Text('Activo'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'Inactivo',
+                                  child: Text('Inactivo'),
+                                ),
+                              ],
+                              child: _FilterButton(label: _statusFilter),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: PopupMenuButton<String>(
+                              initialValue: _sortOrder,
+                              onSelected: (value) => setState(() {
+                                _sortOrder = value;
+                                _visibleClients = _pageSize;
+                              }),
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'Ordenar por nombre',
+                                  child: Text('Ordenar por nombre'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'Ordenar por pedidos',
+                                  child: Text('Ordenar por pedidos'),
+                                ),
+                              ],
+                              child: _FilterButton(label: _sortOrder),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'LISTADO DE CLIENTES',
+                            style: GoogleFonts.poppins(
+                              color: muted,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '${_visibleClients >= _filteredClients().length ? _filteredClients().length : _visibleClients} DE ${_filteredClients().length}',
                             style: GoogleFonts.poppins(
                               color: muted,
                               fontSize: 14,
                             ),
                           ),
-                        ),
-                      )
-                    else
-                      ..._filteredClients().take(_visibleClients).map(
-                        (client) => _ClientCard(
-                          client: client,
-                          onView: () => _showClientDetail(context, client),
-                          onEdit: () => _showEditClientDialog(context, client),
-                          onToggle: () => _toggleClientActive(client),
-                        ),
+                        ],
                       ),
-                  ],
+                      const SizedBox(height: 14),
+                      if (_filteredClients().isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 28),
+                          child: Center(
+                            child: Text(
+                              'No se encontraron clientes',
+                              style: GoogleFonts.poppins(
+                                color: muted,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ..._filteredClients()
+                            .take(_visibleClients)
+                            .map(
+                              (client) => _ClientCard(
+                                client: client,
+                                onView: () =>
+                                    _showClientDetail(context, client),
+                                onEdit: () =>
+                                    _showEditClientDialog(context, client),
+                                onToggle: () => _toggleClientActive(client),
+                              ),
+                            ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -379,7 +382,6 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
-
     const items = [
       (Icons.home_outlined, 'Inicio'),
       (Icons.people_outline, 'Clientes'),
@@ -630,112 +632,8 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
   void _showClientDetail(BuildContext context, _Client client) {
     showDialog<void>(
       context: context,
-      barrierColor: Colors.black54,
-      builder: (dialogContext) {
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(36, 28, 36, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Detalle Cliente',
-                      style: GoogleFonts.montserrat(
-                        color: ink,
-                        fontSize: 30,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      icon: const Icon(Icons.close, color: Colors.black45),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-                const Divider(height: 30),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 43,
-                      backgroundColor: client.color,
-                      child: Text(
-                        client.initials,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 24),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            client.name,
-                            style: GoogleFonts.poppins(
-                              color: ink,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            client.id,
-                            style: GoogleFonts.poppins(
-                              color: muted,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                _DetailRow(label: 'Correo', value: client.email),
-                _DetailRow(label: 'Pedidos totales', value: '${client.orders}'),
-                _DetailRow(
-                  label: 'Estado',
-                  value: client.active ? 'Activo' : 'Inactivo',
-                ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: FilledButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFF2F2F4),
-                      foregroundColor: ink,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-                    child: Text(
-                      'Cerrar',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      barrierColor: Colors.transparent,
+      builder: (_) => _ClientDetailScreen(client: client),
     );
   }
 
@@ -957,42 +855,243 @@ class _EmployeeClientsScreenState extends State<EmployeeClientsScreen> {
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, required this.value});
+class _ClientDetailScreen extends StatelessWidget {
+  const _ClientDetailScreen({required this.client});
+
+  final _Client client;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog.fullscreen(
+      backgroundColor: _EmployeeClientsScreenState.page,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Detalle Cliente',
+                      style: GoogleFonts.montserrat(
+                        color: _EmployeeClientsScreenState.ink,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close, color: Colors.black45),
+                    tooltip: 'Cerrar',
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 26, 24, 30),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(24, 22, 24, 16),
+                  decoration: BoxDecoration(
+                    color: _EmployeeClientsScreenState.page,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE1D8D6)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0A000000),
+                        blurRadius: 3,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 43,
+                            backgroundColor: client.color,
+                            child: Text(
+                              client.initials,
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  client.name,
+                                  style: GoogleFonts.poppins(
+                                    color: _EmployeeClientsScreenState.ink,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  client.id,
+                                  style: GoogleFonts.poppins(
+                                    color: _EmployeeClientsScreenState.muted,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+                      _ClientDetailRow(
+                        label: 'ID Cliente',
+                        value: client.id,
+                        emphasize: true,
+                      ),
+                      _ClientDetailRow(
+                        label: 'Nombre completo',
+                        value: client.name,
+                      ),
+                      _ClientDetailRow(
+                        label: 'Correo electrónico',
+                        value: client.email,
+                        singleLine: true,
+                      ),
+                      _ClientDetailRow(
+                        label: 'Pedidos totales',
+                        value: '${client.orders}',
+                      ),
+                      _ClientDetailRow(
+                        label: 'Estado',
+                        value: client.active ? 'Activo' : 'Inactivo',
+                        status: client.active,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFFF2F2F4),
+                    foregroundColor: _EmployeeClientsScreenState.ink,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: Text(
+                    'Cerrar',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ClientDetailRow extends StatelessWidget {
+  const _ClientDetailRow({
+    required this.label,
+    required this.value,
+    this.emphasize = false,
+    this.singleLine = false,
+    this.status,
+  });
 
   final String label;
   final String value;
+  final bool emphasize;
+  final bool singleLine;
+  final bool? status;
+
+  @override
+  Widget build(BuildContext context) {
+    final valueStyle = GoogleFonts.poppins(
+      color: _EmployeeClientsScreenState.ink,
+      fontSize: 17,
+      fontWeight: emphasize ? FontWeight.w700 : FontWeight.w400,
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE8E0DE))),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: _EmployeeClientsScreenState.muted,
+                fontSize: 17,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Flexible(
+            child: status == null
+                ? (singleLine
+                      ? FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(value, style: valueStyle),
+                        )
+                      : Text(
+                          value,
+                          textAlign: TextAlign.right,
+                          style: valueStyle,
+                        ))
+                : _ClientStatusBadge(active: status!),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClientStatusBadge extends StatelessWidget {
+  const _ClientStatusBadge({required this.active});
+
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 17),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFEDEDED))),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+      decoration: BoxDecoration(
+        color: active ? const Color(0xFFD2F8E5) : const Color(0xFFF0F3F7),
+        borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: _EmployeeClientsScreenState.muted,
-              fontSize: 16,
-            ),
-          ),
-          const Spacer(),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: GoogleFonts.poppins(
-                color: _EmployeeClientsScreenState.ink,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        active ? 'Activo' : 'Inactivo',
+        style: GoogleFonts.poppins(
+          color: active
+              ? const Color(0xFF086E4C)
+              : _EmployeeClientsScreenState.muted,
+          fontSize: 12,
+        ),
       ),
     );
   }
@@ -1053,9 +1152,7 @@ class _DialogField extends StatelessWidget {
           readOnly: readOnly,
           keyboardType: keyboardType,
           style: GoogleFonts.poppins(
-            color: readOnly
-                ? const Color(0xFF9D9895)
-                : const Color(0xFF353535),
+            color: readOnly ? const Color(0xFF9D9895) : const Color(0xFF353535),
             fontSize: 16,
           ),
           decoration: InputDecoration(
@@ -1067,9 +1164,7 @@ class _DialogField extends StatelessWidget {
               fontSize: 16,
             ),
             filled: true,
-            fillColor: readOnly
-                ? AppColors.fieldFill
-                : const Color(0xFFFCFCFB),
+            fillColor: readOnly ? AppColors.fieldFill : const Color(0xFFFCFCFB),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 18,
               vertical: 16,
@@ -1080,7 +1175,9 @@ class _DialogField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: _EmployeeClientsScreenState.red),
+              borderSide: const BorderSide(
+                color: _EmployeeClientsScreenState.red,
+              ),
             ),
           ),
         ),
@@ -1134,11 +1231,7 @@ class _StatCard extends StatelessWidget {
               color: AppColors.iconCircleBg,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: _EmployeeClientsScreenState.red,
-              size: 21,
-            ),
+            child: Icon(icon, color: _EmployeeClientsScreenState.red, size: 21),
           ),
           const Spacer(),
           FittedBox(
@@ -1427,14 +1520,7 @@ class _Client {
   final Color color;
 
   _Client copyWith({bool? active}) {
-    return _Client(
-      name,
-      email,
-      id,
-      orders,
-      active ?? this.active,
-      color,
-    );
+    return _Client(name, email, id, orders, active ?? this.active, color);
   }
 
   String get initials => getInitials(name);

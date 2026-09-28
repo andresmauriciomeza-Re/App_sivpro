@@ -1,6 +1,8 @@
 // register_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../shared/validators.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -28,13 +30,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final List<Map<String, String>> _tiposDocumento = [
     {'code': 'CC', 'label': 'Cédula de Ciudadanía'},
     {'code': 'CE', 'label': 'Cédula de Extranjería'},
-    {'code': 'PPT', 'label': 'Permiso por Protección Temporal'},
-    {'code': 'PEP', 'label': 'Permiso Especial de Permanencia'},
     {'code': 'PAS', 'label': 'Pasaporte'},
-    {'code': 'NIT', 'label': 'Número de Identificación Tributaria'},
-    {'code': 'RC', 'label': 'Registro Civil'},
-    {'code': 'DNI', 'label': 'Documento Nacional de Identidad'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    for (final controller in [
+      _nombreController,
+      _documentoController,
+      _correoController,
+      _telefonoController,
+      _passwordController,
+      _confirmPasswordController,
+    ]) {
+      controller.addListener(_onFieldChanged);
+    }
+  }
+
+  void _onFieldChanged() => setState(() {});
+
+  bool get _isFormValid =>
+      nameValidator(_nombreController.text) == null &&
+      documentValidator(_documentoController.text) == null &&
+      emailValidator(_correoController.text) == null &&
+      phoneValidator(_telefonoController.text) == null &&
+      passwordValidator(_passwordController.text) == null &&
+      confirmPasswordValidator(
+            _confirmPasswordController.text,
+            _passwordController.text,
+          ) ==
+          null;
 
   @override
   void dispose() {
@@ -289,11 +315,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   icon: Icons.badge_outlined,
                                 ),
                                 validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Este campo es obligatorio';
-                                  }
-                                  return null;
+                                  return documentValidator(value);
                                 },
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(15),
+                                ],
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                               ),
                             ],
                           ),
@@ -305,6 +334,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _fieldLabel('Nombre completo'),
                     TextFormField(
                       controller: _nombreController,
+                      inputFormatters: [NameInputFormatter()],
                       style: GoogleFonts.poppins(
                         color: Colors.black87,
                         fontSize: 15,
@@ -314,12 +344,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         label: 'Nombre completo',
                         icon: Icons.person_outline,
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
-                        }
-                        return null;
-                      },
+                      validator: nameValidator,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                     const SizedBox(height: 16),
 
@@ -327,6 +353,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextFormField(
                       controller: _correoController,
                       keyboardType: TextInputType.emailAddress,
+                      inputFormatters: [EmailInputFormatter()],
                       style: GoogleFonts.poppins(
                         color: Colors.black87,
                         fontSize: 15,
@@ -336,19 +363,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         label: 'Correo electrónico',
                         icon: Icons.mail_outline,
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
-                        }
-                        return null;
-                      },
+                      validator: emailValidator,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                     const SizedBox(height: 16),
 
                     _fieldLabel('Teléfono'),
                     TextFormField(
                       controller: _telefonoController,
-                      keyboardType: TextInputType.phone,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
                       style: GoogleFonts.poppins(
                         color: Colors.black87,
                         fontSize: 15,
@@ -358,12 +385,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         label: 'Teléfono',
                         icon: Icons.phone_outlined,
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
-                        }
-                        return null;
-                      },
+                      validator: phoneValidator,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                     const SizedBox(height: 16),
 
@@ -378,7 +401,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       decoration:
                           _fieldDecoration(
-                            label: 'Contraseña',
+                            label: 'Mínimo 8 caracteres',
                             icon: Icons.lock_outline,
                           ).copyWith(
                             suffixIcon: IconButton(
@@ -395,12 +418,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               },
                             ),
                           ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
-                        }
-                        return null;
-                      },
+                      validator: passwordValidator,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                     const SizedBox(height: 16),
 
@@ -415,7 +434,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       decoration:
                           _fieldDecoration(
-                            label: 'Confirmar contraseña',
+                            label: 'Repite tu contraseña',
                             icon: Icons.lock_outline,
                           ).copyWith(
                             suffixIcon: IconButton(
@@ -433,12 +452,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               },
                             ),
                           ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
-                        }
-                        return null;
-                      },
+                      validator: (value) => confirmPasswordValidator(
+                        value,
+                        _passwordController.text,
+                      ),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                   ],
                 ),
@@ -446,7 +464,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 26),
 
               ElevatedButton(
-                onPressed: _onCrearCuenta,
+                onPressed: _isFormValid ? _onCrearCuenta : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: splashRojo,
                   foregroundColor: Colors.white,
