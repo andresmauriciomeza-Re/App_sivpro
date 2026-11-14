@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../shared/initials.dart';
 import '../../theme/app_colors.dart';
+import '../../auth/permisos.dart';
 import 'employee_sales_management_screen.dart';
 import 'employee_clients_screen.dart';
 import '../../shared/page_transitions.dart';
@@ -9,13 +10,34 @@ import '../../auth/auth_service.dart';
 import '../../client/screens/home_screen.dart' hide AppColors;
 import '../services/return_service.dart';
 
-class EmployeeDashboardScreen extends StatelessWidget {
+class EmployeeDashboardScreen extends StatefulWidget {
   const EmployeeDashboardScreen({super.key});
 
   static const Color red = Color(0xFFC9151E);
   static const Color ink = Color(0xFF211616);
   static const Color muted = Color(0xFF8C8583);
   static const Color page = Color(0xFFFCF9F8);
+
+  @override
+  State<EmployeeDashboardScreen> createState() =>
+      _EmployeeDashboardScreenState();
+}
+
+class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
+  static const Color red = EmployeeDashboardScreen.red;
+  static const Color ink = EmployeeDashboardScreen.ink;
+  static const Color muted = EmployeeDashboardScreen.muted;
+  static const Color page = EmployeeDashboardScreen.page;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Permisos.ventas) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ReturnService.instance.cargar();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +57,7 @@ class EmployeeDashboardScreen extends StatelessWidget {
                   children: [
                     Text(
                       '¡Buenos días, María! 👋',
-                      style: GoogleFonts.montserrat(
-                        color: ink,
-                        fontSize: 28,
-                      ),
+                      style: GoogleFonts.montserrat(color: ink, fontSize: 28),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -58,37 +77,39 @@ class EmployeeDashboardScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _QuickAccessCard(
-                            icon: Icons.point_of_sale_outlined,
-                            label: 'Ventas',
-                            subtitle: 'Cobrar orden',
-                            onTap: () => _openSalesManagement(context),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _QuickAccessCard(
-                            icon: Icons.people_outline,
-                            label: 'Clientes',
-                            subtitle: 'Directorio',
-                            onTap: () => _openClients(context),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
+                    if (Permisos.ventas || Permisos.ventasClientes) ...[
+                      Row(
+                        children: [
+                          if (Permisos.ventas)
+                            Expanded(
+                              child: _QuickAccessCard(
+                                icon: Icons.point_of_sale_outlined,
+                                label: 'Ventas',
+                                subtitle: 'Cobrar orden',
+                                onTap: () => _openSalesManagement(context),
+                              ),
+                            ),
+                          if (Permisos.ventas && Permisos.ventasClientes)
+                            const SizedBox(width: 12),
+                          if (Permisos.ventasClientes)
+                            Expanded(
+                              child: _QuickAccessCard(
+                                icon: Icons.people_outline,
+                                label: 'Clientes',
+                                subtitle: 'Directorio',
+                                onTap: () => _openClients(context),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'Últimas ventas',
-                          style: GoogleFonts.poppins(
-                            color: ink,
-                            fontSize: 22,
-                          ),
+                          style: GoogleFonts.poppins(color: ink, fontSize: 22),
                         ),
                         TextButton(
                           onPressed: () => _openSalesManagement(context),
@@ -171,9 +192,9 @@ class EmployeeDashboardScreen extends StatelessWidget {
 
   void _goToStore(BuildContext context) {
     AuthService.instance.startStoreSession();
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
   Widget _buildSalesSummary() {
@@ -193,31 +214,29 @@ class EmployeeDashboardScreen extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _CompactStatCard(
-            icon: Icons.assignment_return_outlined,
-            iconBg: AppColors.returnIconBg,
-            iconColor: AppColors.returnIconFg,
-            value: '$_devolucionesHoy',
-            label: 'Devoluciones',
-            subtext: 'pendientes por atender',
+          child: ListenableBuilder(
+            listenable: ReturnService.instance,
+            builder: (context, _) {
+              final pendientes = ReturnService.instance.pendientes.length;
+              return _CompactStatCard(
+                icon: Icons.assignment_return_outlined,
+                iconBg: AppColors.returnIconBg,
+                iconColor: AppColors.returnIconFg,
+                value: '$pendientes',
+                label: 'Devoluciones',
+                subtext: pendientes == 1
+                    ? 'pendiente por atender'
+                    : 'pendientes por atender',
+              );
+            },
           ),
         ),
       ],
     );
   }
 
-  static int get _devolucionesHoy =>
-      ReturnService.instance.pendientes.length +
-      ReturnService.instance.resueltas.length;
-
   Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, Icons.home, 'Inicio'),
-      (Icons.people_outline, Icons.people, 'Clientes'),
-      (Icons.receipt_long_outlined, Icons.receipt_long, 'Ventas'),
-      (Icons.sync_alt, Icons.sync_alt, 'Devoluciones'),
-      (Icons.person_outline, Icons.person, 'Perfil'),
-    ];
+    final items = employeeNavItems();
 
     return SizedBox(
       height: 80,
@@ -239,24 +258,29 @@ class EmployeeDashboardScreen extends StatelessWidget {
                   for (var index = 0; index < items.length; index++)
                     Expanded(
                       child: InkWell(
-                        onTap: index == 0
+                        onTap: items[index].index == 0
                             ? null
-                            : () => handleEmployeeBottomNav(context, index),
+                            : () => handleEmployeeBottomNav(
+                                context,
+                                items[index].index,
+                              ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              index == 0 ? items[index].$2 : items[index].$1,
-                              color: index == 0
+                              items[index].index == 0
+                                  ? items[index].activeIcon ?? items[index].icon
+                                  : items[index].icon,
+                              color: items[index].index == 0
                                   ? red
                                   : const Color(0xFF756D6A),
                               size: 19,
                             ),
                             const SizedBox(height: 1),
                             Text(
-                              items[index].$3,
+                              items[index].label,
                               style: GoogleFonts.poppins(
-                                color: index == 0
+                                color: items[index].index == 0
                                     ? red
                                     : const Color(0xFF756D6A),
                                 fontSize: 10,

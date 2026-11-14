@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../auth/auth_service.dart';
+import '../../network/api_exception.dart';
 import '../../shared/initials.dart';
 import 'menu_screen.dart';
 import '../../auth/login_screen.dart';
-import '../../auth/auth_service.dart';
 import '../widgets/bottom_nav.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -17,24 +19,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const Color splashRojo = Color(0xE6C32828);
   static const Color fondoClaro = Color(0xFFFCF7F5);
 
-  // Datos de la cuenta, tomados de la sesión real cuando existe.
   late final TextEditingController _nombreController;
   late final TextEditingController _correoController;
   late final TextEditingController _telefonoController;
 
+  Usuario? _usuario;
   bool _editando = false;
+  bool _guardando = false;
+  String _correoGuardado = '';
+  String _telefonoGuardado = '';
 
   @override
   void initState() {
     super.initState();
-    final session = AuthService.instance;
-    _nombreController = TextEditingController(
-      text: session.currentName ?? 'Sebastián',
-    );
-    _correoController = TextEditingController(
-      text: session.currentEmail ?? 'sebas@gmail.com',
-    );
-    _telefonoController = TextEditingController(text: '3109876543');
+    final usuario = AuthService.instance.usuario;
+    _usuario = usuario;
+    _nombreController = TextEditingController(text: usuario?.nombre ?? '');
+    _correoController = TextEditingController(text: usuario?.correo ?? '');
+    _telefonoController = TextEditingController(text: usuario?.telefono ?? '');
+    _correoGuardado = _correoController.text;
+    _telefonoGuardado = _telefonoController.text;
+    _refrescarPerfil();
+  }
+
+  Future<void> _refrescarPerfil() async {
+    try {
+      final usuario = await AuthService.instance.refrescarPerfil();
+      if (!mounted || _editando) return;
+      setState(() => _actualizarCampos(usuario));
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    }
+  }
+
+  void _actualizarCampos(Usuario usuario) {
+    _usuario = usuario;
+    _nombreController.text = usuario.nombre;
+    _correoController.text = usuario.correo;
+    _telefonoController.text = usuario.telefono;
+    _correoGuardado = usuario.correo;
+    _telefonoGuardado = usuario.telefono;
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _iniciarEdicion() {
+    setState(() => _editando = true);
+  }
+
+  void _cancelarEdicion() {
+    setState(() {
+      _correoController.text = _correoGuardado;
+      _telefonoController.text = _telefonoGuardado;
+      _editando = false;
+    });
+  }
+
+  Future<void> _guardarPerfil() async {
+    if (_guardando) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _guardando = true);
+    try {
+      final usuario = await AuthService.instance.actualizarPerfil(
+        correo: _correoController.text.trim(),
+        telefono: _telefonoController.text.trim(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _actualizarCampos(usuario);
+        _editando = false;
+      });
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } finally {
+      if (mounted) setState(() => _guardando = false);
+    }
   }
 
   @override
@@ -45,8 +108,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  void _cerrarSesion() {
-    AuthService.instance.logout();
+  Future<void> _cerrarSesion() async {
+    await AuthService.instance.logout();
+    if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
@@ -135,8 +199,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               const SizedBox(width: 8),
                               OutlinedButton.icon(
-                                onPressed: () =>
-                                    setState(() => _editando = !_editando),
+                                onPressed: _guardando
+                                    ? null
+                                    : (_editando
+                                          ? _guardarPerfil
+                                          : _iniciarEdicion),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.black,
                                   side: const BorderSide(color: Colors.black12),
@@ -145,11 +212,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 icon: Icon(
-                                  _editando ? Icons.check : Icons.edit,
+                                  _guardando
+                                      ? Icons.hourglass_top
+                                      : (_editando ? Icons.check : Icons.edit),
                                   size: 16,
                                 ),
                                 label: Text(
-                                  _editando ? 'Listo' : 'Editar',
+                                  _guardando
+                                      ? 'Guardando'
+                                      : (_editando ? 'Guardar' : 'Editar'),
                                   style: GoogleFonts.poppins(fontSize: 12),
                                 ),
                               ),
@@ -166,7 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              'Cliente',
+                              _usuario?.rol ?? '',
                               style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -197,31 +268,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     _campoLabel(Icons.person_outline, 'Nombre'),
                     const SizedBox(height: 6),
-                    _campoEditable(_nombreController),
+                    _campoTexto(_nombreController.text),
                     const SizedBox(height: 16),
 
                     _campoLabel(Icons.email_outlined, 'Correo electrónico'),
                     const SizedBox(height: 6),
-                    _campoTexto(_correoController.text, habilitado: false),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        'Este campo no es editable',
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: splashRojo,
-                        ),
-                      ),
+                    _campoEditable(
+                      _correoController,
+                      keyboardType: TextInputType.emailAddress,
+                      maxLength: 60,
                     ),
                     const SizedBox(height: 16),
 
                     _campoLabel(Icons.phone_outlined, 'Teléfono'),
                     const SizedBox(height: 6),
-                    _campoEditable(_telefonoController),
+                    _campoEditable(
+                      _telefonoController,
+                      keyboardType: TextInputType.phone,
+                      maxLength: 15,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(15),
+                      ],
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
+
+              if (_editando) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _guardando ? null : _cancelarEdicion,
+                    child: const Text('Cancelar'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               if (AuthService.instance.fromPanel) ...[
                 SizedBox(
@@ -326,7 +410,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _campoTexto(String valor, {required bool habilitado}) {
+  Widget _campoTexto(String valor) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -341,10 +425,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _campoEditable(TextEditingController controller) {
+  Widget _campoEditable(
+    TextEditingController controller, {
+    required TextInputType keyboardType,
+    required int maxLength,
+    List<TextInputFormatter> inputFormatters = const [],
+  }) {
     return TextField(
       controller: controller,
       enabled: _editando,
+      keyboardType: keyboardType,
+      maxLength: maxLength,
+      inputFormatters: inputFormatters,
       style: GoogleFonts.poppins(fontSize: 13.5, color: Colors.black87),
       decoration: InputDecoration(
         filled: true,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
@@ -423,13 +423,7 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
   }
 
   Widget _bottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.people_outline, 'Clientes'),
-      (Icons.receipt_long, 'Ventas'),
-      (Icons.sync_alt, 'Devoluciones'),
-      (Icons.person_outline, 'Perfil'),
-    ];
+    final items = employeeNavItems();
     return SizedBox(
       height: 80,
       child: Column(
@@ -450,19 +444,19 @@ class EmployeeSaleDetailScreen extends StatelessWidget {
                   for (var i = 0; i < items.length; i++)
                     Expanded(
                       child: InkWell(
-                        onTap: () => handleEmployeeBottomNav(context, i),
+                        onTap: () => handleEmployeeBottomNav(context, items[i].index),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              items[i].$1,
-                              color: i == 2 ? red : const Color(0xFF9AA6B7),
+                              items[i].icon,
+                              color: items[i].index == 2 ? red : const Color(0xFF9AA6B7),
                               size: 22,
                             ),
                             Text(
-                              items[i].$2,
+                              items[i].label,
                               style: GoogleFonts.poppins(
-                                color: i == 2
+                                color: items[i].index == 2
                                     ? red
                                     : const Color(0xFF9AA6B7),
                                 fontSize: 10,

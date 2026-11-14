@@ -1,8 +1,10 @@
 // verify_code_screen.dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../network/api_exception.dart';
 import '../shared/page_transitions.dart';
+import 'auth_service.dart';
 import 'new_password_screen.dart';
 
 class VerifyCodeScreen extends StatefulWidget {
@@ -23,6 +25,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     (_) => TextEditingController(),
   );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  bool _verificando = false;
+  bool _reenviando = false;
 
   @override
   void dispose() {
@@ -43,8 +47,50 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     }
   }
 
-  void _onVerificar() {
-    Navigator.of(context).push(heroFadeRoute(const NewPasswordScreen()));
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _onVerificar() async {
+    if (_verificando) return;
+    final codigo = _controllers.map((controller) => controller.text).join();
+    if (codigo.length != 6) {
+      _showMessage('Ingresa los 6 dígitos del código.');
+      return;
+    }
+
+    setState(() => _verificando = true);
+    try {
+      await AuthService.instance.verificarCodigoRecuperacion(
+        widget.email,
+        codigo,
+      );
+      if (!mounted) return;
+      Navigator.of(context).push(
+        heroFadeRoute(NewPasswordScreen(email: widget.email, codigo: codigo)),
+      );
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } finally {
+      if (mounted) setState(() => _verificando = false);
+    }
+  }
+
+  Future<void> _onReenviar() async {
+    if (_reenviando) return;
+    setState(() => _reenviando = true);
+    try {
+      final mensaje = await AuthService.instance.solicitarCodigoRecuperacion(
+        widget.email,
+      );
+      if (mounted) _showMessage(mensaje);
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } finally {
+      if (mounted) setState(() => _reenviando = false);
+    }
   }
 
   @override
@@ -128,6 +174,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
+                                const TextSpan(text: '\nVence en 15 minutos.'),
                               ],
                             ),
                             textAlign: TextAlign.center,
@@ -183,7 +230,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _onVerificar,
+                              onPressed: _verificando ? null : _onVerificar,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: splashRojo,
                                 foregroundColor: Colors.white,
@@ -194,31 +241,42 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              child: Text(
-                                'Verificar código',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
+                              child: _verificando
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.4,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Verificar código',
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 16),
                           TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Código reenviado'),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'Reenviar código',
-                              style: GoogleFonts.poppins(
-                                color: Colors.black54,
-                                fontSize: 14,
-                              ),
-                            ),
+                            onPressed: _reenviando ? null : _onReenviar,
+                            child: _reenviando
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    'Reenviar código',
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.black54,
+                                      fontSize: 14,
+                                    ),
+                                  ),
                           ),
                           const SizedBox(height: 24),
                         ],
