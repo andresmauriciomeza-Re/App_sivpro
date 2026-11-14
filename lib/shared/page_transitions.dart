@@ -1,9 +1,62 @@
 import 'dart:ui';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import '../auth/permisos.dart';
 import '../employee/screens/employee_profile_screen.dart';
 import '../employee/screens/employee_clients_screen.dart';
 import '../employee/screens/employee_sales_management_screen.dart';
 import '../employee/screens/employee_returns_screen.dart';
+
+class EmployeeNavItem {
+  const EmployeeNavItem({
+    required this.index,
+    required this.icon,
+    required this.label,
+    this.activeIcon,
+  });
+
+  final int index;
+  final IconData icon;
+  final String label;
+  final IconData? activeIcon;
+}
+
+/// Elementos visibles del bottom nav del empleado según sus permisos.
+List<EmployeeNavItem> employeeNavItems() {
+  return [
+    const EmployeeNavItem(
+      index: 0,
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home,
+      label: 'Inicio',
+    ),
+    if (Permisos.ventasClientes)
+      const EmployeeNavItem(
+        index: 1,
+        icon: Icons.people_outline,
+        activeIcon: Icons.people,
+        label: 'Clientes',
+      ),
+    if (Permisos.ventas)
+      const EmployeeNavItem(
+        index: 2,
+        icon: Icons.receipt_long_outlined,
+        activeIcon: Icons.receipt_long,
+        label: 'Ventas',
+      ),
+    if (Permisos.ventasDevoluciones)
+      const EmployeeNavItem(
+        index: 3,
+        icon: Icons.sync_alt,
+        label: 'Devoluciones',
+      ),
+    const EmployeeNavItem(
+      index: 4,
+      icon: Icons.person_outline,
+      activeIcon: Icons.person,
+      label: 'Perfil',
+    ),
+  ];
+}
 
 /// Nombre de ruta de la raíz de la sección Ventas (rol Empleado).
 /// Permite volver a ella desde las pantallas internas de Devoluciones,
@@ -33,9 +86,17 @@ void handleEmployeeBottomNav(BuildContext context, int index) {
       Navigator.of(context).popUntil((route) => route.isFirst);
       break;
     case 1:
+      if (!Permisos.ventasClientes) {
+        _sinPermiso(context);
+        return;
+      }
       _openSection(context, kClientesRoute, const EmployeeClientsScreen());
       break;
     case 2:
+      if (!Permisos.ventas) {
+        _sinPermiso(context);
+        return;
+      }
       _openSection(
         context,
         kVentasModulesRoute,
@@ -43,6 +104,10 @@ void handleEmployeeBottomNav(BuildContext context, int index) {
       );
       break;
     case 3:
+      if (!Permisos.ventasDevoluciones) {
+        _sinPermiso(context);
+        return;
+      }
       _openSection(context, kDevolucionesRoute, const EmployeeReturnsScreen());
       break;
     case 4:
@@ -55,6 +120,14 @@ void handleEmployeeBottomNav(BuildContext context, int index) {
         ),
       );
   }
+}
+
+void _sinPermiso(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('No tienes permiso para acceder a este módulo.'),
+    ),
+  );
 }
 
 /// Abre una sección del bottom nav sin duplicar pantallas: si ya existe una

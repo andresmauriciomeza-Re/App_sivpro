@@ -178,7 +178,7 @@ final Map<String, List<MenuItem>> categoriasMenu = {
     ),
 
     const MenuItem(
-      nombre: 'Lasaña Mixta',
+      nombre: 'Lasaña Pollo',
       descripcion:
           'Capas de vegetales frescos de temporada, salsa blanca casera y quesos gratinados.',
       imagen: 'assets/img/lasaña_pollo.png',

@@ -1,64 +1,221 @@
-/// Autenticación mock local (sin backend).
+import 'package:flutter/foundation.dart';
+
+import '../network/api_client.dart';
+import '../network/api_exception.dart';
+import 'models/usuario.dart';
+import 'token_storage.dart';
+
+export 'models/usuario.dart' show UserRole, Usuario, Permiso, RolAsignado;
+
+/// Sesión activa respaldada por el backend.
 ///
-/// Única fuente de verdad de los usuarios y sus roles. Los correos se
-/// comparan sin distinguir mayúsculas/minúsculas y sin espacios al inicio
-/// o final. Si el correo no existe o la contraseña no coincide, el login falla.
-enum UserRole { admin, empleado, cliente }
-
-class _Cuenta {
-  const _Cuenta(this.password, this.role);
-  final String password;
-  final UserRole role;
-}
-
-class AuthService {
-  AuthService._();
-  static final AuthService instance = AuthService._();
-
-  /// Correo de la sesión activa (null = sesión cerrada).
-  String? _currentEmail;
-  String? get currentEmail => _currentEmail;
-
-  /// Nombres visibles por cuenta (identidad real mostrada en la tienda/cliente).
-  static const Map<String, String> _nombres = {
-    'gloria@lasirena.com': 'Gloria Inés Vargas',
-    'maria.gonzalez@gmail.com': 'María González',
-    'sebastianmorelo@gmail.com': 'Sebastián',
-  };
-
-  /// Nombre visible de la sesión activa (null = sesión cerrada).
-  String? get currentName => _currentEmail == null ? null : _nombres[_currentEmail];
-
-  /// La tienda fue abierta desde el panel del empleado (sin cerrar sesión).
-  bool _fromPanel = false;
-  bool get fromPanel => _fromPanel;
-
-  /// Marca la tienda como abierta desde el panel, manteniendo la sesión.
-  void startStoreSession() => _fromPanel = true;
-
-  /// Limpia la bandera al volver al panel o al salir de la tienda.
-  void endStoreSession() => _fromPanel = false;
-
-  /// Cuentas locales: correo normalizado (en minúsculas) -> contraseña y rol.
-  static const Map<String, _Cuenta> _cuentas = {
-    'gloria@lasirena.com': _Cuenta('G123456', UserRole.admin),
-    'maria.gonzalez@gmail.com': _Cuenta('M123456', UserRole.empleado),
-    'sebastianmorelo@gmail.com': _Cuenta('S123456', UserRole.cliente),
-  };
-
-  /// Devuelve el rol si las credenciales son correctas; null si no lo son.
-  UserRole? login(String email, String password) {
-    final normalized = email.trim().toLowerCase();
-    final cuenta = _cuentas[normalized];
-    if (cuenta == null || cuenta.password != password) return null;
-    _currentEmail = normalized;
-    _fromPanel = false;
-    return cuenta.role;
+/// Es la única fuente de verdad de identidad, rol y permisos. Conserva los
+/// getters que ya usaban las pantallas (`currentName`, `currentEmail`,
+/// `fromPanel`, etc.) para no romper la navegación existente.
+class AuthService extends ChangeNotifier {
+  AuthService._() {
+    ApiClient.instance.tokenProvider = () => _token;
+    ApiClient.instance.onSessionExpired = _manejarSesionExpirada;
   }
 
-  /// Cierra la sesión activa.
-  void logout() {
-    _currentEmail = null;
+  static final AuthService instance = AuthService._();
+
+  String? _token;
+  Usuario? _usuario;
+  bool _fromPanel = false;
+  bool _manejandoExpiracion = false;
+
+  /// Se invoca cuando el backend invalida una sesión que estaba activa.
+  void Function(String message)? onSessionExpired;
+
+  Usuario? get usuario => _usuario;
+  String? get currentEmail => _usuario?.correo;
+  String? get currentName => _usuario?.nombre;
+  UserRole? get rol => _usuario?.userRole;
+  bool get isAuthenticated => _usuario != null && _token != null;
+
+  /// La tienda fue abierta desde el panel del empleado (sin cerrar sesión).
+  bool get fromPanel => _fromPanel;
+
+  void startStoreSession() => _fromPanel = true;
+
+  void endStoreSession() => _fromPanel = false;
+
+  bool puedeVer(String modulo, String nombre, {String privilegio = 'Ver'}) {
+    return _usuario?.puedeVer(modulo, nombre, privilegio: privilegio) ?? false;
+  }
+
+  bool puedeVerModulo(String modulo, {String privilegio = 'Ver'}) {
+    return _usuario?.puedeVerModulo(modulo, privilegio: privilegio) ?? false;
+  }
+
+  Future<Usuario> login(String correo, String contrasena) async {
+    final data = await ApiClient.instance.post(
+      '/auth/login',
+      auth: false,
+      body: {'correo': correo.trim(), 'contrasena': contrasena},
+    );
+    if (data is! Map<String, dynamic>) {
+      throw const ApiException('Respuesta inesperada del servidor.');
+    }
+    final token = data['token'];
+    final usuarioJson = data['usuario'];
+    if (token is! String || usuarioJson is! Map<String, dynamic>) {
+      throw const ApiException('Respuesta inesperada del servidor.');
+    }
+
+    final usuario = Usuario.fromJson(usuarioJson);
+    _token = token;
+    _usuario = usuario;
     _fromPanel = false;
+    await TokenStorage.instance.write(token);
+    notifyListeners();
+    return usuario;
+  }
+
+  /// Intenta reabrir la sesión guardada.
+  ///
+  /// Devuelve `false` cuando no hay token o el backend lo rechazó. Si falla la
+  /// red lanza [ApiException] para que el arranque ofrezca reintentar.
+  Future<bool> restoreSession() async {
+    final token = await TokenStorage.instance.read();
+    if (token == null || token.isEmpty) return false;
+
+    _token = token;
+    try {
+      final data = await ApiClient.instance.get('/auth/me');
+      if (data is! Map<String, dynamic>) {
+        throw const ApiException('Respuesta inesperada del servidor.');
+      }
+      _usuario = Usuario.fromJson(data);
+      notifyListeners();
+      return true;
+    } on ApiException catch (error) {
+      if (error.statusCode == 401 || error.statusCode == 403) {
+        await _limpiarSesion();
+        return false;
+      }
+      rethrow;
+    }
+  }
+
+  /// Guarda SOLO correo y teléfono contra `PUT /auth/perfil`.
+  ///
+  /// El backend devuelve el usuario actualizado completo; se reemplaza la
+  /// sesión con esa respuesta sin tocar el token.
+  Future<Usuario> actualizarPerfil({
+    required String correo,
+    required String telefono,
+  }) async {
+    final data = await ApiClient.instance.put(
+      '/auth/perfil',
+      body: {'correo': correo.trim(), 'telefono': telefono.trim()},
+    );
+    final usuario = _usuarioDeRespuesta(data);
+    _usuario = usuario;
+    notifyListeners();
+    return usuario;
+  }
+
+  /// Refresca el usuario de la sesión con `GET /auth/me`.
+  Future<Usuario> refrescarPerfil() async {
+    final data = await ApiClient.instance.get('/auth/me');
+    final usuario = _usuarioDeRespuesta(data);
+    _usuario = usuario;
+    notifyListeners();
+    return usuario;
+  }
+
+  /// Pide un código de recuperación. No lleva token: el usuario no está
+  /// autenticado. Devuelve el mensaje genérico del backend.
+  Future<String> solicitarCodigoRecuperacion(String correo) async {
+    final data = await ApiClient.instance.post(
+      '/auth/recuperar/solicitar',
+      auth: false,
+      body: {'correo': correo.trim()},
+    );
+    return _mensajeDeRespuesta(
+      data,
+      'Si el correo está registrado, enviamos un código de verificación.',
+    );
+  }
+
+  /// Verifica el código de 6 dígitos contra el backend. No lleva token.
+  Future<void> verificarCodigoRecuperacion(String correo, String codigo) async {
+    final data = await ApiClient.instance.post(
+      '/auth/recuperar/verificar',
+      auth: false,
+      body: {'correo': correo.trim(), 'codigo': codigo},
+    );
+    if (data is Map<String, dynamic> && data['valido'] == false) {
+      throw ApiException(
+        _mensajeDeRespuesta(
+          data,
+          'El código no es válido o venció. Solicita uno nuevo.',
+        ),
+      );
+    }
+  }
+
+  /// Aplica la contraseña nueva con el código ya verificado. No lleva token.
+  Future<String> restablecerContrasena(
+    String correo,
+    String codigo,
+    String contrasena,
+  ) async {
+    final data = await ApiClient.instance.post(
+      '/auth/recuperar/restablecer',
+      auth: false,
+      body: {
+        'correo': correo.trim(),
+        'codigo': codigo,
+        'contrasena': contrasena,
+      },
+    );
+    return _mensajeDeRespuesta(
+      data,
+      'Tu contraseña fue actualizada correctamente.',
+    );
+  }
+
+  Usuario _usuarioDeRespuesta(dynamic data) {
+    dynamic json = data;
+    if (data is Map<String, dynamic> &&
+        data['usuario'] is Map<String, dynamic>) {
+      json = data['usuario'];
+    }
+    if (json is! Map<String, dynamic>) {
+      throw const ApiException('Respuesta inesperada del servidor.');
+    }
+    return Usuario.fromJson(json);
+  }
+
+  String _mensajeDeRespuesta(dynamic data, String porDefecto) {
+    if (data is Map<String, dynamic>) {
+      final mensaje = data['mensaje'];
+      if (mensaje is String && mensaje.trim().isNotEmpty) return mensaje;
+    }
+    return porDefecto;
+  }
+
+  Future<void> logout() => _limpiarSesion();
+
+  Future<void> _limpiarSesion() async {
+    _token = null;
+    _usuario = null;
+    _fromPanel = false;
+    await TokenStorage.instance.delete();
+    notifyListeners();
+  }
+
+  Future<void> _manejarSesionExpirada(ApiException error) async {
+    if (_usuario == null || _manejandoExpiracion) return;
+    _manejandoExpiracion = true;
+    final mensaje = error.message.isEmpty
+        ? 'Tu sesión ha expirado. Inicia sesión nuevamente.'
+        : error.message;
+    await _limpiarSesion();
+    _manejandoExpiracion = false;
+    onSessionExpired?.call(mensaje);
   }
 }

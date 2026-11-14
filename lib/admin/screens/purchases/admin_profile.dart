@@ -1,8 +1,6 @@
 part of '../purchases_screen.dart';
 
-/// Perfil del Administrador (estilo compacto idéntico al perfil del Empleado,
-/// con los campos Nombre, Documento, Correo y Teléfono editables en edición,
-/// rol "Administrador" y botón Editar en píldora roja).
+/// Perfil del Administrador con los datos vigentes de la sesión.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -11,40 +9,63 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  static const _fullName = 'Gloria Inés Vargas';
-  static const _role = 'Administrador';
-
   late final TextEditingController _nameController;
   late final TextEditingController _documentController;
+  late final TextEditingController _documentTypeController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
 
-  String _savedName = '';
-  String _savedDocument = '';
+  Usuario? _usuario;
   String _savedEmail = '';
   String _savedPhone = '';
   bool _editing = false;
-
-  static final _emailRegExp = RegExp(r'^[\w\.\-+]+@[\w\-]+(\.[\w\-]+)+$');
-  static final _digitsRegExp = RegExp(r'^[0-9]+$');
+  bool _guardando = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: _fullName);
-    _documentController = TextEditingController(text: '1017245678');
-    _emailController = TextEditingController(text: 'gloria@lasirena.com.co');
-    _phoneController = TextEditingController(text: '3001234567');
-    _savedName = _nameController.text;
-    _savedDocument = _documentController.text;
+    final usuario = AuthService.instance.usuario;
+    _usuario = usuario;
+    _nameController = TextEditingController(text: usuario?.nombre ?? '');
+    _documentController = TextEditingController(
+      text: usuario?.numeroDocumento ?? '',
+    );
+    _documentTypeController = TextEditingController(
+      text: usuario?.tipoDocumento ?? '',
+    );
+    _emailController = TextEditingController(text: usuario?.correo ?? '');
+    _phoneController = TextEditingController(text: usuario?.telefono ?? '');
     _savedEmail = _emailController.text;
     _savedPhone = _phoneController.text;
+    _refrescarPerfil();
+  }
+
+  Future<void> _refrescarPerfil() async {
+    try {
+      final usuario = await AuthService.instance.refrescarPerfil();
+      if (!mounted || _editing) return;
+      setState(() => _actualizarCampos(usuario));
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    }
+  }
+
+  void _actualizarCampos(Usuario usuario) {
+    _usuario = usuario;
+    _nameController.text = usuario.nombre;
+    _documentController.text = usuario.numeroDocumento;
+    _documentTypeController.text = usuario.tipoDocumento;
+    _emailController.text = usuario.correo;
+    _phoneController.text = usuario.telefono;
+    _savedEmail = usuario.correo;
+    _savedPhone = usuario.telefono;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _documentController.dispose();
+    _documentTypeController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
@@ -52,8 +73,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _startEditing() {
     setState(() {
-      _savedName = _nameController.text;
-      _savedDocument = _documentController.text;
       _savedEmail = _emailController.text;
       _savedPhone = _phoneController.text;
       _editing = true;
@@ -62,8 +81,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _cancelEditing() {
     setState(() {
-      _nameController.text = _savedName;
-      _documentController.text = _savedDocument;
       _emailController.text = _savedEmail;
       _phoneController.text = _savedPhone;
       _editing = false;
@@ -71,50 +88,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
+    if (_guardando) return;
     FocusScope.of(context).unfocus();
-    final name = _nameController.text.trim();
-    final doc = _documentController.text
-        .trim()
-        .replaceAll(RegExp(r'[\s\-]'), '');
     final email = _emailController.text.trim();
-    final phone = _phoneController.text
-        .trim()
-        .replaceAll(RegExp(r'[\s\-]'), '');
-
-    if (name.isEmpty || doc.isEmpty || email.isEmpty || phone.isEmpty) {
-      _showMessage('Todos los campos son obligatorios');
-      return;
+    final phone = _phoneController.text.trim();
+    setState(() => _guardando = true);
+    try {
+      final usuario = await AuthService.instance.actualizarPerfil(
+        correo: email,
+        telefono: phone,
+      );
+      if (!mounted) return;
+      setState(() {
+        _actualizarCampos(usuario);
+        _editing = false;
+      });
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } finally {
+      if (mounted) setState(() => _guardando = false);
     }
-    if (!_emailRegExp.hasMatch(email)) {
-      _showMessage('Ingresa un correo electrónico válido');
-      return;
-    }
-    if (!_digitsRegExp.hasMatch(doc)) {
-      _showMessage('El número de documento solo puede contener números');
-      return;
-    }
-    if (!_digitsRegExp.hasMatch(phone)) {
-      _showMessage('El número de teléfono solo puede contener números');
-      return;
-    }
-
-    setState(() {
-      _nameController.text = name;
-      _documentController.text = doc;
-      _emailController.text = email;
-      _phoneController.text = phone;
-      _savedName = name;
-      _savedDocument = doc;
-      _savedEmail = email;
-      _savedPhone = phone;
-      _editing = false;
-    });
-    _showMessage('Perfil actualizado correctamente');
   }
 
   @override
@@ -165,10 +164,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _header() {
-    return AppHeader(
-      title: 'La Sirena Pizza',
-      initials: getInitials(_fullName),
-    );
+    final nombre = _usuario?.nombre ?? '';
+    return AppHeader(title: 'La Sirena Pizza', initials: getInitials(nombre));
   }
 
   Widget _headerCard() {
@@ -187,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             radius: 24,
             backgroundColor: AppColors.red,
             child: Text(
-              getInitials(_fullName),
+              getInitials(_usuario?.nombre ?? ''),
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 18,
@@ -201,7 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _fullName,
+                  _usuario?.nombre ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
@@ -212,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  _role,
+                  _usuario?.rol ?? '',
                   style: GoogleFonts.poppins(
                     color: AppColors.muted,
                     fontSize: 13,
@@ -223,9 +220,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(width: 8),
           FilledButton.icon(
-            onPressed: _editing ? _saveProfile : _startEditing,
-            icon: Icon(_editing ? Icons.check : Icons.edit_outlined, size: 16),
-            label: Text(_editing ? 'Guardar' : 'Editar'),
+            onPressed: _guardando
+                ? null
+                : (_editing ? _saveProfile : _startEditing),
+            icon: _guardando
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : Icon(_editing ? Icons.check : Icons.edit_outlined, size: 16),
+            label: Text(
+              _guardando ? 'Guardando' : (_editing ? 'Guardar' : 'Editar'),
+            ),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.red,
               foregroundColor: Colors.white,
@@ -262,6 +272,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Nombre completo',
             controller: _nameController,
             keyboardType: TextInputType.text,
+            editable: false,
           ),
           const SizedBox(height: 14),
           _field(
@@ -269,6 +280,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Número de documento',
             controller: _documentController,
             keyboardType: TextInputType.number,
+            editable: false,
+          ),
+          const SizedBox(height: 14),
+          _field(
+            icon: Icons.badge_outlined,
+            label: 'Tipo de documento',
+            controller: _documentTypeController,
+            keyboardType: TextInputType.text,
+            editable: false,
           ),
           const SizedBox(height: 14),
           _field(
@@ -276,6 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Correo electrónico',
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
+            editable: true,
           ),
           const SizedBox(height: 14),
           _field(
@@ -283,6 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Número de teléfono',
             controller: _phoneController,
             keyboardType: TextInputType.phone,
+            editable: true,
           ),
         ],
       ),
@@ -294,38 +316,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String label,
     required TextEditingController controller,
     required TextInputType keyboardType,
+    required bool editable,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          Icon(icon, color: AppColors.profileLabelIcon, size: 16),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: AppColors.profileLabel,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+        Row(
+          children: [
+            Icon(icon, color: AppColors.profileLabelIcon, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: AppColors.profileLabel,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ]),
+          ],
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
-          enabled: _editing,
+          enabled: _editing && editable,
           keyboardType: keyboardType,
-          style: GoogleFonts.poppins(
-            color: AppColors.ink,
-            fontSize: 14.5,
-          ),
+          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 14.5),
           decoration: InputDecoration(
             filled: true,
-            fillColor:
-                _editing ? AppColors.profileFieldFillActive : AppColors.profileFieldFill,
+            fillColor: _editing && editable
+                ? AppColors.profileFieldFillActive
+                : AppColors.profileFieldFill,
             isDense: true,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 13,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
@@ -349,13 +374,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: _cancelEditing,
+          onPressed: _guardando ? null : _cancelEditing,
           icon: const Icon(Icons.close, size: 16),
           label: const Text('Cancelar'),
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.ink,
             side: const BorderSide(color: AppColors.cardBorder),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             padding: const EdgeInsets.symmetric(vertical: 12),
             textStyle: GoogleFonts.poppins(
               fontSize: 13,
@@ -414,20 +441,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Center(
           child: Text(
             'La Sirena Pizza – S.I.V.PRO',
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontSize: 12,
-            ),
+            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 12),
           ),
         ),
         const SizedBox(height: 8),
         Center(
           child: Text(
             'Versión 2.1.4',
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontSize: 11,
-            ),
+            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 11),
           ),
         ),
       ],

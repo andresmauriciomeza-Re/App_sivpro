@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../auth/auth_service.dart';
+import '../../network/api_exception.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../shared/page_transitions.dart';
 import '../../theme/app_colors.dart';
 import '../services/employee_profile_service.dart';
 
-/// Perfil del Empleado con edición de datos, historial de contrataciones y
-/// navegación propia del rol Empleado.
+/// Perfil del Empleado con navegación propia del rol Empleado.
 class EmployeeProfileScreen extends StatefulWidget {
   const EmployeeProfileScreen({super.key});
 
@@ -18,36 +19,61 @@ class EmployeeProfileScreen extends StatefulWidget {
 class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _documentController;
+  late final TextEditingController _documentTypeController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
 
-  String _savedName = '';
-  String _savedDocument = '';
+  Usuario? _usuario;
   String _savedEmail = '';
   String _savedPhone = '';
   bool _editing = false;
-
-  static final _emailRegExp = RegExp(r'^[\w\.\-+]+@[\w\-]+(\.[\w\-]+)+$');
-  static final _digitsRegExp = RegExp(r'^[0-9]+$');
+  bool _guardando = false;
 
   @override
   void initState() {
     super.initState();
-    final p = EmployeeProfileService.instance.profile;
-    _nameController = TextEditingController(text: p.fullName);
-    _documentController = TextEditingController(text: p.documentNumber);
-    _emailController = TextEditingController(text: p.email);
-    _phoneController = TextEditingController(text: p.phone);
-    _savedName = p.fullName;
-    _savedDocument = p.documentNumber;
-    _savedEmail = p.email;
-    _savedPhone = p.phone;
+    final usuario = AuthService.instance.usuario;
+    _usuario = usuario;
+    _nameController = TextEditingController(text: usuario?.nombre ?? '');
+    _documentController = TextEditingController(
+      text: usuario?.numeroDocumento ?? '',
+    );
+    _documentTypeController = TextEditingController(
+      text: usuario?.tipoDocumento ?? '',
+    );
+    _emailController = TextEditingController(text: usuario?.correo ?? '');
+    _phoneController = TextEditingController(text: usuario?.telefono ?? '');
+    _savedEmail = _emailController.text;
+    _savedPhone = _phoneController.text;
+    _refrescarPerfil();
+  }
+
+  Future<void> _refrescarPerfil() async {
+    try {
+      final usuario = await AuthService.instance.refrescarPerfil();
+      if (!mounted || _editing) return;
+      setState(() => _actualizarCampos(usuario));
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    }
+  }
+
+  void _actualizarCampos(Usuario usuario) {
+    _usuario = usuario;
+    _nameController.text = usuario.nombre;
+    _documentController.text = usuario.numeroDocumento;
+    _documentTypeController.text = usuario.tipoDocumento;
+    _emailController.text = usuario.correo;
+    _phoneController.text = usuario.telefono;
+    _savedEmail = usuario.correo;
+    _savedPhone = usuario.telefono;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _documentController.dispose();
+    _documentTypeController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
@@ -55,8 +81,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   void _startEditing() {
     setState(() {
-      _savedName = _nameController.text;
-      _savedDocument = _documentController.text;
       _savedEmail = _emailController.text;
       _savedPhone = _phoneController.text;
       _editing = true;
@@ -65,8 +89,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   void _cancelEditing() {
     setState(() {
-      _nameController.text = _savedName;
-      _documentController.text = _savedDocument;
       _emailController.text = _savedEmail;
       _phoneController.text = _savedPhone;
       _editing = false;
@@ -74,68 +96,43 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
+    if (_guardando) return;
     FocusScope.of(context).unfocus();
-    final name = _nameController.text.trim();
-    final doc = _documentController.text
-        .trim()
-        .replaceAll(RegExp(r'[\s\-]'), '');
     final email = _emailController.text.trim();
-    final phone = _phoneController.text
-        .trim()
-        .replaceAll(RegExp(r'[\s\-]'), '');
-
-    if (name.isEmpty || doc.isEmpty || email.isEmpty || phone.isEmpty) {
-      _showMessage('Todos los campos son obligatorios');
-      return;
+    final phone = _phoneController.text.trim();
+    setState(() => _guardando = true);
+    try {
+      final usuario = await AuthService.instance.actualizarPerfil(
+        correo: email,
+        telefono: phone,
+      );
+      if (!mounted) return;
+      setState(() {
+        _actualizarCampos(usuario);
+        _editing = false;
+      });
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } finally {
+      if (mounted) setState(() => _guardando = false);
     }
-    if (!_emailRegExp.hasMatch(email)) {
-      _showMessage('Ingresa un correo electrónico válido');
-      return;
-    }
-    if (!_digitsRegExp.hasMatch(doc)) {
-      _showMessage('El número de documento solo puede contener números');
-      return;
-    }
-    if (!_digitsRegExp.hasMatch(phone)) {
-      _showMessage('El número de teléfono solo puede contener números');
-      return;
-    }
-
-    EmployeeProfileService.instance.update(
-      fullName: name,
-      documentNumber: doc,
-      email: email,
-      phone: phone,
-    );
-    setState(() {
-      _nameController.text = name;
-      _documentController.text = doc;
-      _emailController.text = email;
-      _phoneController.text = phone;
-      _savedName = name;
-      _savedDocument = doc;
-      _savedEmail = email;
-      _savedPhone = phone;
-      _editing = false;
-    });
-    _showMessage('Perfil actualizado correctamente');
   }
 
   @override
   Widget build(BuildContext context) {
-    final profile = EmployeeProfileService.instance.profile;
     return Scaffold(
       backgroundColor: AppColors.page,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            _header(profile),
+            _header(),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
@@ -158,11 +155,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    _headerCard(context, profile),
+                    _headerCard(),
                     const SizedBox(height: 12),
                     _fieldsCard(context),
-                    const SizedBox(height: 14),
-                    _contractsHistory(profile),
                     const SizedBox(height: 14),
                     _actions(),
                   ],
@@ -176,14 +171,14 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
-  Widget _header(EmployeeProfile profile) {
+  Widget _header() {
     return AppHeader(
       title: 'La Sirena Pizza',
-      initials: getInitials(profile.fullName),
+      initials: getInitials(_usuario?.nombre ?? ''),
     );
   }
 
-  Widget _headerCard(BuildContext context, EmployeeProfile profile) {
+  Widget _headerCard() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -199,7 +194,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             radius: 24,
             backgroundColor: AppColors.red,
             child: Text(
-              getInitials(profile.fullName),
+              getInitials(_usuario?.nombre ?? ''),
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 18,
@@ -213,7 +208,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  profile.fullName,
+                  _usuario?.nombre ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
@@ -224,7 +219,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Empleado',
+                  _usuario?.rol ?? '',
                   style: GoogleFonts.poppins(
                     color: AppColors.muted,
                     fontSize: 13,
@@ -235,9 +230,19 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           ),
           const SizedBox(width: 8),
           OutlinedButton.icon(
-            onPressed: _editing ? _saveProfile : _startEditing,
-            icon: Icon(_editing ? Icons.check : Icons.edit_outlined, size: 16),
-            label: Text(_editing ? 'Guardar' : 'Editar'),
+            onPressed: _guardando
+                ? null
+                : (_editing ? _saveProfile : _startEditing),
+            icon: _guardando
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(_editing ? Icons.check : Icons.edit_outlined, size: 16),
+            label: Text(
+              _guardando ? 'Guardando' : (_editing ? 'Guardar' : 'Editar'),
+            ),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.ink,
               side: const BorderSide(color: AppColors.cardBorder),
@@ -274,6 +279,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             label: 'Nombre completo',
             controller: _nameController,
             keyboardType: TextInputType.text,
+            editable: false,
           ),
           const SizedBox(height: 14),
           _field(
@@ -281,6 +287,15 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             label: 'Número de documento',
             controller: _documentController,
             keyboardType: TextInputType.number,
+            editable: false,
+          ),
+          const SizedBox(height: 14),
+          _field(
+            icon: Icons.badge_outlined,
+            label: 'Tipo de documento',
+            controller: _documentTypeController,
+            keyboardType: TextInputType.text,
+            editable: false,
           ),
           const SizedBox(height: 14),
           _field(
@@ -288,6 +303,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             label: 'Correo electrónico',
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
+            editable: true,
           ),
           const SizedBox(height: 14),
           _field(
@@ -295,6 +311,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             label: 'Número de teléfono',
             controller: _phoneController,
             keyboardType: TextInputType.phone,
+            editable: true,
           ),
         ],
       ),
@@ -306,38 +323,41 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     required String label,
     required TextEditingController controller,
     required TextInputType keyboardType,
+    required bool editable,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          Icon(icon, color: AppColors.profileLabelIcon, size: 16),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: AppColors.profileLabel,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+        Row(
+          children: [
+            Icon(icon, color: AppColors.profileLabelIcon, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: AppColors.profileLabel,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ]),
+          ],
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
-          enabled: _editing,
+          enabled: _editing && editable,
           keyboardType: keyboardType,
-          style: GoogleFonts.poppins(
-            color: AppColors.ink,
-            fontSize: 14.5,
-          ),
+          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 14.5),
           decoration: InputDecoration(
             filled: true,
-            fillColor:
-                _editing ? AppColors.profileFieldFillActive : AppColors.profileFieldFill,
+            fillColor: _editing && editable
+                ? AppColors.profileFieldFillActive
+                : AppColors.profileFieldFill,
             isDense: true,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 13,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
@@ -356,142 +376,20 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     );
   }
 
-  Widget _contractsHistory(EmployeeProfile profile) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.profileCardBorder),
-      ),
-      child: ExpansionTile(
-        initiallyExpanded: false,
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        leading: const Icon(
-          Icons.business_center_outlined,
-          color: AppColors.profileLabelIcon,
-          size: 20,
-        ),
-        title: Text(
-          'Historial de contrataciones',
-          style: GoogleFonts.poppins(
-            color: AppColors.profileLabel,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        children: profile.contracts.isEmpty
-            ? [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'No hay contrataciones registradas.',
-                    style: GoogleFonts.poppins(
-                      color: AppColors.muted,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ]
-            : profile.contracts.map(_contractCard).toList(),
-      ),
-    );
-  }
-
-  Widget _contractCard(EmployeeContract contract) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.profileFieldFill,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.profileCardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  contract.position,
-                  style: GoogleFonts.poppins(
-                    color: AppColors.ink,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              if (contract.isCurrent)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'ACTUAL',
-                    style: GoogleFonts.poppins(
-                      color: AppColors.red,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            contract.type,
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '${_formatDate(contract.startDate)} → ${contract.isCurrent ? 'Continúa activo' : _formatDate(contract.endDate!)}',
-            style: GoogleFonts.poppins(
-              color: AppColors.ink,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '${date.year}-$month-$day';
-  }
-
   Widget _actions() {
     if (_editing) {
       return SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: _cancelEditing,
+          onPressed: _guardando ? null : _cancelEditing,
           icon: const Icon(Icons.close, size: 16),
           label: const Text('Cancelar'),
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.ink,
             side: const BorderSide(color: AppColors.cardBorder),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             padding: const EdgeInsets.symmetric(vertical: 12),
             textStyle: GoogleFonts.poppins(
               fontSize: 13,
@@ -550,20 +448,14 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         Center(
           child: Text(
             'La Sirena Pizza – S.I.V.PRO',
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontSize: 12,
-            ),
+            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 12),
           ),
         ),
         const SizedBox(height: 8),
         Center(
           child: Text(
             'Versión 2.1.4',
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontSize: 11,
-            ),
+            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 11),
           ),
         ),
       ],
@@ -571,13 +463,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   }
 
   Widget _bottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.people_outline, 'Clientes'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.sync_alt, 'Devoluciones'),
-      (Icons.person_outline, 'Perfil'),
-    ];
+    final items = employeeNavItems();
     return SizedBox(
       height: 80,
       child: Column(
@@ -598,29 +484,32 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   for (var index = 0; index < items.length; index++)
                     Expanded(
                       child: InkWell(
-                        onTap: index == 4
+                        onTap: items[index].index == 4
                             ? null
-                            : () => handleEmployeeBottomNav(context, index),
+                            : () => handleEmployeeBottomNav(
+                                context,
+                                items[index].index,
+                              ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              items[index].$1,
-                              color: index == 4
+                              items[index].icon,
+                              color: items[index].index == 4
                                   ? AppColors.red
                                   : const Color(0xFF756D6A),
                               size: 19,
                             ),
                             const SizedBox(height: 1),
                             Text(
-                              items[index].$2,
+                              items[index].label,
                               style: GoogleFonts.poppins(
-                                color: index == 4
+                                color: items[index].index == 4
                                     ? AppColors.red
                                     : const Color(0xFF756D6A),
                                 fontSize: 10,
                                 height: 1,
-                                fontWeight: index == 4
+                                fontWeight: items[index].index == 4
                                     ? FontWeight.w700
                                     : FontWeight.w400,
                               ),

@@ -32,6 +32,15 @@ class SalesScreen extends StatelessWidget {
 
       builder: (context, _) {
         final pendingCount = SalesRepository.instance.pendingVerificationCount;
+        final modules = <({
+          IconData icon,
+          String title,
+          String description,
+          bool highlighted,
+        })>[
+          if (Permisos.ventasClientes) _modules[0],
+          if (Permisos.ventas) _modules[1],
+        ];
 
         return Scaffold(
           backgroundColor: PurchasesScreen.page,
@@ -77,25 +86,25 @@ class SalesScreen extends StatelessWidget {
 
                         const SizedBox(height: 24),
 
-                        for (var i = 0; i < _modules.length; i++) ...[
+                        for (var i = 0; i < modules.length; i++) ...[
                           _salesModuleCard(
                             context,
 
-                            icon: _modules[i].icon,
+                            icon: modules[i].icon,
 
-                            title: _modules[i].title,
+                            title: modules[i].title,
 
-                            description: _modules[i].description,
+                            description: modules[i].description,
 
-                            highlighted: _modules[i].highlighted,
+                            highlighted: modules[i].highlighted,
 
                             pendingCount:
-                                _modules[i].title == 'Gestión Clientes'
+                                modules[i].title == 'Gestión Clientes'
                                 ? 0
                                 : pendingCount,
                           ),
 
-                          if (i != _modules.length - 1)
+                          if (i != modules.length - 1)
                             const SizedBox(height: 24),
                         ],
                       ],

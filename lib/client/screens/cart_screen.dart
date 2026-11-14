@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'menu_screen.dart';
 import '../services/cart_service.dart';
@@ -151,7 +151,7 @@ class _CartScreenState extends State<CartScreen> {
             separatorBuilder: (_, _) => const SizedBox(height: 14),
             itemBuilder: (context, index) {
               final item = cart.items[index];
-              return _CartItemCard(item: item);
+              return _CartItemCard(item: item, key: ValueKey(item.id));
             },
           ),
         ),
@@ -243,7 +243,7 @@ class _CartScreenState extends State<CartScreen> {
 }
 
 class _CartItemCard extends StatelessWidget {
-  const _CartItemCard({required this.item});
+  const _CartItemCard({required this.item, super.key});
 
   final CartItem item;
 
@@ -325,16 +325,9 @@ class _CartItemCard extends StatelessWidget {
                         item.cantidad - 1,
                       ),
                     ),
-                    SizedBox(
-                      width: 28,
-                      child: Text(
-                        '${item.cantidad}',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
+                    _CartQuantityStepper(
+                      itemId: item.id,
+                      cantidad: item.cantidad,
                     ),
                     _stepButton(
                       icon: Icons.add,
@@ -389,6 +382,85 @@ class _CartItemCard extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 14, color: splashRojo),
+      ),
+    );
+  }
+}
+
+class _CartQuantityStepper extends StatefulWidget {
+  const _CartQuantityStepper({required this.itemId, required this.cantidad});
+
+  final String itemId;
+  final int cantidad;
+
+  @override
+  State<_CartQuantityStepper> createState() => _CartQuantityStepperState();
+}
+
+class _CartQuantityStepperState extends State<_CartQuantityStepper> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: '${widget.cantidad}');
+    _focusNode = FocusNode()..addListener(_onFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(_CartQuantityStepper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.cantidad != oldWidget.cantidad && !_focusNode.hasFocus) {
+      _controller.text = '${widget.cantidad}';
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) _sincronizar();
+  }
+
+  void _sincronizar() {
+    final int? parsed = int.tryParse(_controller.text.trim());
+    final bool valido = parsed != null && parsed >= 1;
+    if (!valido || parsed == widget.cantidad) {
+      _controller.text = '${widget.cantidad}';
+      return;
+    }
+    CartService.instance.updateQuantity(widget.itemId, parsed);
+  }
+
+  void _onSubmitted(String value) {
+    _sincronizar();
+    _focusNode.unfocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 28,
+      child: TextField(
+        controller: _controller,
+        focusNode: _focusNode,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.poppins(
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+        ),
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
+        onSubmitted: _onSubmitted,
       ),
     );
   }

@@ -1,14 +1,15 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 //Mis Importaciones
 import 'package:google_fonts/google_fonts.dart';
 import 'auth_service.dart';
+import '../network/api_exception.dart';
 import '../shared/page_transitions.dart';
 import '../shared/validators.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 import '../client/screens/home_screen.dart';
-import '../admin/screens/admin_dashboard_screen.dart';
+import '../admin/screens/admin_home.dart';
 import '../employee/screens/employee_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  bool _loading = false;
 
   @override
   void initState() {
@@ -78,61 +80,75 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// Valida las credenciales contra [AuthService]. Si son incorrectas muestra
-  /// un aviso y NO navega; si son correctas lleva al panel según el rol.
-  void _onLogin() {
+  /// Valida las credenciales contra el backend. Si fallan muestra el mensaje
+  /// del servidor y NO navega; si son correctas lleva al panel según el rol.
+  Future<void> _onLogin() async {
+    if (_loading) return;
     if (!_formKey.currentState!.validate()) return;
-    final role = AuthService.instance.login(
-      _emailController.text.toLowerCase(),
-      _passwordController.text,
-    );
 
-    if (role == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: splashRojo,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.all(16),
-          content: Row(
-            children: [
-              const Icon(Icons.error_outline, color: Colors.white),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Correo o contraseña incorrectos',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
+    setState(() => _loading = true);
+    try {
+      final usuario = await AuthService.instance.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+      if (!mounted) return;
+
+      switch (usuario.userRole) {
+        case UserRole.admin:
+          Navigator.of(
+            context,
+          ).pushReplacement(heroFadeRoute(adminHomeScreen()));
+          break;
+        case UserRole.empleado:
+          Navigator.of(
+            context,
+          ).pushReplacement(heroFadeRoute(const EmployeeDashboardScreen()));
+          break;
+        case UserRole.cliente:
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+          break;
+        case null:
+          _mostrarError('Tu cuenta no tiene un rol habilitado.');
+          break;
+      }
+    } on ApiException catch (error) {
+      if (mounted) _mostrarError(error.message);
+    } catch (_) {
+      if (mounted) {
+        _mostrarError('No se pudo iniciar sesión. Inténtalo de nuevo.');
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _mostrarError(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: splashRojo,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                mensaje,
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
-      return;
-    }
-
-    switch (role) {
-      case UserRole.admin:
-        Navigator.of(
-          context,
-        ).pushReplacement(heroFadeRoute(const AdminDashboardScreen()));
-        break;
-      case UserRole.empleado:
-        Navigator.of(
-          context,
-        ).pushReplacement(heroFadeRoute(const EmployeeDashboardScreen()));
-        break;
-      case UserRole.cliente:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-        break;
-    }
+      ),
+    );
   }
 
   @override
@@ -297,22 +313,35 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 14),
 
                       ElevatedButton(
-                        onPressed: _onLogin,
+                        onPressed: _loading ? null : _onLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: splashRojo,
                           foregroundColor: Colors.white,
+                          disabledBackgroundColor: splashRojo.withValues(
+                            alpha: 0.6,
+                          ),
+                          disabledForegroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: Text(
-                          'Iniciar sesión',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                        ),
+                        child: _loading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.4,
+                                ),
+                              )
+                            : Text(
+                                'Iniciar sesión',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
+                              ),
                       ),
 
                       const SizedBox(height: 28),

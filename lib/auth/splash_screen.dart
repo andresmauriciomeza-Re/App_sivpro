@@ -1,12 +1,17 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'login_screen.dart'; // ajusta si tu archivo se llama distinto
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import '../admin/screens/admin_home.dart';
+import '../client/screens/home_screen.dart';
+import '../employee/screens/employee_dashboard_screen.dart';
+import '../network/api_exception.dart';
+import 'auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -167,6 +172,10 @@ class _SplashScreenState extends State<SplashScreen>
   );
   bool _imagenesPrecargadas = false;
 
+  bool _restaurando = false;
+  bool _errorDialogoAbierto = false;
+  bool _navegando = false;
+
   // Modo ligero (solo release): si varios frames seguidos superan los 40 ms
   // en la fase de revelado, se apagan la textura de puntos, las ondas y el
   // polvo, y se cancela el acelerómetro para cuidar el 60 fps en gama baja.
@@ -277,6 +286,73 @@ class _SplashScreenState extends State<SplashScreen>
     // Mide la duración de cada frame durante el revelado para poder activar
     // el modo ligero si el dispositivo no da a basto.
     _controller.addListener(_monitorearFluidez);
+
+    _restaurarSesion();
+  }
+
+  Future<void> _restaurarSesion() async {
+    if (_restaurando || _navegando) return;
+    _restaurando = true;
+    try {
+      final restauracion = AuthService.instance.restoreSession();
+      await Future<void>.delayed(const Duration(milliseconds: 1200));
+      final restaurada = await restauracion;
+      _restaurando = false;
+      if (!mounted) return;
+      if (restaurada) {
+        _navegando = true;
+        _irAlPanel();
+      } else {
+        _navegando = true;
+        _goToLogin();
+      }
+    } on ApiException catch (error) {
+      _restaurando = false;
+      if (!mounted) return;
+      await _mostrarErrorRestauracion(error.message);
+    }
+  }
+
+  Future<void> _mostrarErrorRestauracion(String mensaje) async {
+    if (_errorDialogoAbierto || !mounted) return;
+    _errorDialogoAbierto = true;
+    final reintentar = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Sin conexión'),
+        content: Text(mensaje),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Ir a iniciar sesión'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Reintentar'),
+          ),
+        ],
+      ),
+    );
+    _errorDialogoAbierto = false;
+    if (!mounted) return;
+    if (reintentar == true) {
+      await _restaurarSesion();
+    } else {
+      _goToLogin();
+    }
+  }
+
+  void _irAlPanel() {
+    final pagina = switch (AuthService.instance.rol) {
+      UserRole.admin => adminHomeScreen(),
+      UserRole.empleado => const EmployeeDashboardScreen(),
+      UserRole.cliente => const HomeScreen(),
+      null => const LoginScreen(),
+    };
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => pagina),
+    );
   }
 
   @override

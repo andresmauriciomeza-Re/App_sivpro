@@ -14,15 +14,17 @@ dependencies:
     sdk: flutter
 
   flutter_native_splash: ^2.4.8
-  google_fonts: ^8.2.1
+  google_fonts: ^9.0.0
   sensors_plus: ^7.1.0
   file_picker: ^8.1.6
   flutter_map: ^7.0.0
   latlong2: ^0.9.0
   url_launcher: ^6.2.0
   http: ^1.2.0
+  flutter_secure_storage: ^9.2.4
   flutter_local_notifications: ^18.0.1
 
+  material_ui: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,104 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../auth/login_screen.dart';
 import '../../auth/auth_service.dart';
-import '../../shared/initials.dart';
-
-/// Registro de una contratación del empleado.
-class EmployeeContract {
-  final String position;
-  final String type;
-  final DateTime startDate;
-  final DateTime? endDate;
-
-  const EmployeeContract({
-    required this.position,
-    required this.type,
-    required this.startDate,
-    this.endDate,
-  });
-
-  bool get isCurrent => endDate == null;
-}
-
-/// Información del empleado que inició sesión (estado local en memoria).
-class EmployeeProfile {
-  final String fullName;
-  final String documentNumber;
-  final String email;
-  final String phone;
-  final List<EmployeeContract> contracts;
-
-  const EmployeeProfile({
-    required this.fullName,
-    required this.documentNumber,
-    required this.email,
-    required this.phone,
-    this.contracts = const [],
-  });
-
-  EmployeeProfile copyWith({
-    String? fullName,
-    String? documentNumber,
-    String? email,
-    String? phone,
-    List<EmployeeContract>? contracts,
-  }) {
-    return EmployeeProfile(
-      fullName: fullName ?? this.fullName,
-      documentNumber: documentNumber ?? this.documentNumber,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      contracts: contracts ?? this.contracts,
-    );
-  }
-
-  /// Iniciales a partir del nombre (p. ej. "María González" -> "MG").
-  String get initials => getInitials(fullName);
-}
-
-/// Única fuente de verdad del perfil del empleado mientras la app está abierta.
-/// El usuario no tiene teléfono ni documento registrados, por eso se cargan
-/// datos de ejemplo.
-class EmployeeProfileService {
-  EmployeeProfileService._();
-  static final EmployeeProfileService instance = EmployeeProfileService._();
-
-  EmployeeProfile _profile = EmployeeProfile(
-    fullName: 'María González',
-    documentNumber: '1035467890',
-    email: 'maria.gonzalez@gmail.com',
-    phone: '3001234567',
-    contracts: [
-      EmployeeContract(
-        position: 'Auxiliar de cocina',
-        type: 'Empleado',
-        startDate: DateTime(2022, 2, 14),
-        endDate: DateTime(2023, 11, 30),
-      ),
-      EmployeeContract(
-        position: 'Domiciliario',
-        type: 'Usuario',
-        startDate: DateTime(2024, 5, 2),
-      ),
-    ],
-  );
-
-  EmployeeProfile get profile => _profile;
-
-  void update({
-    required String fullName,
-    required String documentNumber,
-    required String email,
-    required String phone,
-  }) {
-    _profile = _profile.copyWith(
-      fullName: fullName.trim(),
-      documentNumber: documentNumber.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-    );
-  }
-}
 
 /// Diálogo de confirmación y cierre de sesión. Limpia la sesión y va al login
 /// reconstruyendo el stack, así no se puede volver con el botón de atrás.
@@ -115,7 +17,9 @@ Future<void> confirmEmployeeSignOut(BuildContext context) async {
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          style: FilledButton.styleFrom(backgroundColor: const Color(0xFFC9151E)),
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFFC9151E),
+          ),
           child: const Text('Cerrar sesión'),
         ),
       ],
@@ -123,7 +27,8 @@ Future<void> confirmEmployeeSignOut(BuildContext context) async {
   );
 
   if (confirmed == true && context.mounted) {
-    AuthService.instance.logout();
+    await AuthService.instance.logout();
+    if (!context.mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,

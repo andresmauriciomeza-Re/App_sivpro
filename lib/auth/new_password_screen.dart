@@ -1,11 +1,20 @@
 // new_password_screen.dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../network/api_exception.dart';
 import '../shared/page_transitions.dart';
+import 'auth_service.dart';
 import 'password_updated_screen.dart';
 
 class NewPasswordScreen extends StatefulWidget {
-  const NewPasswordScreen({super.key});
+  const NewPasswordScreen({
+    super.key,
+    required this.email,
+    required this.codigo,
+  });
+
+  final String email;
+  final String codigo;
 
   @override
   State<NewPasswordScreen> createState() => _NewPasswordScreenState();
@@ -19,6 +28,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   final _confirmController = TextEditingController();
   bool _obscure1 = true;
   bool _obscure2 = true;
+  bool _guardando = false;
 
   @override
   void initState() {
@@ -33,13 +43,49 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     super.dispose();
   }
 
-  void _onCambiar() {
-    Navigator.of(context).push(heroFadeRoute(const PasswordUpdatedScreen()));
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  bool _hasMinLength(String p) => p.length >= 6;
+  Future<void> _onCambiar() async {
+    if (_guardando) return;
+    final password = _passwordController.text;
+    if (!_hasValidLength(password) ||
+        !_hasUpperCase(password) ||
+        !_hasLowerCase(password) ||
+        !_hasNumber(password) ||
+        !_hasNoWhitespace(password)) {
+      _showMessage('La contraseña no cumple los requisitos.');
+      return;
+    }
+    if (_confirmController.text != password) {
+      _showMessage('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setState(() => _guardando = true);
+    try {
+      await AuthService.instance.restablecerContrasena(
+        widget.email,
+        widget.codigo,
+        password,
+      );
+      if (!mounted) return;
+      Navigator.of(context).push(heroFadeRoute(const PasswordUpdatedScreen()));
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } finally {
+      if (mounted) setState(() => _guardando = false);
+    }
+  }
+
+  bool _hasValidLength(String p) => p.length >= 8 && p.length <= 72;
   bool _hasUpperCase(String p) => RegExp(r'[A-Z]').hasMatch(p);
+  bool _hasLowerCase(String p) => RegExp(r'[a-z]').hasMatch(p);
   bool _hasNumber(String p) => RegExp(r'[0-9]').hasMatch(p);
+  bool _hasNoWhitespace(String p) => !RegExp(r'\s').hasMatch(p);
 
   InputDecoration _dec(String hint, VoidCallback toggle, bool obscure) {
     return InputDecoration(
@@ -179,9 +225,10 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           TextField(
                             controller: _passwordController,
                             obscureText: _obscure1,
+                            maxLength: 72,
                             style: GoogleFonts.poppins(color: Colors.black87),
                             decoration: _dec(
-                              'Mínimo 6 caracteres',
+                              'Entre 8 y 72 caracteres',
                               () => setState(() => _obscure1 = !_obscure1),
                               _obscure1,
                             ),
@@ -203,6 +250,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           TextField(
                             controller: _confirmController,
                             obscureText: _obscure2,
+                            maxLength: 72,
                             style: GoogleFonts.poppins(color: Colors.black87),
                             decoration: _dec(
                               'Repite tu contraseña',
@@ -218,16 +266,24 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildCheckItem(
-                                  'Mínimo 6 caracteres',
-                                  _hasMinLength(password),
+                                  'Entre 8 y 72 caracteres',
+                                  _hasValidLength(password),
                                 ),
                                 _buildCheckItem(
                                   'Al menos una mayúscula',
                                   _hasUpperCase(password),
                                 ),
                                 _buildCheckItem(
+                                  'Al menos una minúscula',
+                                  _hasLowerCase(password),
+                                ),
+                                _buildCheckItem(
                                   'Al menos un número',
                                   _hasNumber(password),
+                                ),
+                                _buildCheckItem(
+                                  'Sin espacios',
+                                  _hasNoWhitespace(password),
                                 ),
                               ],
                             ),
@@ -237,7 +293,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _onCambiar,
+                              onPressed: _guardando ? null : _onCambiar,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: splashRojo,
                                 foregroundColor: Colors.white,
@@ -248,13 +304,22 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              child: Text(
-                                'Cambiar contraseña',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
+                              child: _guardando
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.4,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Cambiar contraseña',
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 24),

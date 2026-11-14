@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/auth_service.dart';
+import '../../auth/permisos.dart';
 import '../../client/screens/home_screen.dart' hide AppColors;
 import '../../shared/initials.dart';
 import '../../theme/app_colors.dart';
@@ -316,12 +317,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
+    final items = <(IconData, String, int)>[
+      if (Permisos.dashboard) (Icons.home_outlined, 'Inicio', 0),
+      if (Permisos.compras) (Icons.shopping_cart_outlined, 'Compras', 1),
+      if (Permisos.produccion) (Icons.factory_outlined, 'Producción', 2),
+      if (Permisos.ventasAdministracion)
+        (Icons.receipt_long_outlined, 'Ventas', 3),
+      (Icons.person_outline, 'Mi Perfil', 4),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -332,25 +334,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          for (var i = 0; i < items.length; i++)
+          for (final item in items)
             GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
+              onTap: () => navigateToBottomModule(context, item.$3),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 0 ? red : muted,
+                    icon: item.$1,
+                    color: item.$3 == 0 ? red : muted,
                     size: 25,
-                    showPendingBadge: i == adminSalesNavIndex,
+                    showPendingBadge: item.$3 == adminSalesNavIndex,
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    items[i].$2,
+                    item.$2,
                     style: GoogleFonts.poppins(
-                      color: i == 0 ? red : muted,
+                      color: item.$3 == 0 ? red : muted,
                       fontSize: 12,
-                      fontWeight: i == 0 ? FontWeight.w700 : FontWeight.w400,
+                      fontWeight: item.$3 == 0
+                          ? FontWeight.w700
+                          : FontWeight.w400,
                     ),
                   ),
                 ],

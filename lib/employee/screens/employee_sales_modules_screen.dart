@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../auth/permisos.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../shared/page_transitions.dart';
@@ -44,44 +45,47 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                       style: GoogleFonts.poppins(color: muted, fontSize: 11),
                     ),
                     const SizedBox(height: 18),
-                    _ModuleCard(
-                      icon: Icons.person,
-                      title: 'Clientes',
-                      description: 'Administrar base de clientes',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const EmployeeClientsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _ModuleCard(
-                      icon: Icons.shopping_cart_outlined,
-                      title: 'Ventas',
-                      description: 'Registro y control de pedidos',
-                      selected: true,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                const EmployeeSalesManagementScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _ModuleCard(
-                      icon: Icons.sync_alt,
-                      title: 'Devoluciones',
-                      description: 'Gestión de garantías y reembolsos',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const EmployeeReturnsScreen(),
-                          ),
-                        );
-                      },
-                    ),
+                    if (Permisos.ventasClientes)
+                      _ModuleCard(
+                        icon: Icons.person,
+                        title: 'Clientes',
+                        description: 'Administrar base de clientes',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const EmployeeClientsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    if (Permisos.ventas)
+                      _ModuleCard(
+                        icon: Icons.shopping_cart_outlined,
+                        title: 'Ventas',
+                        description: 'Registro y control de pedidos',
+                        selected: true,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const EmployeeSalesManagementScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    if (Permisos.ventasDevoluciones)
+                      _ModuleCard(
+                        icon: Icons.sync_alt,
+                        title: 'Devoluciones',
+                        description: 'Gestión de garantías y reembolsos',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const EmployeeReturnsScreen(),
+                            ),
+                          );
+                        },
+                      ),
                   ],
                 ),
               ),
@@ -100,13 +104,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, Icons.home, 'Inicio'),
-      (Icons.people_outline, Icons.people, 'Clientes'),
-      (Icons.receipt_long_outlined, Icons.receipt_long, 'Ventas'),
-      (Icons.sync_alt, Icons.sync_alt, 'Devoluciones'),
-      (Icons.person_outline, Icons.person, 'Perfil'),
-    ];
+    final items = employeeNavItems();
 
     return SizedBox(
       height: 80,
@@ -128,23 +126,26 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
                   for (var index = 0; index < items.length; index++)
                     Expanded(
                       child: InkWell(
-                        onTap: () => handleEmployeeBottomNav(context, index),
+                        onTap: () =>
+                            handleEmployeeBottomNav(context, items[index].index),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              index == 2 ? items[index].$2 : items[index].$1,
-                              color: index == 2 ? red : muted,
+                              items[index].index == 2
+                                  ? items[index].activeIcon ?? items[index].icon
+                                  : items[index].icon,
+                              color: items[index].index == 2 ? red : muted,
                               size: 19,
                             ),
                             const SizedBox(height: 1),
                             Text(
-                              items[index].$3,
+                              items[index].label,
                               style: GoogleFonts.poppins(
-                                color: index == 2 ? red : muted,
+                                color: items[index].index == 2 ? red : muted,
                                 fontSize: 10,
                                 height: 1,
-                                fontWeight: index == 2
+                                fontWeight: items[index].index == 2
                                     ? FontWeight.w700
                                     : FontWeight.w400,
                               ),

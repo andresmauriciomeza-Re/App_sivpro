@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../network/api_exception.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../theme/app_colors.dart';
@@ -20,11 +21,20 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
   final _searchController = TextEditingController();
   String _query = '';
   String _filter = 'todas';
+  int? _gestionandoId;
 
   static const red = Color(0xFFC9151E);
   static const ink = Color(0xFF211616);
   static const muted = Color(0xFF766B68);
   static const page = Color(0xFFFCF9F8);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ReturnService.instance.cargar();
+    });
+  }
 
   @override
   void dispose() {
@@ -45,7 +55,7 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
             final service = ReturnService.instance;
             final pendientes = service.pendientes;
             final resueltas = service.resueltas;
-            final todos = <ReturnRecord>[...pendientes, ...resueltas];
+            final todos = <DevolucionVenta>[...pendientes, ...resueltas];
             final source = _filter == 'pendientes'
                 ? pendientes
                 : _filter == 'resueltas'
@@ -54,109 +64,133 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
             final resultados = source
                 .where(
                   (r) => matchesSearchQuery(_query, [
-                    '${r.index}',
+                    '${r.idVenta}',
                     r.customer,
-                    r.date,
-                    r.amount,
+                    r.fechaTexto,
+                    r.montoTexto,
                     r.payment,
-                    r.tipoVenta,
-                    ...r.products.map((p) => p.nombre),
-                    r.status,
-                    r.resolutionType,
-                    r.refundAmount,
-                    r.refundNote,
-                    r.replacementProduct,
-                    ...r.returnedProducts.map((p) => p.nombre),
+                    r.tipoVentaTexto,
+                    ...r.lineas.map((l) => l.nombre),
+                    ...r.lineas.map((l) => l.motivo ?? ''),
+                    r.devolucionEstado ?? '',
+                    r.devolucionTipo ?? '',
+                    r.devolucionMonto?.toString() ?? '',
+                    r.devolucionNota ?? '',
+                    r.idVentaReemplazo?.toString() ?? '',
                   ]),
                 )
                 .toList();
             final filteredPendientes = resultados
-                .where((r) => r.status == 'pendiente')
+                .where((r) => !r.resuelta)
                 .toList();
             final filteredResueltas = resultados
-                .where((r) => r.status == 'resuelta')
+                .where((r) => r.resuelta)
                 .toList();
             return Column(
               children: [
                 _header(context),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(26, 18, 26, 28),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Devoluciones',
-                          style: GoogleFonts.montserrat(
-                            color: ink,
-                            fontSize: 30,
+                  child: RefreshIndicator(
+                    color: red,
+                    onRefresh: () => ReturnService.instance.cargar(),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(26, 18, 26, 28),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Devoluciones',
+                            style: GoogleFonts.montserrat(
+                              color: ink,
+                              fontSize: 30,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        AppSearchField(
-                          controller: _searchController,
-                          hint: 'Buscar devoluciones...',
-                          onChanged: (value) => setState(() => _query = value),
-                          showClearButton: true,
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _filterChip(
-                                'todas',
-                                'Todas',
-                                todos.length,
+                          const SizedBox(height: 14),
+                          AppSearchField(
+                            controller: _searchController,
+                            hint: 'Buscar devoluciones...',
+                            onChanged: (value) =>
+                                setState(() => _query = value),
+                            showClearButton: true,
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _filterChip(
+                                  'todas',
+                                  'Todas',
+                                  todos.length,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _filterChip(
-                                'pendientes',
-                                'Pendientes',
-                                pendientes.length,
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _filterChip(
+                                  'pendientes',
+                                  'Pendientes',
+                                  pendientes.length,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _filterChip(
-                                'resueltas',
-                                'Resueltas',
-                                resueltas.length,
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _filterChip(
+                                  'resueltas',
+                                  'Resueltas',
+                                  resueltas.length,
+                                ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 26),
+                          if (service.isLoading && todos.isNotEmpty) ...[
+                            const LinearProgressIndicator(
+                              color: red,
+                              backgroundColor: Color(0xFFF3E9E7),
                             ),
+                            const SizedBox(height: 16),
                           ],
-                        ),
-                        const SizedBox(height: 26),
-                        if (resultados.isEmpty)
-                          _emptySearchResult()
-                        else ...[
-                          if (filteredPendientes.isNotEmpty) ...[
-                            _sectionTitle(
-                              'PENDIENTES DE RESOLUCIÓN',
-                              badge: '${filteredPendientes.length} en cola',
-                            ),
-                            const SizedBox(height: 18),
-                            ...filteredPendientes.map(
-                              (item) => _ReturnCard(
-                                item: item,
-                                onManage: () =>
-                                    _showManageDialog(context, item),
+                          if (service.error != null && todos.isNotEmpty) ...[
+                            _errorBanner(service.error!),
+                            const SizedBox(height: 16),
+                          ],
+                          if (service.isLoading && todos.isEmpty)
+                            _loadingBlock()
+                          else if (service.error != null && todos.isEmpty)
+                            _errorBlock(service.error!)
+                          else if (resultados.isEmpty)
+                            _emptySearchResult()
+                          else ...[
+                            if (filteredPendientes.isNotEmpty) ...[
+                              _sectionTitle(
+                                'PENDIENTES DE RESOLUCIÓN',
+                                badge: '${filteredPendientes.length} en cola',
                               ),
-                            ),
-                            const SizedBox(height: 22),
+                              const SizedBox(height: 18),
+                              ...filteredPendientes.map(
+                                (item) => _ReturnCard(
+                                  item: item,
+                                  loading: _gestionandoId == item.idVenta,
+                                  onManage: () => _showManageDialog(item),
+                                ),
+                              ),
+                              const SizedBox(height: 22),
+                            ],
+                            if (filteredResueltas.isNotEmpty) ...[
+                              _sectionTitle('RESUELTAS'),
+                              const SizedBox(height: 18),
+                              ...filteredResueltas.map(
+                                (item) => _ResolvedCard(
+                                  item: item,
+                                  onTap: () => _showDetailDialog(context, item),
+                                ),
+                              ),
+                              const SizedBox(height: 22),
+                            ],
+                            _resolutionInfo(),
                           ],
-                          if (filteredResueltas.isNotEmpty) ...[
-                            _sectionTitle('RESUELTAS'),
-                            const SizedBox(height: 18),
-                            ...filteredResueltas.map(
-                              (item) => _ResolvedCard(item: item),
-                            ),
-                            const SizedBox(height: 22),
-                          ],
-                          _resolutionInfo(),
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -173,6 +207,83 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
       initials: getInitials('María González'),
+    );
+  }
+
+  Widget _loadingBlock() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 48),
+      child: Center(child: CircularProgressIndicator(color: red)),
+    );
+  }
+
+  Widget _errorBlock(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE8E5E4)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.cloud_off_outlined, color: muted, size: 42),
+          const SizedBox(height: 14),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(color: ink, fontSize: 15, height: 1.5),
+          ),
+          const SizedBox(height: 18),
+          FilledButton(
+            onPressed: () => ReturnService.instance.cargar(),
+            style: FilledButton.styleFrom(backgroundColor: red),
+            child: Text(
+              'Reintentar',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _errorBanner(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBF0),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFD55A)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: Color(0xFF9B4610), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF9B4610),
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => ReturnService.instance.cargar(),
+            child: Text(
+              'Reintentar',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF9B4610),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -322,13 +433,7 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
   }
 
   Widget _bottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.people_outline, 'Clientes'),
-      (Icons.receipt_long, 'Ventas'),
-      (Icons.sync_alt, 'Devoluciones'),
-      (Icons.person_outline, 'Perfil'),
-    ];
+    final items = employeeNavItems();
     return SizedBox(
       height: 80,
       child: Column(
@@ -349,19 +454,24 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
                   for (var i = 0; i < items.length; i++)
                     Expanded(
                       child: InkWell(
-                        onTap: () => handleEmployeeBottomNav(context, i),
+                        onTap: () =>
+                            handleEmployeeBottomNav(context, items[i].index),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              items[i].$1,
-                              color: i == 3 ? red : const Color(0xFFA49A97),
+                              items[i].icon,
+                              color: items[i].index == 3
+                                  ? red
+                                  : const Color(0xFFA49A97),
                               size: 22,
                             ),
                             Text(
-                              items[i].$2,
+                              items[i].label,
                               style: GoogleFonts.poppins(
-                                color: i == 3 ? red : const Color(0xFFA49A97),
+                                color: items[i].index == 3
+                                    ? red
+                                    : const Color(0xFFA49A97),
                                 fontSize: 10,
                                 height: 1,
                               ),
@@ -380,36 +490,59 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
     );
   }
 
-  Future<void> _showManageDialog(
-    BuildContext context,
-    ReturnRecord item,
-  ) async {
-    final resolved = await Navigator.of(context).push<String>(
-      MaterialPageRoute<String>(
-        builder: (_) => _ReturnManagementScreen(item: item),
-      ),
-    );
-    if (resolved == 'canje' && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Devolución realizada correctamente.')),
+  Future<void> _showManageDialog(DevolucionVenta item) async {
+    if (_gestionandoId != null) return;
+    setState(() => _gestionandoId = item.idVenta);
+    try {
+      final detalle = await ReturnService.instance.detalle(item.idVenta);
+      if (!mounted) return;
+      setState(() => _gestionandoId = null);
+      final resolved = await Navigator.of(context).push<String>(
+        MaterialPageRoute<String>(
+          builder: (_) => _ReturnManagementScreen(item: detalle),
+        ),
       );
-    } else if (resolved == 'dinero' && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reembolso registrado correctamente.')),
-      );
+      if (resolved == 'canje' && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Devolución realizada correctamente.')),
+        );
+      } else if (resolved == 'dinero' && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reembolso registrado correctamente.')),
+        );
+      }
+    } on ApiException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _gestionandoId = null);
     }
+  }
+
+  Future<void> _showDetailDialog(BuildContext context, DevolucionVenta item) {
+    return showDialog<void>(
+      context: context,
+      builder: (_) => _ResolvedDetailDialog(item: item),
+    );
   }
 }
 
 class _ReturnCard extends StatelessWidget {
-  const _ReturnCard({required this.item, required this.onManage});
+  const _ReturnCard({
+    required this.item,
+    required this.onManage,
+    required this.loading,
+  });
 
-  final ReturnRecord item;
+  final DevolucionVenta item;
   final VoidCallback onManage;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
-    final isNequi = item.payment == 'Nequi';
     return Container(
       margin: const EdgeInsets.only(bottom: 22),
       padding: const EdgeInsets.fromLTRB(26, 27, 26, 24),
@@ -437,7 +570,7 @@ class _ReturnCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '#${item.index}  ${item.customer}',
+                  '#${item.idVenta}  ${item.customer}',
                   style: GoogleFonts.poppins(
                     color: Colors.black,
                     fontSize: 17,
@@ -445,7 +578,7 @@ class _ReturnCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  item.date,
+                  item.fechaTexto,
                   style: GoogleFonts.poppins(color: const Color(0xFFA49A97)),
                 ),
                 const SizedBox(height: 10),
@@ -453,7 +586,7 @@ class _ReturnCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.amount,
+                      item.montoTexto,
                       style: GoogleFonts.poppins(
                         color: Colors.black,
                         fontSize: 21,
@@ -461,7 +594,7 @@ class _ReturnCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    _PaymentBadge(payment: item.payment, isNequi: isNequi),
+                    _PaymentBadge(payment: item.payment),
                   ],
                 ),
               ],
@@ -469,7 +602,7 @@ class _ReturnCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           OutlinedButton(
-            onPressed: onManage,
+            onPressed: loading ? null : onManage,
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF7A2B0C),
               side: const BorderSide(color: Color(0xFFFFC51C)),
@@ -478,7 +611,16 @@ class _ReturnCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
               ),
             ),
-            child: const Text('Gestionar'),
+            child: loading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF7A2B0C),
+                    ),
+                  )
+                : const Text('Gestionar'),
           ),
         ],
       ),
@@ -487,134 +629,162 @@ class _ReturnCard extends StatelessWidget {
 }
 
 class _PaymentBadge extends StatelessWidget {
-  const _PaymentBadge({required this.payment, required this.isNequi});
+  const _PaymentBadge({required this.payment});
 
   final String payment;
-  final bool isNequi;
 
   @override
   Widget build(BuildContext context) {
+    final esNequi = payment == 'Nequi';
+    final esBancolombia = payment == 'Bancolombia';
+    final esEfectivo = payment == 'Efectivo';
+    final background = esNequi
+        ? const Color(0xFFF0E3FF)
+        : esBancolombia
+        ? const Color(0xFFFFF3C7)
+        : const Color(0xFFE8F0FE);
+    final foreground = esNequi
+        ? const Color(0xFF6E1DCB)
+        : esBancolombia
+        ? const Color(0xFF8B3F11)
+        : const Color(0xFF1A4B8C);
+    final icon = esNequi
+        ? '💜 '
+        : esBancolombia
+        ? '🏦 '
+        : esEfectivo
+        ? '💵 '
+        : '';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
       decoration: BoxDecoration(
-        color: isNequi ? const Color(0xFFF0E3FF) : const Color(0xFFFFF3C7),
+        color: background,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
-        isNequi ? '💜 Nequi' : '▤  Bancolombia',
-        style: GoogleFonts.poppins(
-          color: isNequi ? const Color(0xFF6E1DCB) : const Color(0xFF8B3F11),
-          fontSize: 13,
-        ),
+        '$icon$payment',
+        style: GoogleFonts.poppins(color: foreground, fontSize: 13),
       ),
     );
   }
 }
 
 class _ResolvedCard extends StatelessWidget {
-  const _ResolvedCard({required this.item});
+  const _ResolvedCard({required this.item, required this.onTap});
 
-  final ReturnRecord item;
-
-  String get _resolutionText {
-    if (item.isCanje) return 'Canje: ${item.replacementProduct}';
-    final base = 'Reembolso: ${item.amountTexto}';
-    return item.refundNote.isEmpty ? base : '$base — ${item.refundNote}';
-  }
+  final DevolucionVenta item;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 22),
-      padding: const EdgeInsets.fromLTRB(26, 27, 26, 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF9BD5B0)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE0F5E9),
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 22),
+        padding: const EdgeInsets.fromLTRB(26, 27, 26, 24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFF9BD5B0)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: Color(0xFFE0F5E9),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                color: Color(0xFF19733B),
+                size: 36,
+              ),
             ),
-            child: const Icon(
-              Icons.check_rounded,
-              color: Color(0xFF19733B),
-              size: 36,
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '#${item.index}  ${item.customer}',
-                  style: GoogleFonts.poppins(
-                    color: Colors.black,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '#${item.idVenta}  ${item.customer}',
+                    style: GoogleFonts.poppins(
+                      color: Colors.black,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                Text(
-                  item.date,
-                  style: GoogleFonts.poppins(color: const Color(0xFFA49A97)),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    _ResolutionBadge(label: item.isCanje ? 'Canje' : 'Dinero'),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _resolutionText,
+                  Text(
+                    item.fechaTexto,
+                    style: GoogleFonts.poppins(color: const Color(0xFFA49A97)),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      _ResolutionBadge(label: item.etiquetaResolucion),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          item.descripcionResolucion,
+                          style: GoogleFonts.poppins(
+                            color: const Color(0xFF19733B),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (item.devolucionNota != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      item.devolucionNota!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF766B68),
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Text(
+                        item.montoTexto,
+                        style: GoogleFonts.poppins(
+                          color: Colors.black,
+                          fontSize: 21,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        'Ver detalle',
                         style: GoogleFonts.poppins(
                           color: const Color(0xFF19733B),
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Text(
-                      item.amount,
-                      style: GoogleFonts.poppins(
-                        color: Colors.black,
-                        fontSize: 21,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: Color(0xFF19733B),
+                        size: 18,
                       ),
-                    ),
-                    const Spacer(),
-                    const Icon(
-                      Icons.check_circle,
-                      color: Color(0xFF19733B),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Resuelta',
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF19733B),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -645,10 +815,179 @@ class _ResolutionBadge extends StatelessWidget {
   }
 }
 
+class _ResolvedDetailDialog extends StatelessWidget {
+  const _ResolvedDetailDialog({required this.item});
+
+  final DevolucionVenta item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 540, maxHeight: 620),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Devolución #${item.idVenta}',
+                      style: GoogleFonts.montserrat(
+                        color: const Color(0xFF211616),
+                        fontSize: 22,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              Text(
+                '${item.customer} · ${item.fechaTexto}',
+                style: GoogleFonts.poppins(
+                  color: const Color(0xFF766B68),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 18),
+              _filaDetalle('Resolución', item.etiquetaResolucion),
+              _filaDetalle('Monto devuelto', item.montoDevolucionTexto),
+              if (item.idVentaReemplazo != null)
+                _filaDetalle('Venta de reemplazo', '#${item.idVentaReemplazo}'),
+              if (item.devolucionNota != null)
+                _filaDetalle('Nota', item.devolucionNota!),
+              const Divider(height: 30),
+              Text(
+                'PRODUCTOS DEVUELTOS',
+                style: GoogleFonts.poppins(
+                  color: const Color(0xFFA49A97),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: .6,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (item.lineas.isEmpty)
+                Text(
+                  'Sin detalle de productos.',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF766B68),
+                    fontSize: 13,
+                  ),
+                )
+              else
+                ...item.lineas.map(_lineaDetalle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _filaDetalle(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF766B68),
+                fontSize: 13,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF211616),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _lineaDetalle(DevolucionLinea linea) {
+    final motivo = linea.motivo == null
+        ? 'Sin motivo registrado'
+        : linea.descripcionMotivo == null ||
+              linea.descripcionMotivo!.trim().isEmpty
+        ? linea.motivo!
+        : '${linea.motivo}: ${linea.descripcionMotivo}';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFCF9F8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDE6E4)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _productImage(linea.imagen, size: 52),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  linea.nombreCompleto,
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF211616),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Cantidad original: ${linea.cantidad} · ${linea.precioTexto} c/u',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF766B68),
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Motivo: $motivo',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF9B4610),
+                    fontSize: 12,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ReturnManagementScreen extends StatefulWidget {
   const _ReturnManagementScreen({required this.item});
 
-  final ReturnRecord item;
+  final DevolucionVenta item;
 
   @override
   State<_ReturnManagementScreen> createState() =>
@@ -770,7 +1109,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '#${widget.item.index}  ${widget.item.customer} · ${widget.item.date}',
+                      '#${widget.item.idVenta}  ${widget.item.customer} · ${widget.item.fechaTexto}',
                       style: GoogleFonts.poppins(
                         color: ink,
                         fontSize: 16,
@@ -779,7 +1118,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      widget.item.amount,
+                      widget.item.montoTexto,
                       style: GoogleFonts.poppins(
                         color: ink,
                         fontSize: 25,
@@ -825,17 +1164,17 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
   }
 
   Widget _paymentBadge() {
-    final isNequi = widget.item.payment == 'Nequi';
+    final esNequi = widget.item.payment == 'Nequi';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
       decoration: BoxDecoration(
-        color: isNequi ? const Color(0xFFF0E3FF) : const Color(0xFFFFF3C7),
+        color: esNequi ? const Color(0xFFF0E3FF) : const Color(0xFFFFF3C7),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
-        isNequi ? '💜 Nequi' : '🏦 Bancolombia',
+        esNequi ? '💜 Nequi' : '🏦 ${widget.item.payment}',
         style: GoogleFonts.poppins(
-          color: isNequi ? const Color(0xFF6E1DCB) : const Color(0xFF8B3F11),
+          color: esNequi ? const Color(0xFF6E1DCB) : const Color(0xFF8B3F11),
           fontSize: 13,
         ),
       ),
@@ -916,13 +1255,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
   }
 
   Widget _bottomNavigation() {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.people_outline, 'Clientes'),
-      (Icons.receipt_long, 'Ventas'),
-      (Icons.sync_alt, 'Devoluciones'),
-      (Icons.person_outline, 'Perfil'),
-    ];
+    final items = employeeNavItems();
     return SizedBox(
       height: 80,
       child: Column(
@@ -938,19 +1271,24 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
                   for (var i = 0; i < items.length; i++)
                     Expanded(
                       child: InkWell(
-                        onTap: () => handleEmployeeBottomNav(context, i),
+                        onTap: () =>
+                            handleEmployeeBottomNav(context, items[i].index),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              items[i].$1,
-                              color: i == 3 ? red : const Color(0xFFA4AAB5),
+                              items[i].icon,
+                              color: items[i].index == 3
+                                  ? red
+                                  : const Color(0xFFA4AAB5),
                               size: 21,
                             ),
                             Text(
-                              items[i].$2,
+                              items[i].label,
                               style: GoogleFonts.poppins(
-                                color: i == 3 ? red : const Color(0xFFA4AAB5),
+                                color: items[i].index == 3
+                                    ? red
+                                    : const Color(0xFFA4AAB5),
                                 fontSize: 10,
                               ),
                             ),
@@ -990,4 +1328,31 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
       Navigator.of(context).pop('dinero');
     }
   }
+}
+
+Widget _productImage(String? path, {double size = 52}) {
+  final placeholder = Container(
+    width: size,
+    height: size,
+    color: const Color(0xFFF1F3F5),
+    alignment: Alignment.center,
+    child: const Icon(Icons.local_pizza, color: Color(0xFFC9151E), size: 24),
+  );
+  if (path == null || path.isEmpty) return placeholder;
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return Image.network(
+      path,
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => placeholder,
+    );
+  }
+  return Image.asset(
+    path,
+    width: size,
+    height: size,
+    fit: BoxFit.cover,
+    errorBuilder: (_, _, _) => placeholder,
+  );
 }

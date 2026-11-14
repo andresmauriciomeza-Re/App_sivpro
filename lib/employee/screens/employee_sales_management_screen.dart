@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
@@ -238,13 +238,7 @@ class _EmployeeSalesManagementScreenState
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.people_outline, 'Clientes'),
-      (Icons.receipt_long, 'Ventas'),
-      (Icons.sync_alt, 'Devoluciones'),
-      (Icons.person_outline, 'Perfil'),
-    ];
+    final items = employeeNavItems();
     return SizedBox(
       height: 80,
       child: Column(
@@ -265,19 +259,19 @@ class _EmployeeSalesManagementScreenState
                   for (var index = 0; index < items.length; index++)
                     Expanded(
                       child: InkWell(
-                        onTap: () => handleEmployeeBottomNav(context, index),
+                        onTap: () => handleEmployeeBottomNav(context, items[index].index),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              items[index].$1,
-                              color: index == 2 ? red : muted,
+                              items[index].icon,
+                              color: items[index].index == 2 ? red : muted,
                               size: 19,
                             ),
                             Text(
-                              items[index].$2,
+                              items[index].label,
                               style: GoogleFonts.poppins(
-                                color: index == 2 ? red : muted,
+                                color: items[index].index == 2 ? red : muted,
                                 fontSize: 10,
                                 height: 1,
                               ),

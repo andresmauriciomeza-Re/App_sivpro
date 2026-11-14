@@ -1,14 +1,18 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../auth/auth_service.dart';
 import '../../auth/login_screen.dart';
+import '../../auth/permisos.dart';
+import '../../config/api_config.dart';
+import '../../network/api_exception.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../shared/search.dart';
 import '../../theme/app_colors.dart';
 import '../services/products_repository.dart';
+import '../services/production_repository.dart';
 import '../services/sales_repository.dart';
-import '../widgets/production_summary_card.dart';
 import '../widgets/sales_pending_badge.dart';
 
 part 'purchases/admin_profile.dart';
@@ -42,6 +46,8 @@ Future<void> _confirmSignOut(BuildContext context) async {
   );
 
   if (confirmed == true && context.mounted) {
+    await AuthService.instance.logout();
+    if (!context.mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
@@ -55,9 +61,24 @@ void navigateToBottomModule(BuildContext context, int index) {
     return;
   }
 
+  final permitido = switch (index) {
+    1 => Permisos.compras,
+    2 => Permisos.produccion,
+    3 => Permisos.ventasAdministracion,
+    _ => true,
+  };
+  if (!permitido) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('No tienes permiso para acceder a este módulo.'),
+      ),
+    );
+    return;
+  }
+
   final Widget destination = switch (index) {
     1 => const PurchasesScreen(),
-    2 => const _ProductionScreen(),
+    2 => const ProductionModulesScreen(),
     3 => const SalesScreen(),
     4 => const ProfileScreen(),
     _ => const PurchasesScreen(),
@@ -112,41 +133,46 @@ class PurchasesScreen extends StatelessWidget {
                       style: GoogleFonts.poppins(color: muted, fontSize: 15),
                     ),
                     const SizedBox(height: 24),
-                    _ModuleCard(
-                      icon: Icons.shopping_bag_outlined,
-                      title: 'Compras',
-                      description:
-                          'Registrar y consultar órdenes de compra a proveedores.',
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const PurchaseManagementScreen(),
+                    if (Permisos.comprasCompra) ...[
+                      _ModuleCard(
+                        icon: Icons.shopping_bag_outlined,
+                        title: 'Compras',
+                        description:
+                            'Registrar y consultar órdenes de compra a proveedores.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PurchaseManagementScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    _ModuleCard(
-                      icon: Icons.inventory_2_outlined,
-                      title: 'Insumos',
-                      description:
-                          'Control de inventario, stock bajo y actualización de unidades.',
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const _SupplyManagementScreen(),
+                      const SizedBox(height: 24),
+                    ],
+                    if (Permisos.comprasInsumos) ...[
+                      _ModuleCard(
+                        icon: Icons.inventory_2_outlined,
+                        title: 'Insumos',
+                        description:
+                            'Control de inventario, stock bajo y actualización de unidades.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const _SupplyManagementScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    _ModuleCard(
-                      icon: Icons.local_shipping_outlined,
-                      title: 'Proveedores',
-                      description:
-                          'Directorio de contactos, estados e historial de distribuidores.',
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const ProviderManagementScreen(),
+                      const SizedBox(height: 24),
+                    ],
+                    if (Permisos.comprasProveedores)
+                      _ModuleCard(
+                        icon: Icons.local_shipping_outlined,
+                        title: 'Proveedores',
+                        description:
+                            'Directorio de contactos, estados e historial de distribuidores.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ProviderManagementScreen(),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -167,12 +193,13 @@ class PurchasesScreen extends StatelessWidget {
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
+    final items = <(IconData, String, int)>[
+      if (Permisos.dashboard) (Icons.home_outlined, 'Inicio', 0),
+      if (Permisos.compras) (Icons.shopping_cart_outlined, 'Compras', 1),
+      if (Permisos.produccion) (Icons.factory_outlined, 'Producción', 2),
+      if (Permisos.ventasAdministracion)
+        (Icons.receipt_long_outlined, 'Ventas', 3),
+      (Icons.person_outline, 'Mi Perfil', 4),
     ];
     return Container(
       padding: const EdgeInsets.only(top: 9, bottom: 8),
@@ -183,25 +210,27 @@ class PurchasesScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          for (var i = 0; i < items.length; i++)
+          for (final item in items)
             GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
+              onTap: () => navigateToBottomModule(context, item.$3),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 1 ? red : muted,
+                    icon: item.$1,
+                    color: item.$3 == 1 ? red : muted,
                     size: 27,
-                    showPendingBadge: i == adminSalesNavIndex,
+                    showPendingBadge: item.$3 == adminSalesNavIndex,
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    items[i].$2,
+                    item.$2,
                     style: GoogleFonts.poppins(
-                      color: i == 1 ? red : muted,
+                      color: item.$3 == 1 ? red : muted,
                       fontSize: 12,
-                      fontWeight: i == 1 ? FontWeight.w700 : FontWeight.w400,
+                      fontWeight: item.$3 == 1
+                          ? FontWeight.w700
+                          : FontWeight.w400,
                     ),
                   ),
                 ],

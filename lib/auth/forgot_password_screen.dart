@@ -1,7 +1,9 @@
 // forgot_password_screen.dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../network/api_exception.dart';
 import '../shared/page_transitions.dart';
+import 'auth_service.dart';
 import 'verify_code_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   static const Color splashRojo = Color(0xE6C32828);
   static const Color campoGris = Color(0xFFF2F2F2);
   final _emailController = TextEditingController();
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -22,10 +25,35 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _onEnviarCodigo() {
-    Navigator.of(
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
       context,
-    ).push(heroFadeRoute(VerifyCodeScreen(email: _emailController.text)));
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _onEnviarCodigo() async {
+    if (_loading) return;
+    final correo = _emailController.text.trim();
+    if (correo.isEmpty) {
+      _showMessage('Ingresa tu correo electrónico');
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final mensaje = await AuthService.instance.solicitarCodigoRecuperacion(
+        correo,
+      );
+      if (!mounted) return;
+      _showMessage(mensaje);
+      Navigator.of(
+        context,
+      ).push(heroFadeRoute(VerifyCodeScreen(email: correo)));
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -117,7 +145,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             keyboardType: TextInputType.emailAddress,
                             style: GoogleFonts.poppins(color: Colors.black87),
                             decoration: InputDecoration(
-                              hintText: 'gloria@lasirena.com',
+                              hintText: 'Ingresa tu correo',
                               hintStyle: GoogleFonts.poppins(
                                 color: Colors.black38,
                               ),
@@ -148,10 +176,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _onEnviarCodigo,
+                              onPressed: _loading ? null : _onEnviarCodigo,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: splashRojo,
                                 foregroundColor: Colors.white,
+                                disabledBackgroundColor: splashRojo.withValues(
+                                  alpha: 0.6,
+                                ),
+                                disabledForegroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 18,
                                 ),
@@ -159,13 +191,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              child: Text(
-                                'Enviar código',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
+                              child: _loading
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.4,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Enviar código',
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 24),

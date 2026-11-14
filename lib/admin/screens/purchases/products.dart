@@ -30,65 +30,98 @@ class _ProductFichaTecnica {
   final String porciones;
   final List<_ProductFichaInsumo> insumos;
   final List<String> pasos;
+
+  factory _ProductFichaTecnica.fromApi(FichaProducto ficha) =>
+      _ProductFichaTecnica(
+        id: ficha.id.toString(),
+        prepTime: ficha.tiempoPreparacion?.toString() ?? '—',
+        porciones: ficha.porciones?.toString() ?? '—',
+        insumos: ficha.insumos
+            .map(
+              (insumo) => _ProductFichaInsumo(
+                insumoId: '',
+                name: insumo.nombre,
+                cantidad: insumo.cantidad.toString(),
+                medida: insumo.medida,
+              ),
+            )
+            .toList(growable: false),
+        pasos: ficha.pasos,
+      );
 }
 
 class _Product {
   const _Product({
     required this.id,
+    required this.idCategoria,
     required this.name,
     required this.category,
+    required this.type,
     required this.price,
+    required this.largePrice,
     required this.imagePath,
-    this.estado = 'Activo',
-    this.unit = 'und',
-    this.fichaTecnica,
+    required this.hasImage,
+    required this.estado,
+    required this.unit,
+    required this.stock,
+    required this.stockParts,
+    required this.availableMedium,
+    required this.availableLarge,
+    required this.content,
+    required this.contentUnit,
+    required this.purchaseUnit,
+    required this.unitsPerPackage,
   });
 
   final String id;
+  final int idCategoria;
   final String name;
   final String category;
-  final int price;
+  final String type;
+  final double price;
+  final double? largePrice;
   final String imagePath;
-
-  /// 'Activo' o 'Inactivo'.
+  final bool hasImage;
   final String estado;
-
-  /// Unidad de venta (und, kg, l).
   final String unit;
+  final int? stock;
+  final int? stockParts;
+  final int? availableMedium;
+  final int? availableLarge;
+  final double? content;
+  final String? contentUnit;
+  final String? purchaseUnit;
+  final int? unitsPerPackage;
 
-  /// Ficha técnica opcional del producto.
-  final _ProductFichaTecnica? fichaTecnica;
+  bool get isPizza =>
+      category.toLowerCase().contains('pizza') ||
+      stockParts != null ||
+      availableMedium != null ||
+      availableLarge != null;
 
-  bool get isActive => estado == 'Activo';
-
-  /// El stock no vive en el modelo: `ProductsRepository` es la fuente de verdad
-  /// (lo actualiza la producción y también el campo "Stock disponible").
-  int get stock => ProductsRepository.instance.stockOf(id);
-
-  /// Copia con los datos editados desde "Editar Producto" (el stock se guarda
-  /// aparte, en el repositorio).
-  _Product copyWith({
-    String? name,
-    String? category,
-    int? price,
-    String? imagePath,
-    String? estado,
-    String? unit,
-    _ProductFichaTecnica? fichaTecnica,
-  }) => _Product(
-    id: id,
-    name: name ?? this.name,
-    category: category ?? this.category,
-    price: price ?? this.price,
-    imagePath: imagePath ?? this.imagePath,
-    estado: estado ?? this.estado,
-    unit: unit ?? this.unit,
-    fichaTecnica: fichaTecnica ?? this.fichaTecnica,
+  factory _Product.fromApi(ProductoGestion product) => _Product(
+    id: product.idProducto.toString(),
+    idCategoria: product.idCategoria,
+    name: product.nombre,
+    category: product.categoriaNombre ?? '',
+    type: product.tipo,
+    price: product.precioVenta,
+    largePrice: product.precioGrande,
+    imagePath: product.imagen ?? '',
+    hasImage: product.tieneImagen,
+    estado: product.estado,
+    unit: product.unidadVenta,
+    stock: product.stock,
+    stockParts: product.stockPartes,
+    availableMedium: product.disponiblesMediana,
+    availableLarge: product.disponiblesGrande,
+    content: product.contenido,
+    contentUnit: product.contenidoUnidad,
+    purchaseUnit: product.unidadCompra,
+    unitsPerPackage: product.unidadesPorEmpaque,
   );
 }
 
-/// Las imágenes pueden venir de un asset (datos mock) o de una URL pegada por el
-/// usuario al crear el producto.
 bool _isNetworkImage(String path) {
   return path.startsWith('http://') || path.startsWith('https://');
 }
@@ -101,21 +134,36 @@ Widget _productImageFallback(
   return Container(
     color: const Color(0xFFE8B66A),
     alignment: Alignment.center,
-    child: const Text(
-      'Pizza',
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
+    child: const Icon(Icons.image_not_supported_outlined, color: Colors.white),
   );
 }
 
 Widget _productImage(String path, {BoxFit fit = BoxFit.cover}) {
+  if (path.isEmpty) {
+    return Container(
+      color: const Color(0xFFE8B66A),
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.image_not_supported_outlined,
+        color: Colors.white,
+      ),
+    );
+  }
   return _isNetworkImage(path)
       ? Image.network(path, fit: fit, errorBuilder: _productImageFallback)
       : Image.asset(path, fit: fit, errorBuilder: _productImageFallback);
+}
+
+Widget _productImageFor(_Product product, {BoxFit fit = BoxFit.cover}) {
+  if (product.hasImage) {
+    final imageUrl = '${ApiConfig.baseUrl}/productos/${product.id}/imagen';
+    return Image.network(
+      imageUrl,
+      fit: fit,
+      errorBuilder: _productImageFallback,
+    );
+  }
+  return _productImage(product.imagePath, fit: fit);
 }
 
 class _ProductManagementScreen extends StatefulWidget {
@@ -128,92 +176,43 @@ class _ProductManagementScreen extends StatefulWidget {
 
 class _ProductManagementScreenState extends State<_ProductManagementScreen> {
   String _query = '';
-  final List<_Product> _products = [
-    const _Product(
-      id: 'PROD-001',
-      name: 'Margarita Clásica',
-      category: 'CAT-001 - Pizzas Clásicas',
-      price: 24000,
-      imagePath: 'assets/images/products/pizza.jpg',
-      estado: 'Activo',
-      fichaTecnica: _ProductFichaTecnica(
-        id: 'REC-001',
-        prepTime: '12',
-        porciones: '1',
-        insumos: [
-          _ProductFichaInsumo(
-            insumoId: 'INS-004',
-            name: 'Masa Pre-elaborada',
-            cantidad: '1',
-            medida: 'und',
-          ),
-          _ProductFichaInsumo(
-            insumoId: 'INS-008',
-            name: 'Salsa de tomate',
-            cantidad: '150',
-            medida: 'ml',
-          ),
-          _ProductFichaInsumo(
-            insumoId: 'INS-007',
-            name: 'Queso mozzarella',
-            cantidad: '120',
-            medida: 'g',
-          ),
-          _ProductFichaInsumo(
-            insumoId: 'INS-010',
-            name: 'Orégano seco',
-            cantidad: '5',
-            medida: 'g',
-          ),
-        ],
-        pasos: [
-          'Desengrasar la mesa y extender la masa pre-elaborada.',
-          'Añadir la salsa de tomate dejando un borde de 2 cm.',
-          'Distribuir el queso mozzarella y el orégano seco.',
-          'Hornear a 400 °C durante 12 minutos.',
-        ],
-      ),
-    ),
-    const _Product(
-      id: 'PROD-002',
-      name: 'Pepperoni Premium',
-      category: 'CAT-001 - Pizzas Clásicas',
-      price: 28000,
-      imagePath: 'assets/images/products/pizza.jpg',
-      estado: 'Activo',
-    ),
-    const _Product(
-      id: 'PROD-003',
-      name: 'Cuatro Quesos',
-      category: 'CAT-002 - Pizzas Especiales',
-      price: 30000,
-      imagePath: 'assets/images/products/pizza.jpg',
-      estado: 'Activo',
-    ),
-    const _Product(
-      id: 'PROD-004',
-      name: 'Especial La Sirena',
-      category: 'CAT-002 - Pizzas Especiales',
-      price: 32000,
-      imagePath: 'assets/images/products/pizza.jpg',
-      estado: 'Activo',
-    ),
-    const _Product(
-      id: 'PROD-005',
-      name: 'Veggie Mediterránea',
-      category: 'CAT-003 - Pizzas Vegetarianas',
-      price: 26000,
-      imagePath: 'assets/images/products/pizza.jpg',
-      estado: 'Inactivo',
-    ),
-  ];
+  List<_Product> _products = [];
+  bool _loading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts({bool showLoading = true}) async {
+    if (showLoading && mounted) {
+      setState(() {
+        _loading = true;
+        _errorMessage = null;
+      });
+    }
+    try {
+      final products = await ProductsRepository.instance.listar();
+      if (!mounted) return;
+      setState(() {
+        _products = products.map(_Product.fromApi).toList(growable: true);
+        _loading = false;
+        _errorMessage = null;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _errorMessage = error.message;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ProductsRepository.instance,
-      builder: (context, _) => _buildProductList(context),
-    );
+    return _buildProductList(context);
   }
 
   Widget _buildProductList(BuildContext context) {
@@ -235,10 +234,11 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
           children: [
             _buildHeader(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(23, 26, 23, 28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: RefreshIndicator(
+                onRefresh: _loadProducts,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(23, 26, 23, 28),
                   children: [
                     Text(
                       'Gestión Producto',
@@ -262,10 +262,40 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                       onChanged: (value) => setState(() => _query = value),
                     ),
                     const SizedBox(height: 26),
-                    for (final product in filteredProducts) ...[
-                      _productCard(product),
-                      const SizedBox(height: 22),
-                    ],
+                    if (_loading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (_errorMessage != null)
+                      Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              _errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                color: PurchasesScreen.red,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _loadProducts,
+                              child: const Text('Reintentar'),
+                            ),
+                          ],
+                        ),
+                      )
+                    else if (filteredProducts.isEmpty)
+                      Center(
+                        child: Text(
+                          'No hay productos para mostrar.',
+                          style: GoogleFonts.poppins(
+                            color: PurchasesScreen.muted,
+                          ),
+                        ),
+                      )
+                    else
+                      for (final product in filteredProducts) ...[
+                        _productCard(product),
+                        const SizedBox(height: 22),
+                      ],
                   ],
                 ),
               ),
@@ -283,9 +313,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
     );
     if (actualizado == null || !mounted) return;
 
-    final index = _products.indexWhere((item) => item.id == product.id);
-    if (index >= 0) _products[index] = actualizado;
-    setState(() {});
+    await _loadProducts();
   }
 
   Future<void> _openEditProduct(_Product product) async {
@@ -294,24 +322,34 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
     );
     if (actualizado == null || !mounted) return;
 
-    final index = _products.indexWhere((item) => item.id == product.id);
-    if (index >= 0) _products[index] = actualizado;
-    setState(() {});
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${product.id} actualizado correctamente.')),
-    );
+    await _loadProducts();
+  }
+
+  Future<void> _changeState(_Product product, String estado) async {
+    try {
+      await ProductsRepository.instance.cambiarEstado(
+        int.parse(product.id),
+        estado,
+      );
+      await _loadProducts();
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    }
   }
 
   Widget _buildHeader(BuildContext context) {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
+      initials: getInitials(AuthService.instance.usuario?.nombre ?? ''),
     );
   }
 
   Widget _productCard(_Product product) {
-    final isLowStock = product.stock <= 25;
+    final isLowStock = product.stock != null && product.stock! <= 25;
     return Container(
       padding: const EdgeInsets.fromLTRB(17, 17, 17, 14),
       decoration: BoxDecoration(
@@ -328,10 +366,8 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                 width: 68,
                 height: 68,
                 clipBehavior: Clip.antiAlias,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
-                child: _productImage(product.imagePath),
+                decoration: const BoxDecoration(shape: BoxShape.circle),
+                child: _productImageFor(product),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -375,13 +411,27 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
           Row(
             children: [
               Text(
-                '\$${_formatPrice(product.price)}',
+                product.price > 0
+                    ? '\$${_formatPrice(product.price)}'
+                    : 'Sin precio',
                 style: GoogleFonts.poppins(
                   color: Colors.black,
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (product.largePrice != null) ...[
+                const SizedBox(width: 8),
+                Text(
+                  product.largePrice! > 0
+                      ? 'Grande \$${_formatPrice(product.largePrice!)}'
+                      : 'Grande sin precio',
+                  style: GoogleFonts.poppins(
+                    color: PurchasesScreen.muted,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
               const Spacer(),
               IconButton(
                 onPressed: () => _openDetailProduct(product),
@@ -414,7 +464,9 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'Stock: ${product.stock}',
+                  product.isPizza
+                      ? 'Stock: ${product.stockParts ?? '—'} partes'
+                      : 'Stock: ${product.stock ?? '—'} ${product.unit}',
                   style: GoogleFonts.poppins(
                     color: isLowStock
                         ? PurchasesScreen.red
@@ -425,6 +477,17 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
               ],
             ),
           ),
+          if (product.isPizza)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Pizzas disponibles · Mediana: ${product.availableMedium ?? '—'} · Grande: ${product.availableLarge ?? '—'}',
+                style: GoogleFonts.poppins(
+                  color: PurchasesScreen.muted,
+                  fontSize: 14,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -439,39 +502,41 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
       ),
       child: Text(
         text,
-        style: GoogleFonts.poppins(
-          color: PurchasesScreen.ink,
-          fontSize: 13,
-        ),
+        style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 13),
       ),
     );
   }
 
-  /// Pill de estado: verde "Activo" / rojo "Inactivo".
   Widget _estadoBadge(_Product product) {
-    final isActive = product.isActive;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFE3F2E5) : const Color(0xFFFFE8EB),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        product.estado,
-        style: GoogleFonts.poppins(
-          color: isActive ? const Color(0xFF3D824B) : PurchasesScreen.red,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
+    final disponible = product.estado == 'Disponible';
+    return PopupMenuButton<String>(
+      onSelected: (estado) => _changeState(product, estado),
+      itemBuilder: (_) => const [
+        PopupMenuItem(value: 'Automático', child: Text('Automático')),
+        PopupMenuItem(value: 'Descontinuado', child: Text('Descontinuado')),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: BoxDecoration(
+          color: disponible ? const Color(0xFFE3F2E5) : const Color(0xFFFFE8EB),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          product.estado,
+          style: GoogleFonts.poppins(
+            color: disponible ? const Color(0xFF3D824B) : PurchasesScreen.red,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
   }
 
-  String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-          RegExp(r'(?=(\d{3})+(?!\d))'),
-          (match) => '.',
-        );
+  String _formatPrice(double price) {
+    return price
+        .toStringAsFixed(0)
+        .replaceAllMapped(RegExp(r'(?=(\d{3})+(?!\d))'), (match) => '.');
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
@@ -531,11 +596,53 @@ class _ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<_ProductDetailScreen> {
   late _Product _product;
+  _ProductFichaTecnica? _ficha;
+  bool _loadingDetail = true;
+  String? _detailError;
 
   @override
   void initState() {
     super.initState();
     _product = widget.product;
+    _loadDetail();
+  }
+
+  Future<void> _loadDetail({bool showLoading = true}) async {
+    if (mounted) {
+      setState(() {
+        _detailError = null;
+        if (showLoading) _loadingDetail = true;
+      });
+    }
+    try {
+      final id = int.parse(_product.id);
+      final products = await ProductsRepository.instance.listar();
+      final product = products.where((item) => item.idProducto == id);
+      if (product.isEmpty) {
+        throw const ApiException('Producto no encontrado.');
+      }
+      final fichas = await ProductsRepository.instance.obtenerFichas(id);
+      if (!mounted) return;
+      final vigentes = fichas.where((item) => item.vigente).toList();
+      final ficha = vigentes.isEmpty
+          ? null
+          : vigentes.reduce(
+              (current, next) =>
+                  next.version > current.version ? next : current,
+            );
+      setState(() {
+        _product = _Product.fromApi(product.first);
+        _ficha = ficha == null ? null : _ProductFichaTecnica.fromApi(ficha);
+        _loadingDetail = false;
+        _detailError = null;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadingDetail = false;
+        _detailError = error.message;
+      });
+    }
   }
 
   /// Abre "Editar Producto" y refleja en el detalle lo que se guarde allí.
@@ -545,16 +652,12 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     );
     if (actualizado == null || !mounted) return;
     setState(() => _product = actualizado);
+    await _loadDetail(showLoading: false);
   }
 
   @override
   Widget build(BuildContext context) {
     final product = _product;
-    final categoryParts = product.category.split(' - ');
-    final categoryId = categoryParts.first;
-    final categoryName = categoryParts.length > 1
-        ? categoryParts.sublist(1).join(' - ')
-        : product.category;
 
     return Scaffold(
       backgroundColor: PurchasesScreen.page,
@@ -596,95 +699,166 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
               ),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 25, 24, 25),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: PurchasesScreen.page,
-                    borderRadius: BorderRadius.circular(17),
-                    border: Border.all(color: const Color(0xFFE5BDB9)),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      _detailSection(
-                        'ID PRODUCTO',
-                        product.id,
-                        valueStyle: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+              child: RefreshIndicator(
+                onRefresh: () => _loadDetail(showLoading: false),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(24, 25, 24, 25),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: PurchasesScreen.page,
+                      borderRadius: BorderRadius.circular(17),
+                      border: Border.all(color: const Color(0xFFE5BDB9)),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        _detailSection(
+                          'ID PRODUCTO',
+                          product.id,
+                          valueStyle: GoogleFonts.poppins(
+                            color: PurchasesScreen.ink,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      _detailSection(
-                        'NOMBRE',
-                        product.name,
-                        valueStyle: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
-                          fontSize: 25,
-                          fontWeight: FontWeight.w700,
+                        _detailSection(
+                          'NOMBRE',
+                          product.name,
+                          valueStyle: GoogleFonts.poppins(
+                            color: PurchasesScreen.ink,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 190,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: _productImage(
-                              product.imagePath,
-                              fit: BoxFit.cover,
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 190,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: _productImageFor(
+                                product,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      _detailSection(
-                        'ID CATEGORÍA',
-                        '$categoryId  -  $categoryName',
-                        icon: Icons.category_outlined,
-                        valueColor: PurchasesScreen.red,
-                      ),
-                      _detailSection(
-                        'PRECIO UNITARIO',
-                        '\$${_formatPrice(product.price)}',
-                        valueStyle: GoogleFonts.poppins(
-                          color: PurchasesScreen.red,
-                          fontSize: 27,
-                          fontWeight: FontWeight.w700,
+                        _detailSection(
+                          'ID CATEGORÍA',
+                          '${product.idCategoria}  -  ${product.category}',
+                          icon: Icons.category_outlined,
+                          valueColor: PurchasesScreen.red,
                         ),
-                        backgroundColor: const Color(0xFFF9F5F4),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 25),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: _detailValueColumn(
-                                'UNIDAD DE VENTA',
-                                product.unit,
-                                GoogleFonts.poppins(
-                                  color: PurchasesScreen.ink,
-                                  fontSize: 20,
+                        _detailSection('TIPO', product.type),
+                        _detailSection(
+                          product.isPizza
+                              ? 'PRECIO POR PORCIÓN MEDIANA'
+                              : 'PRECIO UNITARIO',
+                          product.price > 0
+                              ? '\$${_formatPrice(product.price)}'
+                              : 'Sin precio',
+                          valueStyle: GoogleFonts.poppins(
+                            color: PurchasesScreen.red,
+                            fontSize: 27,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          backgroundColor: const Color(0xFFF9F5F4),
+                        ),
+                        if (product.largePrice != null)
+                          _detailSection(
+                            'PRECIO POR PORCIÓN GRANDE',
+                            product.largePrice! > 0
+                                ? '\$${_formatPrice(product.largePrice!)}'
+                                : 'Sin precio',
+                          ),
+                        _detailSection('ESTADO', product.estado),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 25),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _detailValueColumn(
+                                  'UNIDAD DE VENTA',
+                                  product.unit,
+                                  GoogleFonts.poppins(
+                                    color: PurchasesScreen.ink,
+                                    fontSize: 20,
+                                  ),
                                 ),
                               ),
-                            ),
-                            _detailValueColumn(
-                              'STOCK',
-                              '${product.stock} und',
-                              GoogleFonts.poppins(
-                                color: PurchasesScreen.ink,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                              _detailValueColumn(
+                                product.isPizza ? 'STOCK EN PARTES' : 'STOCK',
+                                product.isPizza
+                                    ? '${product.stockParts ?? '—'}'
+                                    : '${product.stock ?? '—'} ${product.unit}',
+                                GoogleFonts.poppins(
+                                  color: PurchasesScreen.ink,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                valueBackground: const Color(0xFFE9E7E6),
                               ),
-                              valueBackground: const Color(0xFFE9E7E6),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      _buildFichaTecnica(product.fichaTecnica),
-                    ],
+                        if (product.isPizza) ...[
+                          _detailSection(
+                            'PIZZAS DISPONIBLES MEDIANA',
+                            '${product.availableMedium ?? '—'}',
+                          ),
+                          _detailSection(
+                            'PIZZAS DISPONIBLES GRANDE',
+                            '${product.availableLarge ?? '—'}',
+                          ),
+                          _detailSection(
+                            'CONVERSIÓN DE PIZZA',
+                            '1 pizza = 24 partes · Mediana: 3 partes, 8 porciones · Grande: 4 partes, 6 porciones',
+                          ),
+                        ],
+                        if (product.type == 'Reventa') ...[
+                          _detailSection(
+                            'CONTENIDO',
+                            '${product.content ?? '—'} ${product.contentUnit ?? ''}',
+                          ),
+                          _detailSection(
+                            'UNIDAD DE COMPRA',
+                            product.purchaseUnit ?? '—',
+                          ),
+                          _detailSection(
+                            'UNIDADES POR EMPAQUE',
+                            '${product.unitsPerPackage ?? '—'}',
+                          ),
+                        ],
+                        if (_loadingDetail)
+                          const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: CircularProgressIndicator(),
+                          )
+                        else if (_detailError != null)
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              children: [
+                                Text(
+                                  _detailError!,
+                                  style: GoogleFonts.poppins(
+                                    color: PurchasesScreen.red,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: _loadDetail,
+                                  child: const Text('Reintentar'),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          _buildFichaTecnica(_ficha),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -756,24 +930,8 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     );
   }
 
-  /// Ficha técnica del producto o el aviso de que todavía no tiene una.
   Widget _buildFichaTecnica(_ProductFichaTecnica? ficha) {
-    if (ficha == null) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 25),
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Color(0xFFE5BDB9))),
-        ),
-        child: Text(
-          'Sin ficha técnica registrada',
-          style: GoogleFonts.poppins(
-            color: PurchasesScreen.muted,
-            fontSize: 17,
-          ),
-        ),
-      );
-    }
+    if (ficha == null) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -852,7 +1010,7 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
+      initials: getInitials(AuthService.instance.usuario?.nombre ?? ''),
     );
   }
 
@@ -869,9 +1027,7 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 23),
       decoration: BoxDecoration(
         color: backgroundColor ?? PurchasesScreen.page,
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFFE5BDB9)),
-        ),
+        border: const Border(bottom: BorderSide(color: Color(0xFFE5BDB9))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -895,7 +1051,8 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
               Expanded(
                 child: Text(
                   value,
-                  style: valueStyle ??
+                  style:
+                      valueStyle ??
                       GoogleFonts.poppins(
                         color: valueColor ?? PurchasesScreen.ink,
                         fontSize: 20,
@@ -944,11 +1101,10 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     );
   }
 
-  String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-          RegExp(r'(?=(\d{3})+(?!\d))'),
-          (match) => '.',
-        );
+  String _formatPrice(double price) {
+    return price
+        .toStringAsFixed(0)
+        .replaceAllMapped(RegExp(r'(?=(\d{3})+(?!\d))'), (match) => '.');
   }
 }
 
@@ -965,34 +1121,58 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _imageUrlController;
   late final TextEditingController _priceController;
-  late final TextEditingController _stockController;
+  late final TextEditingController _largePriceController;
+  late final TextEditingController _unitController;
+  late final TextEditingController _contentController;
+  late final TextEditingController _unitsPerPackageController;
   late String _category;
-  late String _estado;
-  late String _unit;
-  late _ProductFichaTecnica? _ficha;
-
-  static const _estados = ['Activo', 'Inactivo'];
-  static const _unidades = ['und', 'kg', 'l'];
+  String? _contentUnit;
+  String? _purchaseUnit;
+  List<CategoriaProductoOpcion> _categories = [];
+  bool _loadingCategories = true;
+  bool _saving = false;
+  String? _categoryError;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.product.name);
-    _imageUrlController = TextEditingController(
-      text: _isNetworkImage(widget.product.imagePath)
-          ? widget.product.imagePath
-          : '',
-    );
+    _imageUrlController = TextEditingController(text: widget.product.imagePath);
     _priceController = TextEditingController(
-      text: widget.product.price.toString(),
+      text: widget.product.price > 0 ? widget.product.price.toString() : '',
     );
-    _stockController = TextEditingController(
-      text: widget.product.stock.toString(),
+    _largePriceController = TextEditingController(
+      text: widget.product.largePrice?.toString() ?? '',
     );
-    _category = widget.product.category;
-    _estado = widget.product.estado;
-    _unit = widget.product.unit;
-    _ficha = widget.product.fichaTecnica;
+    _unitController = TextEditingController(text: widget.product.unit);
+    _contentController = TextEditingController(
+      text: widget.product.content?.toString() ?? '',
+    );
+    _unitsPerPackageController = TextEditingController(
+      text: widget.product.unitsPerPackage?.toString() ?? '',
+    );
+    _category = widget.product.idCategoria.toString();
+    _contentUnit = widget.product.contentUnit;
+    _purchaseUnit = widget.product.purchaseUnit;
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final categories = await ProductsRepository.instance.listarCategorias();
+      if (!mounted) return;
+      setState(() {
+        _categories = categories;
+        _loadingCategories = false;
+        _categoryError = null;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadingCategories = false;
+        _categoryError = error.message;
+      });
+    }
   }
 
   @override
@@ -1000,18 +1180,15 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     _nameController.dispose();
     _imageUrlController.dispose();
     _priceController.dispose();
-    _stockController.dispose();
+    _largePriceController.dispose();
+    _unitController.dispose();
+    _contentController.dispose();
+    _unitsPerPackageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    const categories = [
-      'CAT-001 - Pizzas Clásicas',
-      'CAT-002 - Pizzas Especiales',
-      'CAT-003 - Pizzas Vegetarianas',
-    ];
-
     return Scaffold(
       backgroundColor: PurchasesScreen.page,
       body: SafeArea(
@@ -1040,142 +1217,132 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _fieldLabel('Nombre *'),
+                      _fieldLabel('Nombre'),
                       _textField(_nameController),
-                      const SizedBox(height: 28),
-                      _fieldLabel('Imagen del producto'),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.upload_outlined),
-                              label: const Text('Subir archivo'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: PurchasesScreen.ink,
-                                side: const BorderSide(
-                                  color: Color(0xFFE5BDB9),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 17,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _textField(
-                              _imageUrlController,
-                              hintText: 'URL de imagen',
-                            ),
-                          ),
-                        ],
-                      ),
+                      const SizedBox(height: 22),
+                      _fieldLabel('Tipo'),
+                      Text(widget.product.type),
+                      const SizedBox(height: 22),
+                      _fieldLabel('Imagen'),
+                      _textField(_imageUrlController, hintText: 'Imagen'),
                       const SizedBox(height: 18),
-                      Stack(
-                        children: [
-                          SizedBox(
-                            width: double.infinity,
-                            height: 190,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: _productImage(
-                                widget.product.imagePath,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 150,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: _productImageFor(
+                            widget.product,
+                            fit: BoxFit.cover,
                           ),
-                          Positioned(
-                            top: 10,
-                            right: 10,
-                            child: CircleAvatar(
-                              radius: 25,
-                              backgroundColor: Colors.black87,
-                              child: IconButton(
-                                onPressed: () {},
-                                icon: const Icon(
-                                  Icons.close,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 30),
-                      _fieldLabel('ID Categoría *'),
-                      _dropdownField(
-                        value: _category,
-                        items: categories,
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() => _category = value);
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 26),
-                      _fieldLabel('Precio unitario (COP)'),
-                      _textField(
-                        _priceController,
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 26),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _fieldLabel('Unidad de venta'),
-                                _dropdownField(
-                                  value: _unit,
-                                  items: _unidades,
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      setState(() => _unit = value);
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _fieldLabel('Stock disponible'),
-                                _textField(
-                                  _stockController,
-                                  keyboardType: TextInputType.number,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 26),
-                      _fieldLabel('Estado del producto'),
-                      _dropdownField(
-                        value: _estado,
-                        items: _estados,
-                        onChanged: (value) {
-                          if (value != null) setState(() => _estado = value);
-                        },
-                      ),
-                      if (_ficha != null) ...[
-                        const SizedBox(height: 30),
-                        const Divider(color: Color(0xFFE5BDB9), height: 1),
-                        const SizedBox(height: 24),
-                        _fichaTitle(_ficha!.id),
-                        const SizedBox(height: 18),
-                        _ProductFichaTecnicaEditor(
-                          ficha: _ficha!,
-                          onChanged: (ficha) => setState(() => _ficha = ficha),
                         ),
+                      ),
+                      const SizedBox(height: 24),
+                      _fieldLabel('Categoría'),
+                      if (_loadingCategories)
+                        const Center(child: CircularProgressIndicator())
+                      else if (_categoryError != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _categoryError!,
+                              style: const TextStyle(
+                                color: PurchasesScreen.red,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _loadCategories,
+                              child: const Text('Reintentar'),
+                            ),
+                          ],
+                        )
+                      else if (_categories.any(
+                        (item) => item.idCategoria.toString() == _category,
+                      ))
+                        DropdownButtonFormField<String>(
+                          initialValue: _category,
+                          isExpanded: true,
+                          items: _categories
+                              .map(
+                                (item) => DropdownMenuItem(
+                                  value: item.idCategoria.toString(),
+                                  child: Text(item.nombre),
+                                ),
+                              )
+                              .toList(growable: false),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _category = value);
+                            }
+                          },
+                        )
+                      else
+                        Text(widget.product.category),
+                      const SizedBox(height: 22),
+                      _fieldLabel('Unidad de venta'),
+                      if (widget.product.type == 'Reventa')
+                        Text(widget.product.unit)
+                      else
+                        _textField(_unitController),
+                      if (widget.product.type == 'Elaborado') ...[
+                        const SizedBox(height: 22),
+                        _fieldLabel(
+                          widget.product.isPizza
+                              ? 'Precio por porción Mediana (COP)'
+                              : 'Precio de venta (COP)',
+                        ),
+                        _textField(
+                          _priceController,
+                          keyboardType: TextInputType.number,
+                        ),
+                        if (widget.product.isPizza) ...[
+                          const SizedBox(height: 22),
+                          _fieldLabel('Precio por porción Grande (COP)'),
+                          _textField(
+                            _largePriceController,
+                            keyboardType: TextInputType.number,
+                          ),
+                        ],
+                      ],
+                      if (widget.product.type == 'Reventa') ...[
+                        const SizedBox(height: 22),
+                        _fieldLabel('Contenido'),
+                        _textField(
+                          _contentController,
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 22),
+                        _fieldLabel('Unidad del contenido'),
+                        _dropdownField(
+                          value: _contentUnit,
+                          items: const ['ml', 'L'],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _contentUnit = value);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 22),
+                        _fieldLabel('Unidad de compra'),
+                        _dropdownField(
+                          value: _purchaseUnit,
+                          items: const ['und', 'paca', 'caja'],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _purchaseUnit = value);
+                            }
+                          },
+                        ),
+                        if (_purchaseUnit != null &&
+                            _purchaseUnit != 'und') ...[
+                          const SizedBox(height: 22),
+                          _fieldLabel('Unidades por empaque'),
+                          _textField(
+                            _unitsPerPackageController,
+                            keyboardType: TextInputType.number,
+                          ),
+                        ],
                       ],
                       const SizedBox(height: 34),
                       Row(
@@ -1205,7 +1372,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                           const SizedBox(width: 18),
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: _saveProduct,
+                              onPressed: _saving ? null : _saveProduct,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: PurchasesScreen.red,
                                 foregroundColor: Colors.white,
@@ -1213,13 +1380,22 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                                   vertical: 17,
                                 ),
                               ),
-                              child: Text(
-                                'Guardar',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                              child: _saving
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Guardar',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                             ),
                           ),
                         ],
@@ -1240,7 +1416,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
+      initials: getInitials(AuthService.instance.usuario?.nombre ?? ''),
     );
   }
 
@@ -1285,7 +1461,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
             ),
             alignment: Alignment.center,
             child: Text(
-              getInitials('Gloria Inés Vargas'),
+              getInitials(AuthService.instance.usuario?.nombre ?? ''),
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 13,
@@ -1303,10 +1479,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         label,
-        style: GoogleFonts.poppins(
-          color: PurchasesScreen.muted,
-          fontSize: 20,
-        ),
+        style: GoogleFonts.poppins(color: PurchasesScreen.muted, fontSize: 20),
       ),
     );
   }
@@ -1319,10 +1492,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: GoogleFonts.poppins(
-        color: PurchasesScreen.ink,
-        fontSize: 21,
-      ),
+      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 21),
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -1342,7 +1512,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
   }
 
   Widget _dropdownField({
-    required String value,
+    required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
@@ -1351,10 +1521,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       isExpanded: true,
       onChanged: onChanged,
       icon: const Icon(Icons.keyboard_arrow_down),
-      style: GoogleFonts.poppins(
-        color: PurchasesScreen.ink,
-        fontSize: 18,
-      ),
+      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 18),
       decoration: const InputDecoration(
         filled: true,
         fillColor: Color(0xFFF7F8F9),
@@ -1368,78 +1535,78 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       ),
       items: [
         for (final item in items)
-          DropdownMenuItem<String>(
-            value: item,
-            child: Text(item),
-          ),
-      ],
-    );
-  }
-
-  Widget _fichaTitle(String fichaId) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          'FICHA TÉCNICA',
-          style: GoogleFonts.poppins(
-            color: PurchasesScreen.muted,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFE8EB),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            fichaId,
-            style: GoogleFonts.poppins(
-              color: PurchasesScreen.red,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
+          DropdownMenuItem<String>(value: item, child: Text(item)),
       ],
     );
   }
 
   void _avisar(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
-  /// Guarda los cambios y devuelve el producto actualizado a la lista.
-  void _saveProduct() {
-    final nombre = _nameController.text.trim();
-    if (nombre.isEmpty) {
-      _avisar('El nombre del producto es obligatorio.');
-      return;
-    }
+  Future<void> _saveProduct() async {
+    final body = <String, Object?>{
+      'id_categoria': int.parse(_category),
+      'nombre': _nameController.text.trim(),
+      'unidad_venta': widget.product.type == 'Reventa'
+          ? 'und'
+          : _unitController.text.trim(),
+      'imagen': _imageUrlController.text.trim(),
+    };
 
-    // Ajuste manual del stock: la producción completada sigue sumando por
-    // separado sobre este valor.
-    final stock = int.tryParse(_stockController.text.trim());
-    if (stock != null) {
-      ProductsRepository.instance.setStock(widget.product.id, stock);
-    }
+    try {
+      if (widget.product.type == 'Elaborado') {
+        final price = _priceController.text.trim();
+        final largePrice = _largePriceController.text.trim();
+        if (price.isNotEmpty) {
+          body['precio_venta'] = _parseNumber(price);
+        }
+        if (widget.product.isPizza && largePrice.isNotEmpty) {
+          body['precio_grande'] = _parseNumber(largePrice);
+        }
+      } else {
+        final content = _contentController.text.trim();
+        if (content.isNotEmpty) {
+          body['contenido'] = _parseNumber(content);
+        }
+        if (_contentUnit != null) {
+          body['contenido_unidad'] = _contentUnit;
+        }
+        if (_purchaseUnit != null) {
+          body['unidad_compra'] = _purchaseUnit;
+        }
+        final units = _unitsPerPackageController.text.trim();
+        if (_purchaseUnit != null &&
+            _purchaseUnit != 'und' &&
+            units.isNotEmpty) {
+          body['unidades_por_empaque'] = int.parse(units);
+        }
+      }
 
-    final url = _imageUrlController.text.trim();
-    Navigator.of(context).pop(
-      widget.product.copyWith(
-        name: nombre,
-        category: _category,
-        price: int.tryParse(_priceController.text.trim()),
-        imagePath: url.isEmpty ? null : url,
-        estado: _estado,
-        unit: _unit,
-        fichaTecnica: _ficha,
-      ),
-    );
+      setState(() => _saving = true);
+      final updated = await ProductsRepository.instance.actualizar(
+        int.parse(widget.product.id),
+        body,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(_Product.fromApi(updated));
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _avisar(error.message);
+    } on FormatException {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _avisar('Ingresa valores numéricos válidos.');
+    }
+  }
+
+  double _parseNumber(String value) {
+    final number = double.tryParse(value);
+    if (number == null || !number.isFinite) throw const FormatException();
+    return number;
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
@@ -1643,7 +1810,9 @@ class _ProductFichaTecnicaEditorState
   }
 
   void _avisar(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   @override
@@ -2022,11 +2191,7 @@ class _ProductFichaTecnicaEditorState
         for (final item in items)
           DropdownMenuItem<String>(
             value: item,
-            child: Text(
-              item,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: Text(item, maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
       ],
     );
