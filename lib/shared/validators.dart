@@ -16,6 +16,50 @@ String? requiredValidator(String? value) {
   return null;
 }
 
+/// Login: el backend solo exige correo no vacío (sin restricción de dominio).
+String? loginEmailValidator(String? value) {
+  if (value == null || value.trim().isEmpty) return 'Ingresa tu correo';
+  return null;
+}
+
+/// Login: el backend solo exige contraseña no vacía.
+String? loginPasswordValidator(String? value) {
+  if (value == null || value.isEmpty) return 'Ingresa tu contraseña';
+  return null;
+}
+
+/// Perfil: formato de correo válido, sin restricción de dominio (máx. 255).
+String? profileEmailValidator(String? value) {
+  final email = value?.trim() ?? '';
+  if (email.isEmpty) return 'El correo es obligatorio';
+  if (email.length > 255) return 'El correo es demasiado largo';
+  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$').hasMatch(email)) {
+    return 'Ingresa un correo válido';
+  }
+  return null;
+}
+
+/// Perfil: solo dígitos, de 7 a 15 (misma regla que el backend).
+String? profilePhoneValidator(String? value) {
+  final phone = value?.trim() ?? '';
+  if (phone.isEmpty) return 'El teléfono es obligatorio';
+  if (!RegExp(r'^\d{7,15}$').hasMatch(phone)) {
+    return 'El teléfono debe tener solo números, entre 7 y 15 dígitos';
+  }
+  return null;
+}
+
+/// Formateadores del campo teléfono del perfil: solo dígitos, máximo 15.
+List<TextInputFormatter> profilePhoneFormatters() => <TextInputFormatter>[
+  FilteringTextInputFormatter.digitsOnly,
+  LengthLimitingTextInputFormatter(15),
+];
+
+/// Valida los dos campos editables del perfil. Devuelve el primer error o null.
+String? validateProfileContact(String correo, String telefono) {
+  return profileEmailValidator(correo) ?? profilePhoneValidator(telefono);
+}
+
 String? documentValidator(String? value) {
   if (value == null || value.isEmpty) return 'Este campo es obligatorio';
   if (!RegExp(r'^\d+$').hasMatch(value)) return 'Solo se permiten números';

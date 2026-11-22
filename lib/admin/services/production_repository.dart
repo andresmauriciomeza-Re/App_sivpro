@@ -36,7 +36,7 @@ class OrdenProduccionLinea {
       idFicha: _optionalInt(json['id_ft']),
       nombre: _requiredString(json, 'nombre'),
       unidad: _requiredString(json, 'unidad'),
-      tamano: json['tamano'] as String?,
+      tamano: _optionalString(json['tamano']),
       cantidadEstimada: _requiredDouble(json, 'cantidad_estimada'),
       cantidadDebida: _optionalDouble(json['cantidad_debida']),
       cantidadReal: _optionalDouble(json['cantidad_real']),
@@ -61,6 +61,7 @@ class OrdenProduccion {
     this.fechaEnProceso,
     this.fechaCompletada,
     this.fechaCancelada,
+    this.tiempoPreparacionMin,
   });
 
   final int id;
@@ -76,6 +77,9 @@ class OrdenProduccion {
   final String? fechaEnProceso;
   final String? fechaCompletada;
   final String? fechaCancelada;
+
+  /// Tiempo de preparación en minutos (si el backend lo entrega).
+  final int? tiempoPreparacionMin;
   final List<OrdenProduccionLinea> lineas;
 
   String get tipoLabel => tipo == 'Preparacion' ? 'Preparación' : tipo;
@@ -87,29 +91,24 @@ class OrdenProduccion {
     }
     final tipo = _requiredString(json, 'tipo');
     final estado = _requiredString(json, 'estado');
-    if (!const ['Preparacion', 'Pedido'].contains(tipo) ||
-        !const [
-          'Pendiente',
-          'En proceso',
-          'Completada',
-          'Cancelada',
-        ].contains(estado)) {
-      throw const ApiException('Respuesta inesperada del servidor.');
-    }
+    // Un tipo o estado desconocido NO invalida la lista: la orden se conserva
+    // con el texto crudo (sin acciones disponibles, porque estas comparan
+    // contra los valores conocidos).
     return OrdenProduccion(
       id: _requiredInt(json, 'id_orden_produccion'),
       tipo: tipo,
       estado: estado,
       fechaSolicitada: _requiredString(json, 'fecha_solicitada'),
-      fechaEntregaEstimada: json['fecha_entrega_estimada'] as String?,
-      horaSolicitada: json['hora_solicitada'] as String?,
-      ventaNumero: json['venta_numero'] as String?,
-      cliente: json['cliente'] as String?,
-      observacion: json['observacion'] as String?,
-      descripcionPreparacion: json['descripcion_preparacion'] as String?,
-      fechaEnProceso: json['fecha_en_proceso'] as String?,
-      fechaCompletada: json['fecha_completada'] as String?,
-      fechaCancelada: json['fecha_cancelada'] as String?,
+      fechaEntregaEstimada: _optionalString(json['fecha_entrega_estimada']),
+      horaSolicitada: _optionalString(json['hora_solicitada']),
+      ventaNumero: _optionalString(json['venta_numero']),
+      cliente: _optionalString(json['cliente']),
+      observacion: _optionalString(json['observacion']),
+      descripcionPreparacion: _optionalString(json['descripcion_preparacion']),
+      fechaEnProceso: _optionalString(json['fecha_en_proceso']),
+      fechaCompletada: _optionalString(json['fecha_completada']),
+      fechaCancelada: _optionalString(json['fecha_cancelada']),
+      tiempoPreparacionMin: _optionalInt(json['tiempo_preparacion_min']),
       lineas: lineasJson
           .map((item) {
             if (item is! Map<String, dynamic>) {
@@ -182,6 +181,36 @@ class ProductionRepository {
           return LineaVerificacionProduccion.fromJson(item);
         })
         .toList(growable: false);
+  }
+
+  /// `PUT /ordenes-produccion/:id`. Nunca mezcla claves de ambos tipos:
+  /// - Pedido Pendiente: solo `observacion` y `tiempo_preparacion_min`.
+  /// - Pedido En proceso: solo `tiempo_preparacion_min`.
+  /// - Preparación: solo `observacion`, `fecha_solicitada`, `hora_solicitada`.
+  /// Cualquier otra clave de [cambios] se descarta antes de enviar. El
+  /// llamador vuelve a consultar la orden con [obtener].
+  Future<void> actualizar(
+    int id,
+    Map<String, Object?> cambios, {
+    required String tipo,
+    required String estado,
+  }) async {
+    final Set<String> permitidas;
+    if (tipo == 'Pedido') {
+      permitidas = estado == 'Pendiente'
+          ? const {'observacion', 'tiempo_preparacion_min'}
+          : const {'tiempo_preparacion_min'};
+    } else {
+      permitidas = const {'observacion', 'fecha_solicitada', 'hora_solicitada'};
+    }
+    final cuerpo = <String, Object?>{
+      for (final entrada in cambios.entries)
+        if (permitidas.contains(entrada.key)) entrada.key: entrada.value,
+    };
+    if (cuerpo.isEmpty) {
+      throw const ApiException('No hay cambios válidos para esta orden.');
+    }
+    await ApiClient.instance.put('/ordenes-produccion/$id', body: cuerpo);
   }
 
   Future<OrdenProduccion> iniciar(int id) async {
@@ -264,4 +293,11 @@ String _requiredString(Map<String, dynamic> json, String key) {
     throw const ApiException('Respuesta inesperada del servidor.');
   }
   return value;
+}
+
+/// Texto opcional tolerante: acepta cualquier tipo y devuelve null si vacío.
+String? _optionalString(dynamic value) {
+  if (value == null) return null;
+  final text = value.toString();
+  return text.isEmpty ? null : text;
 }

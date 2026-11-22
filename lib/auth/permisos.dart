@@ -9,6 +9,17 @@ class Permisos {
 
   static AuthService get _auth => AuthService.instance;
 
+  /// Consulta un privilegio concreto con los nombres exactos del backend.
+  ///
+  /// Ejemplos: `Permisos.puede('Ventas', 'Ventas', 'Editar')`,
+  /// `Permisos.puede('Producción', 'Orden de Producción', 'Editar')`,
+  /// `Permisos.puede('Compras', 'Compra', 'Ver')`. Lee `usuario.permisos` de la
+  /// sesión (login o `/auth/me`); el super administrador siempre puede.
+  /// Es solo una ayuda de interfaz: la autorización real es del backend.
+  static bool puede(String modulo, String nombre, String privilegio) {
+    return _auth.puedeVer(modulo, nombre, privilegio: privilegio);
+  }
+
   static bool get dashboard => _auth.puedeVer('Dashboard', 'Dashboard');
 
   static bool get comprasCompra => _auth.puedeVer('Compras', 'Compra');

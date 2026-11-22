@@ -10,58 +10,66 @@ class ProviderManagementScreen extends StatefulWidget {
 
 class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
   String _query = '';
+  List<Proveedor> _providers = const [];
+  bool _loading = true;
+  String? _error;
+  final Set<int> _changingStatus = {};
 
-  final List<_Provider> _providers = [
-    _Provider(
-      'PROV-001',
-      '900.123.456-1',
-      'Distribuidora La Cosecha',
-      '+57 300 123 4567',
-      'ventas@lacosecha.com',
-      'Calle 45 # 12-34, Zona Industrial',
-      true,
-      'Carlos Mendoza',
-    ),
-    _Provider(
-      'PROV-002',
-      '800.654.321-2',
-      'Lácteos El Buen Pastor',
-      '+57 311 987 6543',
-      'pedidos@buenpastor.co',
-      'Cra 22 # 8-15, Centro',
-      true,
-      'Ana María Ruiz',
-    ),
-    _Provider(
-      'PROV-003',
-      '700.111.222-3',
-      'Empaques del Norte SAS',
-      '+57 320 555 4433',
-      'contacto@empaquesnorte.com',
-      'Autopista Norte Km 5, Bodega 4',
-      false,
-      null,
-    ),
-    _Provider(
-      'PROV-004',
-      '901.777.888-4',
-      'Harinas y Cereales S.A.',
-      '+57 601 234 5678',
-      'proveedores@harinas.com',
-      'Av. Boyacá # 72-10',
-      true,
-      'Luis Fernando Torres',
-    ),
-  ];
+  /// Compras > Proveedores > Editar (editar datos y cambiar estado).
+  bool get _canEdit => Permisos.puede('Compras', 'Proveedores', 'Editar');
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
+    try {
+      final providers = await ProvidersRepository.instance.listar();
+      if (!mounted) return;
+      setState(() {
+        _providers = providers;
+        _loading = false;
+        _error = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is ApiException
+          ? error.message
+          : 'No se pudieron cargar los proveedores.';
+      if (silent && _providers.isNotEmpty) {
+        _showMessage(message);
+      } else {
+        setState(() {
+          _loading = false;
+          _error = message;
+        });
+      }
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {
     final query = _query.toLowerCase().trim();
     final filtered = _providers.where((provider) {
-      return provider.id.toLowerCase().contains(query) ||
-          provider.nit.toLowerCase().contains(query) ||
-          provider.name.toLowerCase().contains(query) ||
-          provider.email.toLowerCase().contains(query);
+      return provider.codigo.toLowerCase().contains(query) ||
+          provider.identificacion.toLowerCase().contains(query) ||
+          provider.nombre.toLowerCase().contains(query) ||
+          (provider.nombreComercial ?? '').toLowerCase().contains(query) ||
+          (provider.email ?? '').toLowerCase().contains(query);
     }).toList();
 
     return Scaffold(
@@ -90,7 +98,9 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${_providers.length} proveedores registrados',
+                          _loading
+                              ? 'Cargando proveedores...'
+                              : '${_providers.length} proveedores registrados',
                           style: GoogleFonts.poppins(
                             color: PurchasesScreen.muted,
                             fontSize: 17,
@@ -104,28 +114,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(28),
-                              child: Text(
-                                'No se encontraron proveedores.',
-                                style: GoogleFonts.poppins(
-                                  color: PurchasesScreen.muted,
-                                ),
-                              ),
-                            ),
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
-                            itemCount: filtered.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 18),
-                            itemBuilder: (context, index) =>
-                                _providerCard(filtered[index]),
-                          ),
-                  ),
+                  Expanded(child: _buildBody(filtered)),
                 ],
               ),
             ),
@@ -136,15 +125,72 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     );
   }
 
+  Widget _buildBody(List<Proveedor> filtered) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: _load,
+                style: FilledButton.styleFrom(
+                  backgroundColor: PurchasesScreen.red,
+                ),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: () => _load(silent: true),
+      child: filtered.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Center(
+                    child: Text(
+                      'No se encontraron proveedores.',
+                      style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+              itemCount: filtered.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 18),
+              itemBuilder: (context, index) => _providerCard(filtered[index]),
+            ),
+    );
+  }
+
   Widget _buildHeader(BuildContext context) {
     return AppHeader(
       title: 'Gestión Proveedor',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
+      initials: currentUserInitials(),
     );
   }
 
-  Widget _providerCard(_Provider provider) {
+  Widget _providerCard(Proveedor provider) {
     return Container(
       padding: const EdgeInsets.fromLTRB(15, 16, 14, 13),
       decoration: BoxDecoration(
@@ -159,9 +205,9 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: _avatarColorFor(provider.id),
+                backgroundColor: _avatarColorFor(provider.codigo),
                 child: Text(
-                  getInitials(provider.name),
+                  getInitials(provider.nombre),
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 11,
@@ -175,7 +221,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      provider.name,
+                      provider.nombre,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
@@ -186,7 +232,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      provider.id,
+                      provider.codigo,
                       style: GoogleFonts.poppins(
                         color: PurchasesScreen.muted,
                         fontSize: 13,
@@ -201,19 +247,26 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _providerInfo('NIT', provider.nit)),
-              Expanded(child: _providerInfo('TELÉFONO', provider.phone)),
+              Expanded(
+                child: _providerInfo(
+                  provider.esJuridica ? 'NIT' : 'DOCUMENTO',
+                  provider.identificacion,
+                ),
+              ),
+              Expanded(
+                child: _providerInfo('TELÉFONO', provider.telefono ?? ''),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _providerInfo('EMAIL', provider.email)),
+              Expanded(child: _providerInfo('EMAIL', provider.email ?? '')),
               Expanded(
                 child: _providerInfo(
                   'ASESOR COMERCIAL',
-                  provider.advisor ?? '',
+                  provider.asesorComercial ?? '',
                 ),
               ),
             ],
@@ -226,8 +279,15 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
             children: [
               _statusBadge(provider),
               const Spacer(),
-              _providerAction(Icons.visibility_outlined, provider),
-              _providerAction(Icons.edit_outlined, provider),
+              _providerAction(
+                Icons.visibility_outlined,
+                () => _showProviderSheet(provider, edit: false),
+              ),
+              if (_canEdit)
+                _providerAction(
+                  Icons.edit_outlined,
+                  () => _showProviderSheet(provider, edit: true),
+                ),
             ],
           ),
         ],
@@ -240,51 +300,66 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     return AppColors.avatarPalette[hash % AppColors.avatarPalette.length];
   }
 
-  Widget _statusBadge(_Provider provider) {
+  Widget _statusBadge(Proveedor provider) {
+    final changing = _changingStatus.contains(provider.id);
+    final badge = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+      decoration: BoxDecoration(
+        color: provider.estado
+            ? AppColors.statusGreenBg
+            : AppColors.statusRedBg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (changing) ...[
+            const SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Text(
+            provider.estado ? 'Activo' : 'Inactivo',
+            style: GoogleFonts.poppins(
+              color: provider.estado
+                  ? AppColors.statusGreenFg
+                  : AppColors.statusRedFg,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+    // Sin permiso de edición el estado solo se muestra.
+    if (!_canEdit) return badge;
     return InkWell(
       borderRadius: BorderRadius.circular(20),
-      onTap: () => _showChangeStatusDialog(provider),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-        decoration: BoxDecoration(
-          color: provider.active
-              ? AppColors.statusGreenBg
-              : AppColors.statusRedBg,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          provider.active ? 'Activo' : 'Inactivo',
-          style: GoogleFonts.poppins(
-            color: provider.active
-                ? AppColors.statusGreenFg
-                : AppColors.statusRedFg,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      onTap: changing ? null : () => _showChangeStatusDialog(provider),
+      child: badge,
     );
   }
 
-  Widget _providerAction(IconData icon, _Provider provider) {
+  Widget _providerAction(IconData icon, VoidCallback onPressed) {
     return SizedBox(
       width: 42,
       height: 42,
       child: IconButton(
         padding: EdgeInsets.zero,
-        onPressed: icon == Icons.visibility_outlined
-            ? () => _showProviderSheet(provider, edit: false)
-            : () => _showProviderSheet(provider, edit: true),
+        onPressed: onPressed,
         icon: Icon(icon, size: 25, color: AppColors.cardIcon),
       ),
     );
   }
 
   Future<void> _showProviderSheet(
-    _Provider provider, {
+    Proveedor provider, {
     required bool edit,
   }) async {
-    final saved = await showModalBottomSheet<bool>(
+    final updated = await showModalBottomSheet<Proveedor>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -294,16 +369,26 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
           ? _ProviderEditScreen(provider: provider)
           : _ProviderDetailScreen(provider: provider),
     );
-    if (saved == true && mounted) setState(() {});
+    if (updated == null || !mounted) return;
+    setState(() {
+      _providers = [
+        for (final item in _providers) item.id == updated.id ? updated : item,
+      ];
+    });
+    _showMessage('Proveedor actualizado correctamente.');
   }
 
-  Future<void> _showChangeStatusDialog(_Provider provider) async {
-    final targetStatus = provider.active ? 'Inactivo' : 'Activo';
+  Future<void> _showChangeStatusDialog(Proveedor provider) async {
+    if (_changingStatus.contains(provider.id)) return;
+    final target = !provider.estado;
+    final targetLabel = target ? 'Activo' : 'Inactivo';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Cambiar estado'),
-        content: const Text('¿Está seguro de cambiar el estado?'),
+        content: Text(
+          '¿Está seguro de cambiar el estado de ${provider.nombre}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -311,35 +396,32 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text('Cambiar a $targetStatus'),
+            child: Text('Cambiar a $targetLabel'),
           ),
         ],
       ),
     );
     if (confirmed != true || !mounted) return;
+    if (_changingStatus.contains(provider.id)) return;
 
-    final previous = provider.active;
-    setState(() => provider.active = !previous);
+    setState(() => _changingStatus.add(provider.id));
     try {
-      await _persistProviderStatus(provider);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Estado cambiado a "$targetStatus".')),
-        );
-      }
+      await ProvidersRepository.instance.cambiarEstado(provider.id, target);
+      if (!mounted) return;
+      setState(() {
+        _providers = [
+          for (final item in _providers)
+            item.id == provider.id ? item.conEstado(target) : item,
+        ];
+      });
+      _showMessage('Estado cambiado a "$targetLabel".');
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
     } catch (_) {
-      if (mounted) {
-        setState(() => provider.active = previous);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo cambiar el estado.')),
-        );
-      }
+      if (mounted) _showMessage('No se pudo cambiar el estado.');
+    } finally {
+      if (mounted) setState(() => _changingStatus.remove(provider.id));
     }
-  }
-
-  Future<void> _persistProviderStatus(_Provider provider) async {
-    // Simula la persistencia del endpoint mientras la app funciona sin backend.
-    await Future<void>.delayed(Duration.zero);
   }
 
   Widget _providerInfo(String label, String value) {
@@ -355,7 +437,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
         ),
         const SizedBox(height: 6),
         Text(
-          value,
+          value.isEmpty ? '—' : value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 16),
@@ -410,28 +492,6 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
   }
 }
 
-class _Provider {
-  _Provider(
-    this.id,
-    this.nit,
-    this.name,
-    this.phone,
-    this.email,
-    this.address,
-    this.active, [
-    this.advisor,
-  ]);
-
-  final String id;
-  final String nit;
-  final String name;
-  String phone;
-  String email;
-  String address;
-  bool active;
-  String? advisor;
-}
-
 class _ProviderSheetFrame extends StatelessWidget {
   const _ProviderSheetFrame({required this.child});
 
@@ -467,13 +527,55 @@ class _ProviderSheetFrame extends StatelessWidget {
   }
 }
 
-class _ProviderDetailScreen extends StatelessWidget {
+class _ProviderDetailScreen extends StatefulWidget {
   const _ProviderDetailScreen({required this.provider});
 
-  final _Provider provider;
+  final Proveedor provider;
+
+  @override
+  State<_ProviderDetailScreen> createState() => _ProviderDetailScreenState();
+}
+
+class _ProviderDetailScreenState extends State<_ProviderDetailScreen> {
+  late Proveedor _provider = widget.provider;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  /// Muestra primero los datos de la lista y los reemplaza con `GET /:id`.
+  Future<void> _refresh() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final fresh = await ProvidersRepository.instance.obtener(
+        widget.provider.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        _provider = fresh;
+        _loading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = error is ApiException
+            ? error.message
+            : 'No se pudo actualizar el detalle.';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final p = _provider;
     return _ProviderSheetFrame(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
@@ -486,44 +588,141 @@ class _ProviderDetailScreen extends StatelessWidget {
               height: 1,
               thickness: 1,
             ),
+            if (_loading) const LinearProgressIndicator(minHeight: 2),
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (_error != null) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _error!,
+                              style: GoogleFonts.poppins(
+                                color: AppColors.statusRedFg,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _refresh,
+                            child: const Text('Reintentar'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     const _SectionTitle('Identificación del proveedor'),
                     const SizedBox(height: 16),
                     _FieldPair(
-                      left: _ReadOnlyField(label: 'NIT', value: provider.nit),
+                      left: _ReadOnlyField(
+                        label: 'Tipo de persona',
+                        value: p.tipoPersona,
+                      ),
                       right: _ReadOnlyField(
-                        label: 'Nombre',
-                        value: provider.name,
+                        label: p.esJuridica ? 'Razón social' : 'Nombre',
+                        value: p.nombre,
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    if (p.esJuridica)
+                      _FieldPair(
+                        left: _ReadOnlyField(
+                          label: 'NIT',
+                          value: p.identificacion,
+                        ),
+                        right: _ReadOnlyField(
+                          label: 'Tipo de sociedad',
+                          value: p.tipoSociedad ?? '',
+                        ),
+                      )
+                    else
+                      _FieldPair(
+                        left: _ReadOnlyField(
+                          label: 'Tipo de documento',
+                          value: p.tipoDocumento ?? '',
+                        ),
+                        right: _ReadOnlyField(
+                          label: 'Número de documento',
+                          value: p.numeroDocumento ?? '',
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    _ReadOnlyField(
+                      label: 'Nombre comercial',
+                      value: p.nombreComercial ?? '',
+                    ),
+                    if (p.esJuridica) ...[
+                      const SizedBox(height: 16),
+                      _FieldPair(
+                        left: _ReadOnlyField(
+                          label: 'Cámara de comercio',
+                          value: p.camaraComercio ?? '',
+                        ),
+                        right: _ReadOnlyField(
+                          label: 'Fecha exp. cámara',
+                          value: p.fechaExpCamara ?? '',
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      const _SectionTitle('Representante legal'),
+                      const SizedBox(height: 16),
+                      _FieldPair(
+                        left: _ReadOnlyField(
+                          label: 'Nombre',
+                          value: p.repLegalNombre ?? '',
+                        ),
+                        right: _ReadOnlyField(
+                          label: 'Documento',
+                          value: [
+                            p.repLegalTipoDoc,
+                            p.repLegalNumDoc,
+                          ].whereType<String>().join(' '),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _FieldPair(
+                        left: _ReadOnlyField(
+                          label: 'Teléfono',
+                          value: p.repLegalTelefono ?? '',
+                        ),
+                        right: _ReadOnlyField(
+                          label: 'Email',
+                          value: p.repLegalEmail ?? '',
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 28),
                     const _SectionTitle('Contacto'),
                     const SizedBox(height: 16),
                     _FieldPair(
                       left: _ReadOnlyField(
                         label: 'Asesor Comercial',
-                        value: provider.advisor ?? '',
+                        value: p.asesorComercial ?? '',
                       ),
                       right: _ReadOnlyField(
                         label: 'Teléfono',
-                        value: provider.phone,
+                        value: p.telefono ?? '',
                       ),
                     ),
                     const SizedBox(height: 16),
                     _FieldPair(
                       left: _ReadOnlyField(
-                        label: 'Email',
-                        value: provider.email,
+                        label: 'Teléfono fijo',
+                        value: p.telefonoFijo ?? '',
                       ),
                       right: _ReadOnlyField(
-                        label: 'Dirección',
-                        value: provider.address,
+                        label: 'Email',
+                        value: p.email ?? '',
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    _ReadOnlyField(
+                      label: 'Dirección',
+                      value: p.direccion ?? '',
                     ),
                     const SizedBox(height: 28),
                     const _SectionTitle('Configuración'),
@@ -535,7 +734,7 @@ class _ProviderDetailScreen extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: _ReadOnlyField(
                           label: 'Estado',
-                          value: provider.active ? 'Activo' : 'Inactivo',
+                          value: p.estado ? 'Activo' : 'Inactivo',
                         ),
                       ),
                     ),
@@ -562,7 +761,7 @@ class _ProviderDetailScreen extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              'Detalle — ${provider.id}',
+              'Detalle — ${_provider.codigo}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
@@ -610,10 +809,31 @@ class _ProviderDetailScreen extends StatelessWidget {
   }
 }
 
+enum _ProviderFieldKind { text, phone, email, date, url }
+
+/// Campo editable del proveedor, identificado por su nombre en el backend.
+class _ProviderEditableSpec {
+  const _ProviderEditableSpec(
+    this.key,
+    this.label,
+    this.kind, {
+    this.maxLength,
+    this.mandatory = false,
+  });
+
+  final String key;
+  final String label;
+  final _ProviderFieldKind kind;
+  final int? maxLength;
+
+  /// Obligatorio según las reglas del backend para este tipo de persona.
+  final bool mandatory;
+}
+
 class _ProviderEditScreen extends StatefulWidget {
   const _ProviderEditScreen({required this.provider});
 
-  final _Provider provider;
+  final Proveedor provider;
 
   @override
   State<_ProviderEditScreen> createState() => _ProviderEditScreenState();
@@ -621,37 +841,213 @@ class _ProviderEditScreen extends StatefulWidget {
 
 class _ProviderEditScreenState extends State<_ProviderEditScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _advisorController;
-  late final TextEditingController _phoneController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _addressController;
-  late bool _isActive;
+  final Map<String, TextEditingController> _controllers = {};
+  late final List<_ProviderEditableSpec> _specs;
+  bool _saving = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _advisorController = TextEditingController(
-      text: widget.provider.advisor ?? '',
-    );
-    _phoneController = TextEditingController(
-      text: widget.provider.phone.replaceAll(RegExp(r'\D'), ''),
-    );
-    _emailController = TextEditingController(text: widget.provider.email);
-    _addressController = TextEditingController(text: widget.provider.address);
-    _isActive = widget.provider.active;
+    final p = widget.provider;
+    // Natural: el backend rechaza (400) nombre comercial, teléfono fijo,
+    // sociedad, cámara de comercio y representante legal: no se muestran.
+    _specs = p.esJuridica
+        ? const [
+            _ProviderEditableSpec(
+              'nombre_comercial',
+              'Nombre comercial',
+              _ProviderFieldKind.text,
+              maxLength: 100,
+            ),
+            _ProviderEditableSpec(
+              'camara_comercio',
+              'Cámara de comercio (URL)',
+              _ProviderFieldKind.url,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'fecha_exp_camara',
+              'Fecha exp. cámara (AAAA-MM-DD)',
+              _ProviderFieldKind.date,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'rep_legal_nombre',
+              'Representante legal',
+              _ProviderFieldKind.text,
+              maxLength: 100,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'rep_legal_telefono',
+              'Teléfono representante',
+              _ProviderFieldKind.phone,
+              maxLength: 20,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'rep_legal_email',
+              'Email representante',
+              _ProviderFieldKind.email,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'asesor_comercial',
+              'Asesor Comercial',
+              _ProviderFieldKind.text,
+              maxLength: 50,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'telefono',
+              'Teléfono',
+              _ProviderFieldKind.phone,
+              maxLength: 20,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'contacto_telefono_fijo',
+              'Teléfono fijo',
+              _ProviderFieldKind.phone,
+              maxLength: 20,
+            ),
+            _ProviderEditableSpec(
+              'email',
+              'Email',
+              _ProviderFieldKind.email,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'direccion',
+              'Dirección',
+              _ProviderFieldKind.text,
+              maxLength: 100,
+              mandatory: true,
+            ),
+          ]
+        : const [
+            _ProviderEditableSpec(
+              'asesor_comercial',
+              'Asesor Comercial',
+              _ProviderFieldKind.text,
+              maxLength: 50,
+            ),
+            _ProviderEditableSpec(
+              'telefono',
+              'Teléfono',
+              _ProviderFieldKind.phone,
+              maxLength: 20,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'email',
+              'Email',
+              _ProviderFieldKind.email,
+              mandatory: true,
+            ),
+            _ProviderEditableSpec(
+              'direccion',
+              'Dirección',
+              _ProviderFieldKind.text,
+              maxLength: 100,
+              mandatory: true,
+            ),
+          ];
+    for (final spec in _specs) {
+      _controllers[spec.key] = TextEditingController(
+        text: _original(p, spec.key) ?? '',
+      );
+    }
+  }
+
+  String? _original(Proveedor p, String key) {
+    return switch (key) {
+      'nombre_comercial' => p.nombreComercial,
+      'camara_comercio' => p.camaraComercio,
+      'fecha_exp_camara' => p.fechaExpCamara,
+      'rep_legal_nombre' => p.repLegalNombre,
+      'rep_legal_telefono' => p.repLegalTelefono,
+      'rep_legal_email' => p.repLegalEmail,
+      'asesor_comercial' => p.asesorComercial,
+      'telefono' => p.telefono,
+      'contacto_telefono_fijo' => p.telefonoFijo,
+      'email' => p.email,
+      'direccion' => p.direccion,
+      _ => null,
+    };
   }
 
   @override
   void dispose() {
-    _advisorController.dispose();
-    _phoneController.dispose();
-    _emailController.dispose();
-    _addressController.dispose();
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  String? _validate(_ProviderEditableSpec spec, String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return spec.mandatory ? 'Este campo es obligatorio' : null;
+    }
+    final max = spec.maxLength;
+    if (max != null && text.length > max) {
+      return 'Máximo $max caracteres';
+    }
+    switch (spec.kind) {
+      case _ProviderFieldKind.phone:
+        if (!RegExp(r'^\d+$').hasMatch(text)) return 'Solo se permiten números';
+        if (text.length < 7 || text.length > 20) {
+          return 'Debe tener entre 7 y 20 dígitos';
+        }
+        return null;
+      case _ProviderFieldKind.email:
+        return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text)
+            ? null
+            : 'Ingresa un email válido';
+      case _ProviderFieldKind.date:
+        return RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(text)
+            ? null
+            : 'Usa el formato AAAA-MM-DD';
+      case _ProviderFieldKind.url:
+        final uri = Uri.tryParse(text);
+        final valida =
+            uri != null &&
+            (uri.scheme == 'http' || uri.scheme == 'https') &&
+            uri.host.isNotEmpty &&
+            !text.contains(RegExp(r'\s'));
+        return valida ? null : 'Ingresa una URL válida (http o https)';
+      case _ProviderFieldKind.text:
+        return null;
+    }
+  }
+
+  Widget _fieldFor(_ProviderEditableSpec spec) {
+    final max = spec.maxLength;
+    return _EditableField(
+      label: spec.label,
+      controller: _controllers[spec.key]!,
+      keyboardType: switch (spec.kind) {
+        _ProviderFieldKind.phone => TextInputType.phone,
+        _ProviderFieldKind.email => TextInputType.emailAddress,
+        _ProviderFieldKind.date => TextInputType.datetime,
+        _ProviderFieldKind.url => TextInputType.url,
+        _ProviderFieldKind.text => TextInputType.text,
+      },
+      textInputAction: TextInputAction.next,
+      inputFormatters: [
+        if (spec.kind == _ProviderFieldKind.phone)
+          FilteringTextInputFormatter.digitsOnly,
+        if (max != null) LengthLimitingTextInputFormatter(max),
+      ],
+      validator: (value) => _validate(spec, value),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final p = widget.provider;
     return _ProviderSheetFrame(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
@@ -676,64 +1072,37 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                       const SizedBox(height: 16),
                       _FieldPair(
                         left: _LockedField(
-                          label: 'NIT',
-                          value: widget.provider.nit,
+                          label: 'Tipo de persona',
+                          value: p.tipoPersona,
                         ),
                         right: _LockedField(
-                          label: 'Nombre',
-                          value: widget.provider.name,
+                          label: p.esJuridica ? 'Razón social' : 'Nombre',
+                          value: p.nombre,
                         ),
                       ),
-                      const SizedBox(height: 28),
-                      const _SectionTitle('Contacto'),
                       const SizedBox(height: 16),
-                      _EditableField(
-                        label: 'Asesor Comercial',
-                        controller: _advisorController,
-                        textInputAction: TextInputAction.next,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]'),
+                      _LockedField(
+                        label: p.esJuridica ? 'NIT' : 'Documento',
+                        value: p.identificacion,
+                      ),
+                      const SizedBox(height: 28),
+                      const _SectionTitle('Datos editables'),
+                      const SizedBox(height: 16),
+                      for (var i = 0; i < _specs.length; i++) ...[
+                        if (i > 0) const SizedBox(height: 16),
+                        _fieldFor(_specs[i]),
+                      ],
+                      if (_error != null) ...[
+                        const SizedBox(height: 20),
+                        Text(
+                          _error!,
+                          style: GoogleFonts.poppins(
+                            color: AppColors.statusRedFg,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
-                        validator: _lettersValidator,
-                      ),
-                      const SizedBox(height: 16),
-                      _FieldPair(
-                        left: _EditableField(
-                          label: 'Teléfono',
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          validator: _phoneValidator,
                         ),
-                        right: _EditableField(
-                          label: 'Email',
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: _emailValidator,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _EditableField(
-                        label: 'Dirección',
-                        controller: _addressController,
-                        textInputAction: TextInputAction.done,
-                        validator: _requiredValidator,
-                      ),
-                      const SizedBox(height: 28),
-                      const _SectionTitle('Configuración'),
-                      const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: FractionallySizedBox(
-                          widthFactor: 0.5,
-                          alignment: Alignment.centerLeft,
-                          child: _buildEstadoField(),
-                        ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -758,7 +1127,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
         children: [
           Expanded(
             child: Text(
-              'Editar — ${widget.provider.id}',
+              'Editar — ${widget.provider.codigo}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
@@ -777,54 +1146,6 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
     );
   }
 
-  Widget _buildEstadoField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Estado',
-          style: GoogleFonts.poppins(
-            color: AppColors.muted,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<bool>(
-          initialValue: _isActive,
-          borderRadius: BorderRadius.circular(24),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: AppColors.fieldFill,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 13,
-            ),
-            enabledBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-              borderSide: BorderSide(color: AppColors.fieldBorder),
-            ),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-              borderSide: BorderSide(color: AppColors.fieldBorder, width: 1.5),
-            ),
-          ),
-          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
-          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.muted),
-          items: const [
-            DropdownMenuItem(value: true, child: Text('Activo')),
-            DropdownMenuItem(value: false, child: Text('Inactivo')),
-          ],
-          onChanged: (value) {
-            if (value != null) {
-              setState(() => _isActive = value);
-            }
-          },
-        ),
-      ],
-    );
-  }
-
   Widget _buildFooter(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
@@ -834,7 +1155,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
             child: SizedBox(
               height: 48,
               child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: _saving ? null : () => Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: AppColors.ink,
@@ -858,7 +1179,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
             child: SizedBox(
               height: 48,
               child: ElevatedButton(
-                onPressed: _save,
+                onPressed: _saving ? null : _save,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.red,
                   foregroundColor: Colors.white,
@@ -866,13 +1187,22 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                     borderRadius: BorderRadius.circular(24),
                   ),
                 ),
-                child: Text(
-                  'Guardar',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: _saving
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.4,
+                        ),
+                      )
+                    : Text(
+                        'Guardar',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ),
           ),
@@ -881,47 +1211,32 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
     );
   }
 
-  String? _requiredValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Este campo es obligatorio';
-    }
-    return null;
-  }
-
-  String? _lettersValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return null;
-    return RegExp(
-          r'^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$',
-        ).hasMatch(value.trim())
-        ? null
-        : 'Solo se permiten letras';
-  }
-
-  String? _phoneValidator(String? value) {
-    final error = _requiredValidator(value);
-    if (error != null) return error;
-    return RegExp(r'^\d+$').hasMatch(value!)
-        ? null
-        : 'Solo se permiten números';
-  }
-
-  String? _emailValidator(String? value) {
-    final error = _requiredValidator(value);
-    if (error != null) return error;
-    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value!)
-        ? null
-        : 'Ingresa un email válido';
-  }
-
-  void _save() {
+  Future<void> _save() async {
+    if (_saving) return;
     if (!_formKey.currentState!.validate()) return;
-    widget.provider
-      ..advisor = _advisorController.text.trim()
-      ..phone = _phoneController.text
-      ..email = _emailController.text.trim()
-      ..address = _addressController.text.trim()
-      ..active = _isActive;
-    Navigator.of(context).pop(true);
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      final changes = <String, String?>{
+        for (final spec in _specs)
+          spec.key: _controllers[spec.key]!.text.trim(),
+      };
+      final updated = await ProvidersRepository.instance.actualizar(
+        widget.provider.id,
+        changes,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(updated);
+    } on ApiException catch (error) {
+      if (mounted) setState(() => _error = error.message);
+    } catch (_) {
+      if (mounted) setState(() => _error = 'No se pudo guardar el proveedor.');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 }
 

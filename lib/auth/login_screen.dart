@@ -111,7 +111,9 @@ class _LoginScreenState extends State<LoginScreen> {
           );
           break;
         case null:
-          _mostrarError('Tu cuenta no tiene un rol habilitado.');
+          // Sin rol reconocido no se deja una sesión abierta a medias.
+          await AuthService.instance.logout();
+          if (mounted) _mostrarError('Tu cuenta no tiene un rol habilitado.');
           break;
       }
     } on ApiException catch (error) {
@@ -239,10 +241,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             _fieldLabel('Correo electrónico'),
                             TextFormField(
                               controller: _emailController,
-                              inputFormatters: [EmailInputFormatter()],
-                              validator: emailValidator,
+                              validator: loginEmailValidator,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.email],
                               style: GoogleFonts.poppins(
                                 color: Colors.black87,
                                 fontSize: 15,
@@ -259,10 +264,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             _fieldLabel('Contraseña'),
                             TextFormField(
                               controller: _passwordController,
-                              validator: requiredValidator,
+                              validator: loginPasswordValidator,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
                               obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _onLogin(),
                               style: GoogleFonts.poppins(
                                 color: Colors.black87,
                                 fontSize: 15,

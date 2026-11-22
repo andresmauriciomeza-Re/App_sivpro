@@ -1,5 +1,12 @@
 part of '../purchases_screen.dart';
 
+const _supplyTipos = <String>['Insumo', 'Producto insumo'];
+
+/// Pantalla de Insumos para abrirla desde fuera de la biblioteca (por ejemplo
+/// al tocar la notificación de stock mínimo).
+Widget insumosScreen() => const _SupplyManagementScreen();
+
+/// Insumos: consulta de existencias (solo lectura en el móvil).
 class _SupplyManagementScreen extends StatefulWidget {
   const _SupplyManagementScreen();
 
@@ -10,130 +17,67 @@ class _SupplyManagementScreen extends StatefulWidget {
 
 class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
   String _query = '';
+  String? _tipoFilter; // null = todos
+  bool? _estadoFilter; // null = todos
+  List<Insumo> _supplies = const [];
+  bool _loading = true;
+  String? _error;
 
-  static const _supplies = [
-    _Supply(
-      'INS-004',
-      'CINS-004',
-      'Harinas y Masas',
-      'Masa Pre-elaborada',
-      'und',
-      50,
-      20,
-      '\$3.500',
-      _SupplyStatus.ok,
-    ),
-    _Supply(
-      'INS-005',
-      'CINS-003',
-      'Vegetales y Hierbas',
-      'Champiñones',
-      'kg',
-      4,
-      5,
-      '\$12.000',
-      _SupplyStatus.low,
-    ),
-    _Supply(
-      'INS-006',
-      'CINS-001',
-      'Carnes y Proteínas',
-      'Pechuga de pollo',
-      'kg',
-      18,
-      10,
-      '\$18.500',
-      _SupplyStatus.ok,
-    ),
-    _Supply(
-      'INS-007',
-      'CINS-002',
-      'Lácteos',
-      'Queso mozzarella',
-      'kg',
-      25,
-      12,
-      '\$24.000',
-      _SupplyStatus.ok,
-    ),
-    _Supply(
-      'INS-008',
-      'CINS-005',
-      'Salsas',
-      'Salsa de tomate',
-      'lt',
-      14,
-      8,
-      '\$8.900',
-      _SupplyStatus.ok,
-    ),
-    _Supply(
-      'INS-009',
-      'CINS-006',
-      'Vegetales y Hierbas',
-      'Pimentón rojo',
-      'kg',
-      7,
-      8,
-      '\$6.500',
-      _SupplyStatus.low,
-    ),
-    _Supply(
-      'INS-010',
-      'CINS-007',
-      'Condimentos',
-      'Orégano seco',
-      'kg',
-      6,
-      3,
-      '\$15.000',
-      _SupplyStatus.ok,
-    ),
-    _Supply(
-      'INS-011',
-      'CINS-008',
-      'Empaques',
-      'Caja para pizza',
-      'und',
-      120,
-      50,
-      '\$1.200',
-      _SupplyStatus.ok,
-    ),
-    _Supply(
-      'INS-012',
-      'CINS-009',
-      'Bebidas',
-      'Gaseosa personal',
-      'und',
-      36,
-      20,
-      '\$2.800',
-      _SupplyStatus.ok,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
 
-  static final _wastes = <_InsumoWaste>[];
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
+    try {
+      final supplies = await InsumosRepository.instance.listar();
+      if (!mounted) return;
+      setState(() {
+        _supplies = supplies;
+        _loading = false;
+        _error = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is ApiException
+          ? error.message
+          : 'No se pudieron cargar los insumos.';
+      if (silent && _supplies.isNotEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      } else {
+        setState(() {
+          _loading = false;
+          _error = message;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final lowCount = _supplies
-        .where((supply) => supply.status == _SupplyStatus.low)
-        .length;
-    final emptyCount = _supplies
-        .where((supply) => supply.status == _SupplyStatus.empty)
-        .length;
+    final emptyCount = _supplies.where((s) => s.agotado).length;
+    final lowCount = _supplies.where((s) => s.bajoMinimo && !s.agotado).length;
 
-    final filteredSupplies = _supplies
-        .where(
-          (supply) => matchesSearchQuery(_query, [
-            supply.id,
-            supply.categoryId,
-            supply.name,
-            supply.category,
-          ]),
-        )
-        .toList();
+    final filteredSupplies = _supplies.where((supply) {
+      if (_tipoFilter != null && supply.tipo != _tipoFilter) return false;
+      if (_estadoFilter != null && supply.estado != _estadoFilter) {
+        return false;
+      }
+      return matchesSearchQuery(_query, [
+        supply.codigo,
+        supply.nombre,
+        supply.categoriaNombre ?? '',
+      ]);
+    }).toList();
 
     return Scaffold(
       backgroundColor: PurchasesScreen.page,
@@ -143,10 +87,11 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
           children: [
             _buildHeader(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(17, 20, 17, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: RefreshIndicator(
+                onRefresh: () => _load(silent: true),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(17, 20, 17, 24),
                   children: [
                     Text(
                       'Insumos',
@@ -170,7 +115,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                         Expanded(
                           child: _summaryChip(
                             '$lowCount',
-                            'Stock bajo',
+                            'Bajo mínimo',
                             const Color(0xFFF5D9A5),
                           ),
                         ),
@@ -186,34 +131,149 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                     ),
                     const SizedBox(height: 20),
                     AppSearchField(
-                      hint: 'Buscar por ID, nombre o categoría...',
+                      hint: 'Buscar por código, nombre o categoría...',
                       onChanged: (value) => setState(() => _query = value),
                     ),
-                    const SizedBox(height: 28),
-                    if (filteredSupplies.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 28),
-                        child: Center(
-                          child: Text(
-                            'No se encontraron insumos',
-                            style: GoogleFonts.poppins(
-                              color: PurchasesScreen.muted,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      for (final supply in filteredSupplies) ...[
-                        _buildSupplyCard(context, supply),
-                        const SizedBox(height: 16),
-                      ],
+                    const SizedBox(height: 14),
+                    _buildFilters(),
+                    const SizedBox(height: 20),
+                    ..._buildContent(filteredSupplies),
                   ],
                 ),
               ),
             ),
-            _buildBottomNavigation(context),
+            _suppliesBottomNavigation(context),
           ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildContent(List<Insumo> filtered) {
+    if (_loading) {
+      return const [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 40),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ];
+    }
+    if (_error != null) {
+      return [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 28),
+          child: Column(
+            children: [
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: _load,
+                style: FilledButton.styleFrom(
+                  backgroundColor: PurchasesScreen.red,
+                ),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
+      ];
+    }
+    if (filtered.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 28),
+          child: Center(
+            child: Text(
+              'No se encontraron insumos',
+              style: GoogleFonts.poppins(
+                color: PurchasesScreen.muted,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+    return [
+      for (final supply in filtered) ...[
+        _buildSupplyCard(context, supply),
+        const SizedBox(height: 16),
+      ],
+    ];
+  }
+
+  Widget _buildFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _filterChip(
+              'Todos los tipos',
+              _tipoFilter == null,
+              () => setState(() => _tipoFilter = null),
+            ),
+            for (final tipo in _supplyTipos)
+              _filterChip(
+                tipo,
+                _tipoFilter == tipo,
+                () => setState(() => _tipoFilter = tipo),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _filterChip(
+              'Todos',
+              _estadoFilter == null,
+              () => setState(() => _estadoFilter = null),
+            ),
+            _filterChip(
+              'Activos',
+              _estadoFilter == true,
+              () => setState(() => _estadoFilter = true),
+            ),
+            _filterChip(
+              'Inactivos',
+              _estadoFilter == false,
+              () => setState(() => _estadoFilter = false),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _filterChip(String label, bool selected, VoidCallback onTap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? PurchasesScreen.red : PurchasesScreen.page,
+          border: Border.all(
+            color: selected ? PurchasesScreen.red : AppColors.cardBorder,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            color: selected ? Colors.white : PurchasesScreen.ink,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -223,16 +283,12 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
+      initials: currentUserInitials(),
     );
   }
 
-  Widget _summaryChip(
-    String count,
-    String label,
-    Color borderColor,
-  ) {
-    final isWarning = label == 'Stock bajo';
+  Widget _summaryChip(String count, String label, Color borderColor) {
+    final isWarning = label == 'Bajo mínimo';
     final isEmpty = label == 'Agotados';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -240,8 +296,8 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
         color: isWarning
             ? const Color(0xFFFFF3DF)
             : isEmpty
-                ? const Color(0xFFFFE8EB)
-                : PurchasesScreen.page,
+            ? const Color(0xFFFFE8EB)
+            : PurchasesScreen.page,
         border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(24),
       ),
@@ -251,8 +307,8 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
             color: isWarning
                 ? const Color(0xFFB65D0A)
                 : isEmpty
-                    ? PurchasesScreen.red
-                    : PurchasesScreen.ink,
+                ? PurchasesScreen.red
+                : PurchasesScreen.ink,
             fontSize: 12,
           ),
           children: [
@@ -267,724 +323,308 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
     );
   }
 
-  Widget _buildSupplyCard(BuildContext context, _Supply supply) {
-    final isLow = supply.status == _SupplyStatus.low;
-    final isEmpty = supply.status == _SupplyStatus.empty;
-    final statusColor = isLow || isEmpty
-        ? PurchasesScreen.red
-        : const Color(0xFF3D824B);
-    final statusBackground = isLow || isEmpty
-        ? const Color(0xFFFFE8EB)
-        : const Color(0xFFE3F2E5);
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(13, 12, 13, 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE1D8D6)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
-          ),
-        ],
+  Widget _buildSupplyCard(BuildContext context, Insumo supply) {
+    final level = _SupplyLevel.of(supply);
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => _SupplyDetailScreen(supply: supply)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                supply.id,
-                style: GoogleFonts.poppins(
-                  color: PurchasesScreen.muted,
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  '${supply.categoryId} • ${supply.category}',
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE1D8D6)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D000000),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  supply.codigo,
                   style: GoogleFonts.poppins(
                     color: PurchasesScreen.muted,
                     fontSize: 12,
                   ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusBackground,
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Text(
-                  isLow
-                      ? 'Stock\nbajo'
-                      : isEmpty
-                          ? 'Agotado'
-                          : 'O\nK',
-                  style: GoogleFonts.poppins(
-                    color: statusColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            supply.name,
-            style: GoogleFonts.poppins(
-              color: PurchasesScreen.ink,
-              fontSize: 19,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          Text(
-            'Unidad: ${supply.unit}',
-            style: GoogleFonts.poppins(
-              color: PurchasesScreen.muted,
-              fontSize: 12,
-            ),
-          ),
-          const Divider(height: 18),
-          Row(
-            children: [
-              Expanded(
-                child: Text.rich(
-                  TextSpan(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    supply.categoriaNombre ?? supply.tipo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
                       color: PurchasesScreen.muted,
                       fontSize: 12,
                     ),
-                    children: [
-                      const TextSpan(text: 'Stock actual: '),
-                      TextSpan(
-                        text: '${supply.current} ${supply.unit}',
-                        style: TextStyle(
-                          color: isLow ? PurchasesScreen.red : PurchasesScreen.ink,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const TextSpan(text: '\nStock mín.: '),
-                      TextSpan(
-                        text: '${supply.minimum} ${supply.unit}',
-                        style: const TextStyle(
-                          color: PurchasesScreen.ink,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
+                _SupplyLevelBadge(level: level),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              supply.nombre,
+              style: GoogleFonts.poppins(
+                color: PurchasesScreen.ink,
+                fontSize: 19,
+                fontWeight: FontWeight.w700,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+            ),
+            Text(
+              '${supply.tipo} • Unidad: ${supply.unidadMedida}'
+              '${supply.estado ? '' : ' • Inactivo'}',
+              style: GoogleFonts.poppins(
+                color: PurchasesScreen.muted,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _StockBar(supply: supply, level: level),
+            const SizedBox(height: 8),
+            Text.rich(
+              TextSpan(
+                style: GoogleFonts.poppins(
+                  color: PurchasesScreen.muted,
+                  fontSize: 12,
+                ),
                 children: [
-                  Text(
-                    'Precio unit.',
-                    style: GoogleFonts.poppins(
-                      color: PurchasesScreen.muted,
-                      fontSize: 11,
-                    ),
-                  ),
-                  Text(
-                    supply.price,
-                    style: GoogleFonts.poppins(
-                      color: PurchasesScreen.ink,
-                      fontSize: 17,
+                  const TextSpan(text: 'Stock actual: '),
+                  TextSpan(
+                    text:
+                        '${_formatAmount(supply.stockActual)} '
+                        '${supply.unidadMedida}',
+                    style: TextStyle(
+                      color: level.color,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-          const Divider(height: 18),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _supplyAction(
-                Icons.visibility_outlined,
-                () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => _SupplyDetailScreen(supply: supply),
-                  ),
-                ),
-              ),
-              _supplyAction(
-                Icons.delete_outline,
-                () => _showDeleteSupplyDialog(context, supply),
-                danger: true,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _supplyAction(
-    IconData icon,
-    VoidCallback onPressed, {
-    bool danger = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8),
-      child: IconButton(
-        onPressed: onPressed,
-        style: IconButton.styleFrom(
-          backgroundColor: danger
-              ? const Color(0xFFFFD8D8)
-              : const Color(0xFFF8F5F4),
-        ),
-        icon: Icon(
-          icon,
-          color: danger ? PurchasesScreen.red : PurchasesScreen.muted,
-          size: 18,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showDeleteSupplyDialog(
-    BuildContext context,
-    _Supply supply,
-  ) async {
-    final result = await showDialog<({double amount, String unit})>(
-      context: context,
-      barrierColor: Colors.black54,
-      builder: (_) => _DeleteSupplyDialog(supply: supply),
-    );
-
-    if (result == null || !context.mounted) {
-      return;
-    }
-
-    _wastes.add(
-      _InsumoWaste(
-        id: supply.id,
-        amount: result.amount,
-        unit: result.unit,
-        date: DateTime.now(),
-      ),
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Insumo eliminado. Desperdicio registrado: '
-          '${_formatAmount(result.amount)} ${result.unit}',
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 1
-                        ? PurchasesScreen.red
-                        : PurchasesScreen.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 1
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                    ),
+                  TextSpan(
+                    text:
+                        '   Mín.: ${_formatAmount(supply.stockMinimo)}'
+                        '   Máx.: ${_formatAmount(supply.stockMaximo)}',
                   ),
                 ],
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-enum _SupplyStatus { ok, low, empty }
+/// Nivel de existencias de un insumo frente a su mínimo y máximo.
+enum _SupplyLevel {
+  ok('OK', Color(0xFF3D824B), Color(0xFFE3F2E5)),
+  low('Bajo mínimo', PurchasesScreen.red, Color(0xFFFFE8EB)),
+  empty('Agotado', PurchasesScreen.red, Color(0xFFFFE8EB)),
+  over('Sobre máximo', Color(0xFFB65D0A), Color(0xFFFFF3DF));
 
-class _Supply {
-  const _Supply(
-    this.id,
-    this.categoryId,
-    this.category,
-    this.name,
-    this.unit,
-    this.current,
-    this.minimum,
-    this.price,
-    this.status,
+  const _SupplyLevel(this.label, this.color, this.background);
+
+  final String label;
+  final Color color;
+  final Color background;
+
+  static _SupplyLevel of(Insumo supply) {
+    if (supply.agotado) return _SupplyLevel.empty;
+    if (supply.bajoMinimo) return _SupplyLevel.low;
+    if (supply.sobreMaximo) return _SupplyLevel.over;
+    return _SupplyLevel.ok;
+  }
+}
+
+class _SupplyLevelBadge extends StatelessWidget {
+  const _SupplyLevelBadge({required this.level});
+
+  final _SupplyLevel level;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: level.background,
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Text(
+        level.label,
+        style: GoogleFonts.poppins(
+          color: level.color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+/// Barra de existencias: relleno = stock actual sobre el máximo; la marca
+/// vertical indica el stock mínimo.
+class _StockBar extends StatelessWidget {
+  const _StockBar({required this.supply, required this.level});
+
+  final Insumo supply;
+  final _SupplyLevel level;
+
+  @override
+  Widget build(BuildContext context) {
+    final maximo = supply.stockMaximo > 0
+        ? supply.stockMaximo
+        : [supply.stockActual, supply.stockMinimo, 1.0].reduce(
+            (a, b) => a > b ? a : b,
+          );
+    final fill = (supply.stockActual / maximo).clamp(0.0, 1.0);
+    final minMark = (supply.stockMinimo / maximo).clamp(0.0, 1.0);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        return SizedBox(
+          height: 12,
+          child: Stack(
+            alignment: Alignment.centerLeft,
+            children: [
+              Container(
+                height: 8,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFE9E8),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Container(
+                width: width * fill,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: level.color,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Positioned(
+                left: (width * minMark - 1).clamp(0.0, width - 2),
+                child: Container(
+                  width: 2,
+                  height: 12,
+                  color: PurchasesScreen.ink,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+Widget _suppliesBottomNavigation(BuildContext context) {
+  const items = [
+    (Icons.home_outlined, 'Inicio'),
+    (Icons.shopping_cart_outlined, 'Compras'),
+    (Icons.factory_outlined, 'Producción'),
+    (Icons.receipt_long_outlined, 'Ventas'),
+    (Icons.person_outline, 'Mi Perfil'),
+  ];
+  return Container(
+    padding: const EdgeInsets.only(top: 8, bottom: 8),
+    decoration: const BoxDecoration(
+      color: PurchasesScreen.page,
+      border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        for (var i = 0; i < items.length; i++)
+          GestureDetector(
+            onTap: () => navigateToBottomModule(context, i),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AdminBottomNavIcon(
+                  icon: items[i].$1,
+                  color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
+                  showPendingBadge: i == adminSalesNavIndex,
+                ),
+                Text(
+                  items[i].$2,
+                  style: GoogleFonts.poppins(
+                    color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    ),
   );
-
-  final String id;
-  final String categoryId;
-  final String category;
-  final String name;
-  final String unit;
-  final int current;
-  final int minimum;
-  final String price;
-  final _SupplyStatus status;
 }
 
 String _formatAmount(double amount) {
   if (amount == amount.roundToDouble()) {
     return amount.toInt().toString();
   }
-  return amount.toString();
+  return amount.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '');
 }
 
-class _InsumoWaste {
-  const _InsumoWaste({
-    required this.id,
-    required this.amount,
-    required this.unit,
-    required this.date,
-  });
+/// Detalle de solo lectura de un insumo.
+class _SupplyDetailScreen extends StatefulWidget {
+  const _SupplyDetailScreen({required this.supply});
 
-  final String id;
-  final double amount;
-  final String unit;
-  final DateTime date;
-}
-
-class _DeleteSupplyDialog extends StatefulWidget {
-  const _DeleteSupplyDialog({required this.supply});
-
-  final _Supply supply;
+  final Insumo supply;
 
   @override
-  State<_DeleteSupplyDialog> createState() => _DeleteSupplyDialogState();
+  State<_SupplyDetailScreen> createState() => _SupplyDetailScreenState();
 }
 
-class _DeleteSupplyDialogState extends State<_DeleteSupplyDialog> {
-  static const _unitOptions = <(String, String)>[
-    ('und', 'Unidad (und)'),
-    ('kg', 'Kilogramo (kg)'),
-    ('g', 'Gramo (g)'),
-    ('lt', 'Litro (lt)'),
-    ('L', 'Litro (L)'),
-    ('ml', 'Mililitro (ml)'),
-    ('lb', 'Libra (lb)'),
-  ];
-
-  final _formKey = GlobalKey<FormState>();
-  final _amountController = TextEditingController();
-  late String _unit;
-
-  _Supply get supply => widget.supply;
+class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
+  late Insumo _supply = widget.supply;
+  bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _unit = supply.unit;
+    _refresh();
   }
 
-  @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      Navigator.of(context).pop((
-        amount: double.parse(_amountController.text.trim().replaceAll(',', '.')),
-        unit: _unit,
-      ));
-    }
-  }
-
-  String? _validateAmount(String? value) {
-    final raw = value?.trim() ?? '';
-    if (raw.isEmpty) {
-      return 'Ingresa la cantidad a desperdiciar';
-    }
-    final amount = double.tryParse(raw.replaceAll(',', '.'));
-    if (amount == null) {
-      return 'Cantidad no válida';
-    }
-    if (amount < 0) {
-      return 'No puede ser negativa';
-    }
-    if (_unit == 'und' && amount != amount.roundToDouble()) {
-      return 'En unidades solo se permiten enteros';
-    }
-    if (_exceedsStock(amount, _unit)) {
-      return 'No puede ser mayor al stock actual '
-          '(${supply.current} ${supply.unit})';
-    }
-    return null;
-  }
-
-  bool _exceedsStock(double amount, String unit) {
-    final supplyUnit = supply.unit;
-    if (unit == supplyUnit) {
-      return amount > supply.current;
-    }
-    if (!_compatibleUnits(unit, supplyUnit)) {
-      return false;
-    }
-    return _toBaseUnit(unit, amount) >
-        _toBaseUnit(supplyUnit, supply.current.toDouble());
-  }
-
-  static const _massUnits = {'kg', 'g', 'lb'};
-  static const _volumeUnits = {'L', 'lt', 'ml'};
-
-  bool _compatibleUnits(String a, String b) {
-    if (a == b) return true;
-    final bothMass = _massUnits.contains(a) && _massUnits.contains(b);
-    final bothVolume = _volumeUnits.contains(a) && _volumeUnits.contains(b);
-    return bothMass || bothVolume;
-  }
-
-  double _toBaseUnit(String unit, double value) {
-    switch (unit) {
-      case 'g':
-        return value / 1000;
-      case 'lb':
-        return value * 0.45359237;
-      case 'ml':
-        return value / 1000;
-      case 'kg':
-      case 'L':
-      case 'lt':
-        return value;
-      default:
-        return value;
+  /// Muestra primero los datos de la lista y los reemplaza con `GET /:id`.
+  Future<void> _refresh() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final fresh = await InsumosRepository.instance.obtener(widget.supply.id);
+      if (!mounted) return;
+      setState(() {
+        _supply = fresh;
+        _loading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = error is ApiException
+            ? error.message
+            : 'No se pudo actualizar el detalle.';
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 520),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(context),
-            const Divider(
-              color: AppColors.headerDivider,
-              height: 1,
-              thickness: 1,
-            ),
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Indica cuánto de este insumo se desperdicia al '
-                        'eliminarlo.',
-                        style: GoogleFonts.poppins(
-                          color: AppColors.muted,
-                          fontSize: 14,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Stock actual: ${supply.current} ${supply.unit}',
-                        style: GoogleFonts.poppins(
-                          color: AppColors.ink,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final amountField = _buildAmountField();
-                          final unitField = _buildUnitField();
-                          if (constraints.maxWidth < 380) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                amountField,
-                                const SizedBox(height: 16),
-                                unitField,
-                              ],
-                            );
-                          }
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(flex: 3, child: amountField),
-                              const SizedBox(width: 16),
-                              Expanded(flex: 2, child: unitField),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const Divider(
-              color: AppColors.headerDivider,
-              height: 1,
-              thickness: 1,
-            ),
-            _buildFooter(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Eliminar insumo',
-                  style: GoogleFonts.montserrat(
-                    color: AppColors.ink,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${supply.name} · ${supply.id}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    color: AppColors.muted,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close, color: AppColors.muted),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAmountField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Cantidad desperdiciada',
-          style: GoogleFonts.poppins(
-            color: AppColors.muted,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: _amountController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => _submit(),
-          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
-          decoration: InputDecoration(
-            hintText: '0',
-            hintStyle: GoogleFonts.poppins(color: AppColors.muted, fontSize: 15),
-            filled: true,
-            fillColor: AppColors.fieldFill,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 13,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: AppColors.fieldFill),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: AppColors.fieldBorder, width: 1.5),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: AppColors.red),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: AppColors.red, width: 1.5),
-            ),
-            errorStyle: GoogleFonts.poppins(color: AppColors.red, fontSize: 12),
-          ),
-          validator: _validateAmount,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUnitField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Unidad de medida',
-          style: GoogleFonts.poppins(
-            color: AppColors.muted,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          initialValue: _unit,
-          isExpanded: true,
-          borderRadius: BorderRadius.circular(24),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: AppColors.fieldFill,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 13,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: AppColors.fieldFill),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: AppColors.fieldBorder, width: 1.5),
-            ),
-          ),
-          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
-          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.muted),
-          items: [
-            for (final (code, label) in _unitOptions)
-              DropdownMenuItem(
-                value: code,
-                child: Text(
-                  label,
-                  style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
-                ),
-              ),
-          ],
-          onChanged: (value) {
-            if (value != null) {
-              setState(() => _unit = value);
-            }
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFooter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: SizedBox(
-              height: 48,
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.ink,
-                  side: const BorderSide(color: AppColors.fieldBorder),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: Text(
-                  'Cancelar',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.red,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: Text(
-                  'Eliminar',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SupplyDetailScreen extends StatelessWidget {
-  const _SupplyDetailScreen({required this.supply});
-
-  final _Supply supply;
-
-  @override
-  Widget build(BuildContext context) {
+    final s = _supply;
+    final level = _SupplyLevel.of(s);
+    final unidad = s.unidadMedida;
     return Scaffold(
       backgroundColor: PurchasesScreen.page,
       body: SafeArea(
@@ -992,6 +632,7 @@ class _SupplyDetailScreen extends StatelessWidget {
         child: Column(
           children: [
             _buildHeader(context),
+            if (_loading) const LinearProgressIndicator(minHeight: 2),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 26, 24, 30),
@@ -1011,6 +652,7 @@ class _SupplyDetailScreen extends StatelessWidget {
                     ],
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
@@ -1023,57 +665,166 @@ class _SupplyDetailScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Text(
-                            '—',
-                            style: TextStyle(
-                              color: PurchasesScreen.muted,
-                              fontSize: 22,
+                          Expanded(
+                            child: Text(
+                              s.codigo,
+                              style: GoogleFonts.poppins(
+                                color: PurchasesScreen.muted,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            supply.id,
-                            style: GoogleFonts.poppins(
-                              color: PurchasesScreen.muted,
-                              fontSize: 16,
-                            ),
-                          ),
+                          _SupplyLevelBadge(level: level),
                         ],
                       ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _error!,
+                                style: GoogleFonts.poppins(
+                                  color: PurchasesScreen.red,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _refresh,
+                              child: const Text('Reintentar'),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 16),
-                      _supplyDetailRow('ID Insumo', supply.id, mono: true),
+                      _StockBar(supply: s, level: level),
+                      const SizedBox(height: 4),
+                      _supplyDetailRow('Código', s.codigo, mono: true),
+                      _supplyDetailRow('Nombre', s.nombre),
+                      _supplyDetailRow('Categoría', s.categoriaNombre ?? '—'),
+                      _supplyDetailRow('Tipo', s.tipo),
+                      _supplyDetailRow('Estado', s.estado ? 'Activo' : 'Inactivo'),
+                      _supplyDetailRow('Unidad de medida', unidad),
+                      if (s.pesoMedida != null)
+                        _supplyDetailRow(
+                          'Peso / medida',
+                          _formatAmount(s.pesoMedida!),
+                        ),
                       _supplyDetailRow(
-                        'ID Cat. Insumo',
-                        '${supply.categoryId} — ${supply.category}',
-                      ),
-                      _supplyDetailRow('Nombre', supply.name),
-                      _supplyDetailRow('Unidad Medida', supply.unit),
-                      _supplyDetailRow(
-                        'Stock Actual',
-                        '${supply.current} ${supply.unit}',
+                        'Stock actual',
+                        '${_formatAmount(s.stockActual)} $unidad',
                       ),
                       _supplyDetailRow(
-                        'Stock Mínimo',
-                        '${supply.minimum} ${supply.unit}',
+                        'Stock mínimo',
+                        '${_formatAmount(s.stockMinimo)} $unidad',
                       ),
-                      _supplyDetailRow('Precio Unitario', supply.price),
+                      _supplyDetailRow(
+                        'Stock máximo',
+                        '${_formatAmount(s.stockMaximo)} $unidad',
+                      ),
+                      if (s.costoUnitario != null)
+                        _supplyDetailRow(
+                          'Costo unitario',
+                          formatCop(s.costoUnitario!.round()),
+                        ),
+                      if (s.costoMaximo != null)
+                        _supplyDetailRow(
+                          'Costo máximo',
+                          formatCop(s.costoMaximo!.round()),
+                        ),
+                      if (s.iva != null)
+                        _supplyDetailRow('IVA', '${_formatAmount(s.iva!)} %'),
+                      if (s.tiempoPreparacion != null)
+                        _supplyDetailRow(
+                          'Tiempo de preparación',
+                          '${_formatAmount(s.tiempoPreparacion!)} min',
+                        ),
+                      if (s.descripcion != null)
+                        _supplyDetailRow('Descripción', s.descripcion!),
+                      if (s.esProductoInsumo && s.fichaVigente != null)
+                        ..._fichaVigente(s.fichaVigente!),
                     ],
                   ),
                 ),
               ),
             ),
-            _buildBottomNavigation(context),
+            _suppliesBottomNavigation(context),
           ],
         ),
       ),
     );
   }
 
+  /// Ficha vigente de un "Producto insumo": se muestra de forma genérica
+  /// (valores simples y listas) porque su estructura la define el backend.
+  List<Widget> _fichaVigente(Object ficha) {
+    final widgets = <Widget>[
+      const SizedBox(height: 22),
+      Text(
+        'FICHA VIGENTE',
+        style: GoogleFonts.poppins(
+          color: PurchasesScreen.muted,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.8,
+        ),
+      ),
+    ];
+    if (ficha is Map) {
+      ficha.forEach((key, value) {
+        final label = _humanize(key.toString());
+        if (key.toString().startsWith('id_') || value == null) return;
+        if (value is List) {
+          if (value.isEmpty) return;
+          widgets.add(_supplyDetailRow(label, ''));
+          for (var i = 0; i < value.length; i++) {
+            widgets.add(
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  '${i + 1}. ${_fichaItem(value[i])}',
+                  style: GoogleFonts.poppins(
+                    color: PurchasesScreen.ink,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            );
+          }
+        } else if (value is! Map) {
+          widgets.add(_supplyDetailRow(label, value.toString()));
+        }
+      });
+    } else {
+      widgets.add(_supplyDetailRow('Ficha', ficha.toString()));
+    }
+    return widgets;
+  }
+
+  String _fichaItem(Object? item) {
+    if (item is Map) {
+      final nombre = item['nombre'] ?? item['descripcion'] ?? item['paso'];
+      final cantidad = item['cantidad'];
+      final medida = item['medida'] ?? item['unidad'];
+      if (nombre != null) {
+        return [nombre, cantidad, medida].whereType<Object>().join(' ');
+      }
+      return item.values.whereType<Object>().join(' · ');
+    }
+    return item?.toString() ?? '';
+  }
+
+  String _humanize(String key) {
+    final text = key.replaceAll('_', ' ').trim();
+    return text.isEmpty ? key : text[0].toUpperCase() + text.substring(1);
+  }
+
   Widget _buildHeader(BuildContext context) {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
+      initials: currentUserInitials(),
     );
   }
 
@@ -1116,52 +867,4 @@ class _SupplyDetailScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 1
-                        ? PurchasesScreen.red
-                        : PurchasesScreen.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 1
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }
-

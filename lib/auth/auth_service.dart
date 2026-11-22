@@ -31,6 +31,13 @@ class AuthService extends ChangeNotifier {
   Usuario? get usuario => _usuario;
   String? get currentEmail => _usuario?.correo;
   String? get currentName => _usuario?.nombre;
+
+  /// Primer nombre del usuario en sesión (para saludos). Vacío sin sesión.
+  String get currentFirstName {
+    final nombre = (_usuario?.nombre ?? '').trim();
+    if (nombre.isEmpty) return '';
+    return nombre.split(RegExp(r'\s+')).first;
+  }
   UserRole? get rol => _usuario?.userRole;
   bool get isAuthenticated => _usuario != null && _token != null;
 
@@ -68,7 +75,12 @@ class AuthService extends ChangeNotifier {
     _token = token;
     _usuario = usuario;
     _fromPanel = false;
-    await TokenStorage.instance.write(token);
+    try {
+      await TokenStorage.instance.write(token);
+    } catch (_) {
+      // Si el almacenamiento seguro falla, la sesión sigue activa en memoria;
+      // solo no se podrá restaurar al reabrir la app.
+    }
     notifyListeners();
     return usuario;
   }
@@ -78,16 +90,18 @@ class AuthService extends ChangeNotifier {
   /// Devuelve `false` cuando no hay token o el backend lo rechazó. Si falla la
   /// red lanza [ApiException] para que el arranque ofrezca reintentar.
   Future<bool> restoreSession() async {
-    final token = await TokenStorage.instance.read();
+    String? token;
+    try {
+      token = await TokenStorage.instance.read();
+    } catch (_) {
+      return false;
+    }
     if (token == null || token.isEmpty) return false;
 
     _token = token;
     try {
       final data = await ApiClient.instance.get('/auth/me');
-      if (data is! Map<String, dynamic>) {
-        throw const ApiException('Respuesta inesperada del servidor.');
-      }
-      _usuario = Usuario.fromJson(data);
+      _usuario = _usuarioDeRespuesta(data);
       notifyListeners();
       return true;
     } on ApiException catch (error) {
@@ -200,22 +214,36 @@ class AuthService extends ChangeNotifier {
 
   Future<void> logout() => _limpiarSesion();
 
+  /// Cierre de sesión local: no existe endpoint de logout en el backend.
+  ///
+  /// Limpia primero la memoria (usuario y permisos) y siempre notifica, aunque
+  /// falle el borrado del token, para que la app pueda volver al login.
   Future<void> _limpiarSesion() async {
     _token = null;
     _usuario = null;
     _fromPanel = false;
-    await TokenStorage.instance.delete();
-    notifyListeners();
+    try {
+      await TokenStorage.instance.delete();
+    } catch (_) {
+      // El token en memoria ya se descartó; se reintenta en el próximo cierre.
+    } finally {
+      notifyListeners();
+    }
   }
 
   Future<void> _manejarSesionExpirada(ApiException error) async {
     if (_usuario == null || _manejandoExpiracion) return;
     _manejandoExpiracion = true;
-    final mensaje = error.message.isEmpty
-        ? 'Tu sesión ha expirado. Inicia sesión nuevamente.'
-        : error.message;
-    await _limpiarSesion();
-    _manejandoExpiracion = false;
+    // Con código de sesión conocido se muestra el texto del backend; un 401
+    // sin código (p. ej. "Token no proporcionado.") usa el mensaje genérico.
+    final mensaje = error.hasSessionCode && error.message.isNotEmpty
+        ? error.message
+        : ApiException.sessionMessageFor(error.code);
+    try {
+      await _limpiarSesion();
+    } finally {
+      _manejandoExpiracion = false;
+    }
     onSessionExpired?.call(mensaje);
   }
 }

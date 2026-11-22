@@ -181,6 +181,12 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
         _loading = false;
         _errorMessage = error.message;
       });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _errorMessage = 'No se pudo completar la operación.';
+      });
     }
   }
 
@@ -368,40 +374,14 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
             ),
           ],
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              OutlinedButton.icon(
-                onPressed: busy ? null : () => _startOrder(order),
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Iniciar'),
-              ),
-              OutlinedButton.icon(
-                onPressed: busy ? null : () => _completeOrder(order),
-                icon: const Icon(Icons.check),
-                label: const Text('Completar'),
-              ),
-              OutlinedButton.icon(
-                onPressed: busy ? null : () => _askDarBaja(order),
-                icon: const Icon(Icons.block),
-                label: const Text('Dar de baja'),
-              ),
-              OutlinedButton.icon(
-                onPressed: busy ? null : () => _openDetail(order),
-                icon: const Icon(Icons.visibility_outlined),
-                label: const Text('Detalle'),
-              ),
-              if (busy)
-                const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-            ],
+          _OrderActions(
+            order: order,
+            busy: busy,
+            onStart: () => _guarded(() => _startOrder(order)),
+            onComplete: () => _guarded(() => _completeOrder(order)),
+            onDarBaja: () => _guarded(() => _askDarBaja(order)),
+            onEdit: () => _guarded(() => _editOrder(order)),
+            onDetail: () => _openDetail(order),
           ),
         ],
       ),
@@ -426,7 +406,62 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     );
   }
 
+  /// Evita que un doble toque abra dos diálogos o dispare dos acciones.
+  bool _acting = false;
+
+  Future<void> _guarded(Future<void> Function() action) async {
+    if (_acting) return;
+    _acting = true;
+    try {
+      await action();
+    } finally {
+      _acting = false;
+    }
+  }
+
+  Future<bool> _confirm(String title, String message, String confirmLabel) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(confirmLabel),
+          ),
+        ],
+      ),
+    );
+    return ok == true && mounted;
+  }
+
+  /// Edita la orden (observación, fecha/hora o tiempo según tipo y estado).
+  Future<void> _editOrder(OrdenProduccion order) async {
+    final saved = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _OrderEditDialog(order: order, isAdmin: _isAdminRole()),
+    );
+    if (saved != true || !mounted) return;
+    // Se vuelve a consultar la lista (y el detalle, si está abierto) para
+    // mostrar lo que quedó guardado.
+    await _loadOrders(showLoading: false);
+    if (mounted && _errorMessage == null) _showMessage('Orden actualizada.');
+  }
+
   Future<void> _startOrder(OrdenProduccion order) async {
+    if (!await _confirm(
+      'Iniciar orden ${order.id}',
+      'La orden pasará a "En proceso".',
+      'Iniciar',
+    )) {
+      return;
+    }
     await _runOrderAction(
       order.id,
       () => ProductionRepository.instance.iniciar(order.id),
@@ -435,6 +470,16 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
   }
 
   Future<void> _completeOrder(OrdenProduccion order) async {
+    // En una Preparación, el diálogo de completado ya pide confirmar.
+    if (order.tipo == 'Pedido' &&
+        !await _confirm(
+          'Completar orden ${order.id}',
+          'La orden pasará a "Completada" y se descontarán los insumos.',
+          'Completar',
+        )) {
+      return;
+    }
+    if (!mounted) return;
     setState(() => _workingOrderId = order.id);
     try {
       if (order.tipo == 'Pedido') {
@@ -461,6 +506,8 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
       }
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     } finally {
       if (mounted) setState(() => _workingOrderId = null);
     }
@@ -673,61 +720,20 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
   }
 
   Future<void> _askDarBaja(OrdenProduccion order) async {
-    final motivoController = TextEditingController();
-    final descripcionController = TextEditingController();
-    try {
-      final data = await showDialog<Map<String, String>>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text('Dar de baja la orden ${order.id}'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: motivoController,
-                  maxLength: 100,
-                  decoration: const InputDecoration(labelText: 'Motivo'),
-                ),
-                TextField(
-                  controller: descripcionController,
-                  maxLength: 500,
-                  minLines: 2,
-                  maxLines: 4,
-                  decoration: const InputDecoration(labelText: 'Descripción'),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop({
-                'motivo': motivoController.text,
-                'descripcion': descripcionController.text,
-              }),
-              child: const Text('Dar de baja'),
-            ),
-          ],
-        ),
-      );
-      if (data == null || !mounted) return;
-      await _runOrderAction(
+    final data = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (_) => _DarBajaDialog(orderId: order.id),
+    );
+    if (data == null || !mounted) return;
+    await _runOrderAction(
+      order.id,
+      () => ProductionRepository.instance.darBaja(
         order.id,
-        () => ProductionRepository.instance.darBaja(
-          order.id,
-          motivo: data['motivo']!,
-          descripcion: data['descripcion']!,
-        ),
-        'Orden dada de baja.',
-      );
-    } finally {
-      motivoController.dispose();
-      descripcionController.dispose();
-    }
+        motivo: data['motivo']!,
+        descripcion: data['descripcion']!,
+      ),
+      'Orden dada de baja.',
+    );
   }
 
   Future<void> _runOrderAction(
@@ -745,6 +751,8 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
       }
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     } finally {
       if (mounted) setState(() => _workingOrderId = null);
     }
@@ -756,12 +764,20 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
       if (!mounted) return;
       await Navigator.of(context).push<void>(
         MaterialPageRoute(
-          builder: (_) => _ProductionOrderDetailScreen(order: detail),
+          builder: (_) => _ProductionOrderDetailScreen(
+            order: detail,
+            onStart: (o) => _guarded(() => _startOrder(o)),
+            onComplete: (o) => _guarded(() => _completeOrder(o)),
+            onDarBaja: (o) => _guarded(() => _askDarBaja(o)),
+            onEdit: (o) => _guarded(() => _editOrder(o)),
+          ),
         ),
       );
       if (mounted) await _loadOrders(showLoading: false);
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     }
   }
 
@@ -830,9 +846,19 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
 }
 
 class _ProductionOrderDetailScreen extends StatefulWidget {
-  const _ProductionOrderDetailScreen({required this.order});
+  const _ProductionOrderDetailScreen({
+    required this.order,
+    required this.onStart,
+    required this.onComplete,
+    required this.onDarBaja,
+    required this.onEdit,
+  });
 
   final OrdenProduccion order;
+  final Future<void> Function(OrdenProduccion) onStart;
+  final Future<void> Function(OrdenProduccion) onComplete;
+  final Future<void> Function(OrdenProduccion) onDarBaja;
+  final Future<void> Function(OrdenProduccion) onEdit;
 
   @override
   State<_ProductionOrderDetailScreen> createState() =>
@@ -843,6 +869,7 @@ class _ProductionOrderDetailScreenState
     extends State<_ProductionOrderDetailScreen> {
   late OrdenProduccion _order;
   bool _loading = true;
+  bool _busy = false;
   String? _errorMessage;
 
   @override
@@ -850,6 +877,18 @@ class _ProductionOrderDetailScreenState
     super.initState();
     _order = widget.order;
     _loadDetail();
+  }
+
+  /// Ejecuta una acción de la lista y vuelve a consultar la orden.
+  Future<void> _act(Future<void> Function(OrdenProduccion) action) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await action(_order);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    if (mounted) await _loadDetail(showLoading: false);
   }
 
   Future<void> _loadDetail({bool showLoading = true}) async {
@@ -871,6 +910,12 @@ class _ProductionOrderDetailScreenState
       setState(() {
         _loading = false;
         _errorMessage = error.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _errorMessage = 'No se pudo completar la operación.';
       });
     }
   }
@@ -920,6 +965,11 @@ class _ProductionOrderDetailScreenState
                       _errorView(_errorMessage!, () => _loadDetail())
                     else ...[
                       _detailRow('Estado', _order.estado),
+                      if (_order.tiempoPreparacionMin != null)
+                        _detailRow(
+                          'Tiempo de preparación',
+                          '${_order.tiempoPreparacionMin} min',
+                        ),
                       _detailRow(
                         'Fecha solicitada',
                         _formatDate(_order.fechaSolicitada),
@@ -942,6 +992,15 @@ class _ProductionOrderDetailScreenState
                           'Descripción de preparación',
                           _order.descripcionPreparacion!,
                         ),
+                      const SizedBox(height: 18),
+                      _OrderActions(
+                        order: _order,
+                        busy: _busy,
+                        onStart: () => _act(widget.onStart),
+                        onComplete: () => _act(widget.onComplete),
+                        onDarBaja: () => _act(widget.onDarBaja),
+                        onEdit: () => _act(widget.onEdit),
+                      ),
                       const SizedBox(height: 18),
                       Text(
                         'Líneas',
@@ -1047,5 +1106,456 @@ class _ProductionOrderDetailScreenState
   String _formatDateTime(String value) {
     final date = value.replaceFirst('T', ' ');
     return date.length > 16 ? date.substring(0, 16) : date;
+  }
+}
+
+/// El rol de la sesión es Administrador (sin distinguir mayúsculas).
+bool _isAdminRole() =>
+    (AuthService.instance.usuario?.rol ?? '').trim().toLowerCase() ==
+    'administrador';
+
+/// Botones de una orden según su estado y los permisos del usuario.
+///
+/// Pendiente -> Iniciar / Dar de baja / Editar; En proceso -> Completar /
+/// Dar de baja (y Editar el tiempo de un Pedido, solo Administrador);
+/// Completada y Cancelada no tienen acciones. Todo requiere
+/// Producción > Orden de Producción > Editar.
+class _OrderActions extends StatelessWidget {
+  const _OrderActions({
+    required this.order,
+    required this.busy,
+    required this.onStart,
+    required this.onComplete,
+    required this.onDarBaja,
+    required this.onEdit,
+    this.onDetail,
+  });
+
+  final OrdenProduccion order;
+  final bool busy;
+  final VoidCallback onStart;
+  final VoidCallback onComplete;
+  final VoidCallback onDarBaja;
+  final VoidCallback onEdit;
+  final VoidCallback? onDetail;
+
+  @override
+  Widget build(BuildContext context) {
+    final canEdit = Permisos.puede(
+      'Producción',
+      'Orden de Producción',
+      'Editar',
+    );
+    final pendiente = order.estado == 'Pendiente';
+    final enProceso = order.estado == 'En proceso';
+    final puedeEditar =
+        canEdit &&
+        (pendiente || (order.tipo == 'Pedido' && enProceso && _isAdminRole()));
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        if (canEdit && pendiente)
+          OutlinedButton.icon(
+            onPressed: busy ? null : onStart,
+            icon: const Icon(Icons.play_arrow),
+            label: const Text('Iniciar'),
+          ),
+        if (canEdit && enProceso)
+          OutlinedButton.icon(
+            onPressed: busy ? null : onComplete,
+            icon: const Icon(Icons.check),
+            label: const Text('Completar'),
+          ),
+        if (canEdit && (pendiente || enProceso))
+          OutlinedButton.icon(
+            onPressed: busy ? null : onDarBaja,
+            icon: const Icon(Icons.block),
+            label: const Text('Dar de baja'),
+          ),
+        if (puedeEditar)
+          OutlinedButton.icon(
+            onPressed: busy ? null : onEdit,
+            icon: const Icon(Icons.edit_outlined),
+            label: const Text('Editar'),
+          ),
+        if (onDetail != null)
+          OutlinedButton.icon(
+            onPressed: busy ? null : onDetail,
+            icon: const Icon(Icons.visibility_outlined),
+            label: const Text('Detalle'),
+          ),
+        if (busy)
+          const Padding(
+            padding: EdgeInsets.all(10),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Formulario de edición de una orden con solo los campos permitidos:
+/// - Pedido: observación y, solo el Administrador, el tiempo de preparación
+///   (un Pedido En proceso solo admite el tiempo).
+/// - Preparación Pendiente: observación, fecha y hora solicitadas.
+/// No edita líneas. Solo se envían los campos que cambian; los errores del
+/// backend se muestran dentro del formulario.
+class _OrderEditDialog extends StatefulWidget {
+  const _OrderEditDialog({required this.order, required this.isAdmin});
+
+  final OrdenProduccion order;
+  final bool isAdmin;
+
+  @override
+  State<_OrderEditDialog> createState() => _OrderEditDialogState();
+}
+
+class _OrderEditDialogState extends State<_OrderEditDialog> {
+  late final bool _editObservacion;
+  late final bool _editFechaHora;
+  late final bool _editTiempo;
+
+  late final TextEditingController _observacion;
+  late final TextEditingController _tiempo;
+  late DateTime? _fecha;
+  late TimeOfDay? _hora;
+  late final bool _horaConSegundos;
+
+  bool _saving = false;
+  String? _error;
+
+  OrdenProduccion get _order => widget.order;
+
+  @override
+  void initState() {
+    super.initState();
+    final pendiente = _order.estado == 'Pendiente';
+    final esPedido = _order.tipo == 'Pedido';
+    _editObservacion = pendiente;
+    _editFechaHora = pendiente && !esPedido;
+    _editTiempo = esPedido && widget.isAdmin;
+
+    _observacion = TextEditingController(text: _order.observacion ?? '');
+    _tiempo = TextEditingController(
+      text: _order.tiempoPreparacionMin?.toString() ?? '',
+    );
+    _fecha = DateTime.tryParse(
+      _order.fechaSolicitada.substring(
+        0,
+        _order.fechaSolicitada.length < 10 ? _order.fechaSolicitada.length : 10,
+      ),
+    );
+    final hora = _order.horaSolicitada;
+    final partes = hora?.split(':');
+    _hora = partes != null && partes.length >= 2
+        ? TimeOfDay(
+            hour: int.tryParse(partes[0]) ?? 0,
+            minute: int.tryParse(partes[1]) ?? 0,
+          )
+        : null;
+    // Se conserva el formato en que llega la hora (HH:MM o HH:MM:SS).
+    _horaConSegundos = hora == null || hora.split(':').length >= 3;
+  }
+
+  @override
+  void dispose() {
+    _observacion.dispose();
+    _tiempo.dispose();
+    super.dispose();
+  }
+
+  String _fechaTexto(DateTime f) =>
+      '${f.year.toString().padLeft(4, '0')}-'
+      '${f.month.toString().padLeft(2, '0')}-'
+      '${f.day.toString().padLeft(2, '0')}';
+
+  String _horaTexto(TimeOfDay h) {
+    final base =
+        '${h.hour.toString().padLeft(2, '0')}:'
+        '${h.minute.toString().padLeft(2, '0')}';
+    return _horaConSegundos ? '$base:00' : base;
+  }
+
+  String _horaVisible(TimeOfDay h) =>
+      '${h.hour.toString().padLeft(2, '0')}:${h.minute.toString().padLeft(2, '0')}';
+
+  Future<void> _pickFecha() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _fecha ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) setState(() => _fecha = picked);
+  }
+
+  Future<void> _pickHora() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _hora ?? TimeOfDay.now(),
+    );
+    if (picked != null) setState(() => _hora = picked);
+  }
+
+  Future<void> _submit() async {
+    if (_saving) return;
+    final cambios = <String, Object?>{};
+
+    if (_editObservacion) {
+      final texto = _observacion.text.trim();
+      if (texto.length > 255) {
+        setState(() => _error = 'La observación admite máximo 255 caracteres.');
+        return;
+      }
+      if (texto != (_order.observacion ?? '').trim()) {
+        cambios['observacion'] = texto;
+      }
+    }
+
+    if (_editFechaHora) {
+      final fecha = _fecha;
+      if (fecha != null && _fechaTexto(fecha) != _order.fechaSolicitada.substring(
+            0,
+            _order.fechaSolicitada.length < 10
+                ? _order.fechaSolicitada.length
+                : 10,
+          )) {
+        if (_fechaTexto(fecha).compareTo(diaBogotaTexto()) < 0) {
+          setState(() => _error = 'La fecha solicitada no puede ser pasada.');
+          return;
+        }
+        cambios['fecha_solicitada'] = _fechaTexto(fecha);
+      }
+      final hora = _hora;
+      final original = _order.horaSolicitada;
+      if (hora != null &&
+          (original == null ||
+              _horaVisible(hora) !=
+                  original.split(':').take(2).join(':'))) {
+        cambios['hora_solicitada'] = _horaTexto(hora);
+      }
+    }
+
+    if (_editTiempo) {
+      final texto = _tiempo.text.trim();
+      if (texto.isNotEmpty) {
+        final minutos = int.tryParse(texto);
+        if (minutos == null || minutos < 5 || minutos > 180) {
+          setState(() => _error = 'El tiempo debe ser un entero de 5 a 180 minutos.');
+          return;
+        }
+        if (minutos != _order.tiempoPreparacionMin) {
+          cambios['tiempo_preparacion_min'] = minutos;
+        }
+      }
+    }
+
+    if (cambios.isEmpty) {
+      setState(() => _error = 'No hay cambios que guardar.');
+      return;
+    }
+
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await ProductionRepository.instance.actualizar(
+        _order.id,
+        cambios,
+        tipo: _order.tipo,
+        estado: _order.estado,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } on ApiException catch (error) {
+      if (mounted) setState(() => _error = error.message);
+    } catch (_) {
+      if (mounted) setState(() => _error = 'No se pudo guardar la orden.');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Editar orden ${_order.id}'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_editObservacion)
+              TextField(
+                controller: _observacion,
+                enabled: !_saving,
+                maxLength: 255,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Observación',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            if (_editFechaHora) ...[
+              const SizedBox(height: 12),
+              _pickerRow(
+                'Fecha solicitada',
+                _fecha == null ? 'Elegir fecha' : _fechaTexto(_fecha!),
+                _saving ? null : _pickFecha,
+              ),
+              const SizedBox(height: 10),
+              _pickerRow(
+                'Hora solicitada',
+                _hora == null ? 'Elegir hora' : _horaVisible(_hora!),
+                _saving ? null : _pickHora,
+              ),
+            ],
+            if (_editTiempo) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: _tiempo,
+                enabled: !_saving,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: 'Tiempo de preparación (min, de 5 a 180)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _error!,
+                style: const TextStyle(
+                  color: AppColors.statusRedFg,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _saving ? null : () => Navigator.of(context).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: _saving ? null : _submit,
+          style: FilledButton.styleFrom(backgroundColor: PurchasesScreen.red),
+          child: _saving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2.2,
+                  ),
+                )
+              : const Text('Guardar'),
+        ),
+      ],
+    );
+  }
+
+  Widget _pickerRow(String label, String value, VoidCallback? onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
+        child: Text(value),
+      ),
+    );
+  }
+}
+
+/// Diálogo de "Dar de baja": motivo (obligatorio, máx. 100) y descripción
+/// (obligatoria, máx. 500), ambos no vacíos tras recortar espacios. El botón
+/// queda deshabilitado mientras falte alguno.
+class _DarBajaDialog extends StatefulWidget {
+  const _DarBajaDialog({required this.orderId});
+
+  final int orderId;
+
+  @override
+  State<_DarBajaDialog> createState() => _DarBajaDialogState();
+}
+
+class _DarBajaDialogState extends State<_DarBajaDialog> {
+  final _motivo = TextEditingController();
+  final _descripcion = TextEditingController();
+
+  bool get _valido =>
+      _motivo.text.trim().isNotEmpty && _descripcion.text.trim().isNotEmpty;
+
+  @override
+  void dispose() {
+    _motivo.dispose();
+    _descripcion.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Dar de baja la orden ${widget.orderId}'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _motivo,
+              maxLength: 100,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(labelText: 'Motivo'),
+            ),
+            TextField(
+              controller: _descripcion,
+              maxLength: 500,
+              minLines: 2,
+              maxLines: 4,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(labelText: 'Descripción'),
+            ),
+            if (!_valido)
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Text(
+                  'El motivo y la descripción son obligatorios.',
+                  style: TextStyle(color: AppColors.statusRedFg, fontSize: 13),
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: _valido
+              ? () => Navigator.of(context).pop({
+                  'motivo': _motivo.text.trim(),
+                  'descripcion': _descripcion.text.trim(),
+                })
+              : null,
+          child: const Text('Dar de baja'),
+        ),
+      ],
+    );
   }
 }

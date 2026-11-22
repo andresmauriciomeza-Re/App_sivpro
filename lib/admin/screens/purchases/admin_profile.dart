@@ -98,6 +98,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     FocusScope.of(context).unfocus();
     final email = _emailController.text.trim();
     final phone = _phoneController.text.trim();
+    final errorContacto = validateProfileContact(email, phone);
+    if (errorContacto != null) {
+      _showMessage(errorContacto);
+      return;
+    }
     setState(() => _guardando = true);
     try {
       final usuario = await AuthService.instance.actualizarPerfil(
@@ -305,6 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             editable: true,
+            inputFormatters: profilePhoneFormatters(),
           ),
         ],
       ),
@@ -317,6 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required TextEditingController controller,
     required TextInputType keyboardType,
     required bool editable,
+    List<TextInputFormatter> inputFormatters = const [],
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,6 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           controller: controller,
           enabled: _editing && editable,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 14.5),
           decoration: InputDecoration(
             filled: true,

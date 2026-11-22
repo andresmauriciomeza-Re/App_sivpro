@@ -1,3 +1,5 @@
+import '../auth/auth_service.dart';
+
 /// Iniciales a partir de un nombre completo.
 ///
 /// Regla: si hay varias palabras se toma la inicial de la primera y la de la
@@ -14,3 +16,7 @@ String getInitials(String fullName) {
   if (parts.length == 1) return parts.first[0].toUpperCase();
   return (parts.first[0] + parts.last[0]).toUpperCase();
 }
+
+/// Iniciales del usuario en sesión ('?' si no hay sesión).
+String currentUserInitials() =>
+    getInitials(AuthService.instance.currentName ?? '');

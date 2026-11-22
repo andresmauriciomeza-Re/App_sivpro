@@ -1,10 +1,12 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/auth_service.dart';
 import '../../network/api_exception.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../shared/page_transitions.dart';
+import '../../shared/validators.dart';
 import '../../theme/app_colors.dart';
 import '../services/employee_profile_service.dart';
 
@@ -106,6 +108,11 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     FocusScope.of(context).unfocus();
     final email = _emailController.text.trim();
     final phone = _phoneController.text.trim();
+    final errorContacto = validateProfileContact(email, phone);
+    if (errorContacto != null) {
+      _showMessage(errorContacto);
+      return;
+    }
     setState(() => _guardando = true);
     try {
       final usuario = await AuthService.instance.actualizarPerfil(
@@ -312,6 +319,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             editable: true,
+            inputFormatters: profilePhoneFormatters(),
           ),
         ],
       ),
@@ -324,6 +332,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     required TextEditingController controller,
     required TextInputType keyboardType,
     required bool editable,
+    List<TextInputFormatter> inputFormatters = const [],
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,6 +356,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           controller: controller,
           enabled: _editing && editable,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 14.5),
           decoration: InputDecoration(
             filled: true,

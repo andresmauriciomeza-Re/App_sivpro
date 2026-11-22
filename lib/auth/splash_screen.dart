@@ -344,6 +344,10 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _irAlPanel() {
+    // Rol no reconocido: no se deja una sesión abierta sin pantalla asignada.
+    if (AuthService.instance.rol == null) {
+      AuthService.instance.logout();
+    }
     final pagina = switch (AuthService.instance.rol) {
       UserRole.admin => adminHomeScreen(),
       UserRole.empleado => const EmployeeDashboardScreen(),
