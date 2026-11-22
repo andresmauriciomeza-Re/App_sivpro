@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/sales_repository.dart';
+import '../../shared/pending_sales_service.dart';
 
 /// Índice del ítem "Ventas" dentro del bottom nav del administrador.
 const int adminSalesNavIndex = 3;
@@ -48,7 +48,7 @@ class SalesPendingBadge extends StatelessWidget {
 ///
 /// Cuando [showPendingBadge] es true y hay pedidos "Por verificar", muestra
 /// un badge numérico sobre el ícono y se actualiza solo cuando el
-/// [SalesRepository] notifica cambios.
+/// [PendingSalesService] actualiza el contador.
 class AdminBottomNavIcon extends StatelessWidget {
   const AdminBottomNavIcon({
     super.key,
@@ -69,11 +69,10 @@ class AdminBottomNavIcon extends StatelessWidget {
       return Icon(icon, color: color, size: size);
     }
 
-    return ListenableBuilder(
-      listenable: SalesRepository.instance,
-      builder: (context, _) {
+    return ValueListenableBuilder<int>(
+      valueListenable: PendingSalesService.instance.count,
+      builder: (context, count, _) {
         final iconWidget = Icon(icon, color: color, size: size);
-        final count = SalesRepository.instance.pendingVerificationCount;
 
         if (count <= 0) return iconWidget;
 

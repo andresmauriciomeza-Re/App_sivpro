@@ -115,7 +115,7 @@ class _EmployeeRefundScreenState extends State<EmployeeRefundScreen> {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('María González'),
+      initials: currentUserInitials(),
     );
   }
 

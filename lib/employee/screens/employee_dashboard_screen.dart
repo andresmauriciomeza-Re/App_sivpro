@@ -1,11 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../admin/services/indicators_service.dart';
+import '../../admin/services/ventas_repository.dart';
+import '../../network/api_exception.dart';
 import '../../shared/initials.dart';
+import '../../shared/permission_helper.dart';
 import '../../theme/app_colors.dart';
-import '../../auth/permisos.dart';
 import 'employee_sales_management_screen.dart';
 import 'employee_clients_screen.dart';
+import 'employee_sale_detail_screen.dart';
 import '../../shared/page_transitions.dart';
+import '../../shared/periodic_refresh.dart';
 import '../../auth/auth_service.dart';
 import '../../client/screens/home_screen.dart' hide AppColors;
 import '../services/return_service.dart';
@@ -23,20 +28,83 @@ class EmployeeDashboardScreen extends StatefulWidget {
       _EmployeeDashboardScreenState();
 }
 
-class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
+class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen>
+    with PeriodicRefreshMixin<EmployeeDashboardScreen> {
   static const Color red = EmployeeDashboardScreen.red;
   static const Color ink = EmployeeDashboardScreen.ink;
   static const Color muted = EmployeeDashboardScreen.muted;
   static const Color page = EmployeeDashboardScreen.page;
 
+  List<Venta> _ventas = const [];
+  bool _cargandoVentas = true;
+  bool _recargando = false;
+  String? _errorVentas;
+
+  bool get _puedeVerVentas => PermissionHelper.puedeVerVentas;
+
+  bool get _puedeVerClientes => PermissionHelper.puedeVerClientes;
+
   @override
   void initState() {
     super.initState();
-    if (Permisos.ventas) {
+    if (_puedeVerVentas) {
+      _cargarVentas();
+      iniciarRefrescoPeriodico();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ReturnService.instance.cargar();
       });
+    } else {
+      _cargandoVentas = false;
     }
+  }
+
+  @override
+  Future<void> refrescarPeriodico() async {
+    if (_puedeVerVentas) await _recargarTodo();
+  }
+
+  Future<void> _cargarVentas({bool silencioso = false}) async {
+    if (_recargando) return;
+    setState(() {
+      _recargando = true;
+      if (!silencioso) _cargandoVentas = _ventas.isEmpty;
+      if (!silencioso) _errorVentas = null;
+    });
+    try {
+      final ventas = await VentasRepository.instance.listar();
+      if (!mounted) return;
+      setState(() {
+        _ventas = ventas;
+        _errorVentas = null;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() => _errorVentas = error.message);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _errorVentas = 'No se pudieron cargar las ventas.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cargandoVentas = false;
+          _recargando = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _recargarTodo() async {
+    if (_puedeVerVentas) {
+      await _cargarVentas(silencioso: true);
+      await ReturnService.instance.cargar();
+    }
+  }
+
+  List<Venta> get _ventasDeHoy {
+    final hoy = diaBogotaTexto();
+    return ventasCompletadas(
+      _ventas,
+    ).where((venta) => fechaDeVenta(venta) == hoy).toList(growable: false);
   }
 
   @override
@@ -50,83 +118,97 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
           children: [
             _buildHeader(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(18, 22, 18, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '¡Buenos días, María! 👋',
-                      style: GoogleFonts.montserrat(color: ink, fontSize: 28),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Viernes, 18 De Septiembre De 2026',
-                      style: GoogleFonts.poppins(color: muted, fontSize: 13),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSalesSummary(),
-                    const SizedBox(height: 16),
-                    Text(
-                      'ACCESOS RÁPIDOS',
-                      style: GoogleFonts.poppins(
-                        color: muted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1,
+              child: RefreshIndicator(
+                color: red,
+                onRefresh: _recargarTodo,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(18, 22, 18, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _saludo(),
+                        style: GoogleFonts.montserrat(color: ink, fontSize: 28),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    if (Permisos.ventas || Permisos.ventasClientes) ...[
-                      Row(
-                        children: [
-                          if (Permisos.ventas)
-                            Expanded(
-                              child: _QuickAccessCard(
-                                icon: Icons.point_of_sale_outlined,
-                                label: 'Ventas',
-                                subtitle: 'Cobrar orden',
-                                onTap: () => _openSalesManagement(context),
+                      const SizedBox(height: 6),
+                      Text(
+                        _fechaHoy(),
+                        style: GoogleFonts.poppins(color: muted, fontSize: 13),
+                      ),
+                      const SizedBox(height: 16),
+                      if (_errorVentas != null) ...[
+                        _errorBanner(_errorVentas!),
+                        const SizedBox(height: 14),
+                      ],
+                      _buildSalesSummary(),
+                      const SizedBox(height: 16),
+                      Text(
+                        'ACCESOS RÁPIDOS',
+                        style: GoogleFonts.poppins(
+                          color: muted,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      if (_puedeVerVentas || _puedeVerClientes) ...[
+                        Row(
+                          children: [
+                            if (_puedeVerVentas)
+                              Expanded(
+                                child: _QuickAccessCard(
+                                  icon: Icons.point_of_sale_outlined,
+                                  label: 'Ventas',
+                                  subtitle: 'Cobrar orden',
+                                  onTap: () => _openSalesManagement(context),
+                                ),
                               ),
+                            if (_puedeVerVentas && _puedeVerClientes)
+                              const SizedBox(width: 12),
+                            if (_puedeVerClientes)
+                              Expanded(
+                                child: _QuickAccessCard(
+                                  icon: Icons.people_outline,
+                                  label: 'Clientes',
+                                  subtitle: 'Directorio',
+                                  onTap: () => _openClients(context),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                      ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Últimas ventas',
+                            style: GoogleFonts.poppins(
+                              color: ink,
+                              fontSize: 22,
                             ),
-                          if (Permisos.ventas && Permisos.ventasClientes)
-                            const SizedBox(width: 12),
-                          if (Permisos.ventasClientes)
-                            Expanded(
-                              child: _QuickAccessCard(
-                                icon: Icons.people_outline,
-                                label: 'Clientes',
-                                subtitle: 'Directorio',
-                                onTap: () => _openClients(context),
+                          ),
+                          if (_puedeVerVentas)
+                            TextButton(
+                              onPressed: () =>
+                                  _openSalesManagement(context),
+                              child: Text(
+                                'Ver todos  →',
+                                style: GoogleFonts.poppins(
+                                  color: red,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                         ],
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 4),
+                      ..._ultimasVentas(),
                     ],
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Últimas ventas',
-                          style: GoogleFonts.poppins(color: ink, fontSize: 22),
-                        ),
-                        TextButton(
-                          onPressed: () => _openSalesManagement(context),
-                          child: Text(
-                            'Ver todos  →',
-                            style: GoogleFonts.poppins(
-                              color: red,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    ..._sales.map((sale) => _SaleCard(sale: sale)),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -134,6 +216,12 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
         ),
       ),
     );
+  }
+
+  /// Saludo con el primer nombre del usuario en sesión.
+  String _saludo() {
+    final nombre = AuthService.instance.currentFirstName;
+    return nombre.isEmpty ? '¡Buenos días! 👋' : '¡Buenos días, $nombre! 👋';
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -178,7 +266,7 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
             alignment: Alignment.center,
             decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
             child: Text(
-              getInitials('María González'),
+              currentUserInitials(),
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -197,7 +285,15 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
     ).push(MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
+  String _fechaHoy() {
+    final texto = fechaLargaBogota();
+    if (texto.isEmpty) return texto;
+    return texto[0].toUpperCase() + texto.substring(1);
+  }
+
   Widget _buildSalesSummary() {
+    final ventasHoy = _ventasDeHoy;
+    final totalHoy = ventasHoy.fold<double>(0, (suma, v) => suma + v.monto);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -206,10 +302,13 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
             icon: Icons.shopping_bag_outlined,
             iconBg: AppColors.salesIconBg,
             iconColor: AppColors.salesIconFg,
-            value: '24',
+            value: _cargandoVentas && _ventas.isEmpty
+                ? '—'
+                : '${ventasHoy.length}',
             label: 'Ventas hoy',
-            subtext: '+3 en la última hora',
-            badge: '+12%',
+            subtext: _cargandoVentas && _ventas.isEmpty
+                ? 'Cargando...'
+                : 'Total ${_formatearMonto(totalHoy)}',
           ),
         ),
         const SizedBox(width: 12),
@@ -233,6 +332,92 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
         ),
       ],
     );
+  }
+
+  List<Widget> _ultimasVentas() {
+    if (!_puedeVerVentas) {
+      return [
+        _mensajeVentas('No tienes permiso para ver las ventas.'),
+      ];
+    }
+    if (_cargandoVentas && _ventas.isEmpty) {
+      return const [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Center(child: CircularProgressIndicator(color: red)),
+        ),
+      ];
+    }
+    if (_ventas.isEmpty) {
+      return [_mensajeVentas('Aún no hay ventas registradas.')];
+    }
+    return [
+      for (final venta in _ventas.take(5))
+        _SaleCard(
+          venta: venta,
+          onTap: () => _abrirVenta(venta),
+        ),
+    ];
+  }
+
+  Widget _mensajeVentas(String mensaje) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Center(
+        child: Text(
+          mensaje,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(color: muted, fontSize: 14),
+        ),
+      ),
+    );
+  }
+
+  Widget _errorBanner(String mensaje) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBF0),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFD55A)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: Color(0xFF9B4610), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              mensaje,
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF9B4610),
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _recargando ? null : _cargarVentas,
+            child: Text(
+              'Reintentar',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF9B4610),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _abrirVenta(Venta venta) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => EmployeeSaleDetailScreen(idVenta: venta.id),
+      ),
+    );
+    if (mounted) await _cargarVentas(silencioso: true);
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
@@ -392,7 +577,6 @@ class _CompactStatCard extends StatelessWidget {
     required this.value,
     required this.label,
     this.subtext,
-    this.badge,
   });
 
   final IconData icon;
@@ -401,7 +585,6 @@ class _CompactStatCard extends StatelessWidget {
   final String value;
   final String label;
   final String? subtext;
-  final String? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -435,25 +618,6 @@ class _CompactStatCard extends StatelessWidget {
                 child: Icon(icon, color: iconColor, size: 18),
               ),
               const Spacer(),
-              if (badge != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.badgeGreenBg,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    badge!,
-                    style: GoogleFonts.poppins(
-                      color: AppColors.badgeGreenFg,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 12),
@@ -496,163 +660,141 @@ class _CompactStatCard extends StatelessWidget {
   }
 }
 
-class _Sale {
-  const _Sale(
-    this.id,
-    this.customer,
-    this.payment,
-    this.time,
-    this.amount,
-    this.status,
-  );
-
-  final String id;
-  final String customer;
-  final String payment;
-  final String time;
-  final String amount;
-  final String status;
-}
-
-const _sales = [
-  _Sale(
-    'VEN-2024-0156',
-    'María González',
-    'Nequi',
-    '18:30',
-    '\$144.000',
-    'En preparación',
-  ),
-  _Sale(
-    'VEN-2024-0155',
-    'Carlos Martínez',
-    'Efectivo',
-    '18:15',
-    '\$92.000',
-    'Listo',
-  ),
-  _Sale(
-    'VEN-2024-0154',
-    'Ana Rodríguez',
-    'Daviplata',
-    '17:45',
-    '\$110.000',
-    'Entregado',
-  ),
-  _Sale(
-    'VEN-2024-0153',
-    'Jorge Vargas',
-    'Bancolombia',
-    '17:20',
-    '\$156.000',
-    'Listo',
-  ),
-  _Sale(
-    'VEN-2024-0152',
-    'Patricia Soto',
-    'Nequi',
-    '16:50',
-    '\$80.000',
-    'Entregado',
-  ),
-];
-
 class _SaleCard extends StatelessWidget {
-  const _SaleCard({required this.sale});
+  const _SaleCard({required this.venta, required this.onTap});
 
-  final _Sale sale;
+  final Venta venta;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = sale.status == 'En preparación'
-        ? const Color(0xFF2F6FE0)
-        : sale.status == 'Listo'
-        ? const Color(0xFF008C5A)
-        : EmployeeDashboardScreen.muted;
+    final statusColor = _estadoColor(venta.estado);
+    final pago = venta.pagos.isEmpty
+        ? 'Sin pago'
+        : venta.pagos.length == 1
+        ? venta.pagos.first.tipo ?? 'Pago'
+        : '${venta.pagos.length} pagos';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(15, 13, 15, 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFECE6E4)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(
-                sale.id,
-                style: GoogleFonts.poppins(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.fromLTRB(15, 13, 15, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFECE6E4)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Text(
+                  venta.codigo,
+                  style: GoogleFonts.poppins(
+                    color: EmployeeDashboardScreen.muted,
+                    fontSize: 12,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  venta.estadoLabel,
+                  style: GoogleFonts.poppins(
+                    color: statusColor,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    venta.clienteNombre,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _formatearMonto(venta.monto),
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 16),
+            Row(
+              children: [
+                Icon(
+                  Icons.payments_outlined,
                   color: EmployeeDashboardScreen.muted,
-                  fontSize: 12,
+                  size: 15,
                 ),
-              ),
-              const Spacer(),
-              Text(
-                sale.status,
-                style: GoogleFonts.poppins(color: statusColor, fontSize: 11),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Row(
-            children: [
-              Text(
-                sale.customer,
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+                const SizedBox(width: 5),
+                Text(
+                  pago,
+                  style: GoogleFonts.poppins(
+                    color: EmployeeDashboardScreen.muted,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Text(
-                sale.amount,
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    '·',
+                    style: TextStyle(color: Color(0xFFBDB5B3)),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const Divider(height: 16),
-          Row(
-            children: [
-              Icon(
-                Icons.payments_outlined,
-                color: EmployeeDashboardScreen.muted,
-                size: 15,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                sale.payment,
-                style: GoogleFonts.poppins(
+                Icon(
+                  Icons.access_time,
                   color: EmployeeDashboardScreen.muted,
-                  fontSize: 12,
+                  size: 15,
                 ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Text('·', style: TextStyle(color: Color(0xFFBDB5B3))),
-              ),
-              Icon(
-                Icons.access_time,
-                color: EmployeeDashboardScreen.muted,
-                size: 15,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                sale.time,
-                style: GoogleFonts.poppins(
-                  color: EmployeeDashboardScreen.muted,
-                  fontSize: 12,
+                const SizedBox(width: 5),
+                Text(
+                  formatFechaHoraVenta(venta.fecha),
+                  style: GoogleFonts.poppins(
+                    color: EmployeeDashboardScreen.muted,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+Color _estadoColor(EstadoVenta? estado) {
+  return switch (estado) {
+    EstadoVenta.porVerificar => const Color(0xFFB45B00),
+    EstadoVenta.enEspera => const Color(0xFF3B4BA8),
+    EstadoVenta.porEntregar => const Color(0xFF2861B7),
+    EstadoVenta.completado => const Color(0xFF008C5A),
+    EstadoVenta.devolucion => const Color(0xFFB44A00),
+    EstadoVenta.anulado => const Color(0xFFA11D1D),
+    null => EmployeeDashboardScreen.muted,
+  };
+}
+
+String _formatearMonto(double valor) {
+  final redondeado = valor.round();
+  final texto = redondeado.abs().toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < texto.length; i++) {
+    if (i > 0 && (texto.length - i) % 3 == 0) buffer.write('.');
+    buffer.write(texto[i]);
+  }
+  return '\$${redondeado < 0 ? '-' : ''}$buffer';
 }

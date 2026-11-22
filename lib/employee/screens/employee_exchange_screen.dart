@@ -125,7 +125,7 @@ class _EmployeeExchangeScreenState extends State<EmployeeExchangeScreen> {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('María González'),
+      initials: currentUserInitials(),
     );
   }
 

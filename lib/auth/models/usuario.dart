@@ -87,8 +87,8 @@ class Usuario {
       nombre: json['nombre'] as String? ?? '',
       correo: json['correo'] as String? ?? '',
       numeroDocumento: json['numeroDocumento']?.toString() ?? '',
-      tipoDocumento: json['tipoDocumento'] as String? ?? '',
-      telefono: json['telefono'] as String? ?? '',
+      tipoDocumento: json['tipoDocumento']?.toString() ?? '',
+      telefono: json['telefono']?.toString() ?? '',
       rol: json['rol'] as String? ?? '',
       esSuperAdmin: json['esSuperAdmin'] == true,
       permisos: permisos is List

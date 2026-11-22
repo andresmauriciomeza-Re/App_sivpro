@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'auth/session_manager.dart';
 import 'auth/splash_screen.dart';
+import 'shared/low_stock_notification_service.dart';
+import 'shared/pending_sales_service.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -10,6 +12,8 @@ Future<void> main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SessionManager.instance.start();
+  LowStockNotificationService.instance.start();
+  PendingSalesService.instance.start();
   runApp(const SivproApp());
 }
 

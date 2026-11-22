@@ -101,8 +101,10 @@ class ApiClient {
       return data;
     }
 
-    final error = _buildError(response.statusCode, data);
-    if (sentToken && error.isSessionExpired) {
+    final error = _buildError(response.statusCode, data, path: path);
+    // Solo una petición que llevaba token puede cerrar la sesión: el 401 de
+    // /auth/login (sin token) únicamente se muestra como error.
+    if (sentToken && path != '/auth/login' && error.isSessionExpired) {
       await onSessionExpired?.call(error);
     }
     throw error;
@@ -117,24 +119,48 @@ class ApiClient {
     }
   }
 
-  ApiException _buildError(int statusCode, dynamic data) {
+  /// Forma esperada: `{ error: { message, statusCode, code? } }`. También se
+  /// toleran `{ error: "texto" }` y `{ message: "texto" }`. El `message` del
+  /// backend siempre tiene prioridad sobre los textos genéricos.
+  ApiException _buildError(int statusCode, dynamic data, {String? path}) {
     String? message;
     String? code;
+    Map<String, dynamic>? errorData;
     if (data is Map<String, dynamic>) {
       final error = data['error'];
       if (error is Map<String, dynamic>) {
-        message = error['message'] as String?;
-        code = error['code'] as String?;
+        errorData = error;
+        final texto = error['message'];
+        if (texto is String) message = texto;
+        final codigo = error['code'];
+        if (codigo is String) code = codigo;
+      } else if (error is String) {
+        message = error;
+      } else if (data['message'] is String) {
+        message = data['message'] as String;
       }
     }
+    if (message != null && message.trim().isEmpty) message = null;
     return ApiException(
-      message ?? _fallbackMessage(statusCode),
+      message ?? _fallbackMessage(statusCode, code: code, path: path),
       statusCode: statusCode,
       code: code,
+      data: errorData,
     );
   }
 
-  String _fallbackMessage(int statusCode) {
+  String _fallbackMessage(int statusCode, {String? code, String? path}) {
+    if (statusCode == 401) {
+      if (path == '/auth/login') return 'Correo o contraseña incorrectos.';
+      return ApiException.sessionMessageFor(code);
+    }
+    if (statusCode == 403 && path == '/auth/login') {
+      return 'Tu cuenta aún no está activada. Revisa tu correo.';
+    }
+    if (statusCode == 429 && path == '/auth/login') {
+      return 'Demasiados intentos de inicio de sesión. '
+          'Inténtalo de nuevo en unos minutos.';
+    }
     return switch (statusCode) {
       400 => 'La solicitud no es válida.',
       401 => 'Tu sesión ha expirado. Inicia sesión nuevamente.',

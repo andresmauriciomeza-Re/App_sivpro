@@ -3,8 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/auth_service.dart';
 import '../../auth/permisos.dart';
 import '../../client/screens/home_screen.dart' hide AppColors;
+import '../../network/api_exception.dart';
 import '../../shared/initials.dart';
+import '../../shared/pending_sales_service.dart';
 import '../../theme/app_colors.dart';
+import '../services/indicators_service.dart';
+import '../services/insumos_repository.dart';
+import '../services/sales_repository.dart' show formatCop;
+import '../services/ventas_repository.dart';
 import '../widgets/production_summary_card.dart';
 import '../widgets/sales_pending_badge.dart';
 import 'purchases_screen.dart';
@@ -22,24 +28,88 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  static const Map<String, List<int>> _salesValues = {
-    'Hoy': [40, 115, 350, 280, 145, 420, 175],
-    '7 días': [180, 260, 240, 340, 310, 430, 390],
-    '30 días': [350, 300, 410, 330],
-  };
+  List<Venta> _ventas = const [];
+  bool _ventasLoading = false;
+  String? _ventasError;
 
-  static const Map<String, List<String>> _salesLabels = {
-    'Hoy': ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'],
-    '7 días': ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
-    '30 días': ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
-  };
+  List<Insumo> _insumos = const [];
+  bool _insumosLoading = false;
+  String? _insumosError;
 
-  String _selectedPeriod = 'Hoy';
+  /// Cambia al refrescar para que la tarjeta de producción se vuelva a cargar.
+  int _refreshTick = 0;
 
   Color get red => AdminDashboardScreen.red;
   Color get ink => AdminDashboardScreen.ink;
   Color get muted => AdminDashboardScreen.muted;
   Color get page => AdminDashboardScreen.page;
+
+  bool get _puedeVentas => Permisos.ventas;
+  bool get _puedeInsumos => Permisos.comprasInsumos;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAll();
+  }
+
+  Future<void> _loadAll() {
+    return Future.wait([_loadVentas(), _loadInsumos()]);
+  }
+
+  Future<void> _refresh() async {
+    setState(() => _refreshTick++);
+    await _loadAll();
+  }
+
+  Future<void> _loadVentas() async {
+    if (!_puedeVentas) return;
+    setState(() {
+      _ventasLoading = true;
+      _ventasError = null;
+    });
+    try {
+      final ventas = await VentasRepository.instance.listar();
+      if (!mounted) return;
+      PendingSalesService.instance.actualizarDesde(ventas);
+      setState(() {
+        _ventas = ventas;
+        _ventasLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _ventasLoading = false;
+        _ventasError = error is ApiException
+            ? error.message
+            : 'No se pudieron cargar las ventas.';
+      });
+    }
+  }
+
+  Future<void> _loadInsumos() async {
+    if (!_puedeInsumos) return;
+    setState(() {
+      _insumosLoading = true;
+      _insumosError = null;
+    });
+    try {
+      final insumos = await InsumosRepository.instance.listar(estado: true);
+      if (!mounted) return;
+      setState(() {
+        _insumos = insumos;
+        _insumosLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _insumosLoading = false;
+        _insumosError = error is ApiException
+            ? error.message
+            : 'No se pudieron cargar los insumos.';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,60 +122,79 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             _buildHeader(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(18, 26, 18, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '¡Bienvenido, Admin! 👋',
-                      style: GoogleFonts.montserrat(
-                        color: ink,
-                        fontSize: 29,
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(18, 26, 18, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _saludo(),
+                        style: GoogleFonts.montserrat(color: ink, fontSize: 29),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Resumen del día — jueves 20 de agosto de 2026',
-                      style: GoogleFonts.poppins(color: muted, fontSize: 15),
-                    ),
-                    const SizedBox(height: 34),
-                    _buildSummaryGrid(),
-                    const SizedBox(height: 34),
-                    _buildSalesCard(),
-                    const SizedBox(height: 34),
-                    const ProductionSummaryCard(),
-                    const SizedBox(height: 34),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Actividad reciente',
-                          style: GoogleFonts.poppins(
-                            color: ink,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => openSalesManagement(context),
-                          child: Text(
-                            'Ver todos  →',
-                            style: GoogleFonts.poppins(
-                              color: ink,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Resumen del día — ${fechaLargaBogota()}',
+                        style: GoogleFonts.poppins(color: muted, fontSize: 15),
+                      ),
+                      if (Permisos.ventas ||
+                          Permisos.produccionNoConformes) ...[
+                        const SizedBox(height: 22),
+                        _buildIndicatorsButton(),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    ..._recentSales.map(_buildRecentSale),
-                  ],
+                      ..._buildSummarySection(),
+                      const SizedBox(height: 34),
+                      ProductionSummaryCard(key: ValueKey(_refreshTick)),
+                      ..._buildRecentSection(),
+                    ],
+                  ),
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Saludo con el primer nombre del usuario en sesión.
+  String _saludo() {
+    final nombre = AuthService.instance.currentFirstName;
+    return nombre.isEmpty ? '¡Bienvenido! 👋' : '¡Bienvenido, $nombre! 👋';
+  }
+
+  /// Acceso a la pantalla de Indicadores.
+  Widget _buildIndicatorsButton() {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const IndicatorsScreen())),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: page,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE5BDB9)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.insights_outlined, color: red, size: 30),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                'Ver indicadores',
+                style: GoogleFonts.poppins(
+                  color: ink,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: muted, size: 18),
           ],
         ),
       ),
@@ -143,7 +232,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             decoration: BoxDecoration(color: red, shape: BoxShape.circle),
             alignment: Alignment.center,
             child: Text(
-              getInitials('Gloria Inés Vargas'),
+              currentUserInitials(),
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 13,
@@ -158,158 +247,183 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   void _goToStore() {
     AuthService.instance.startStoreSession();
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
-  Widget _buildSummaryGrid() {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.45,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: const [
+  // ------------------------------------------------------------ resumen
+
+  /// Tarjetas con datos reales. Cada fuente solo aparece si el usuario tiene
+  /// su permiso de lectura; no hay cifras de ejemplo.
+  List<Widget> _buildSummarySection() {
+    if (!_puedeVentas && !_puedeInsumos) return const [];
+
+    final hoy = diaBogotaTexto();
+    final completadasHoy = ventasCompletadas(
+      _ventas,
+    ).where((v) => fechaDeVenta(v) == hoy).toList();
+    final totalHoy = completadasHoy.fold<double>(0, (s, v) => s + v.monto);
+    final bajoMinimo = _insumos.where((i) => i.estado && i.bajoMinimo).length;
+
+    final ventasListas = !_ventasLoading && _ventasError == null;
+    final insumosListos = !_insumosLoading && _insumosError == null;
+
+    final cards = <Widget>[
+      if (_puedeVentas) ...[
         _SummaryCard(
-          icon: Icons.shopping_bag_outlined,
-          title: 'Compras hoy',
-          value: '\$842.000',
-          badge: '↗ +5%',
-          badgeColor: Color(0xFFE5F4E8),
-        ),
-        _SummaryCard(
-          icon: Icons.inventory_2_outlined,
-          title: 'Insumos en stock',
-          value: '142',
-          badge: '⚠ Bajo',
-          badgeColor: Color(0xFFFFF0D8),
-          badgeTextColor: Color(0xFFE47C00),
+          icon: Icons.attach_money,
+          title: 'Ventas completadas hoy',
+          value: ventasListas ? formatCop(totalHoy.round()) : '—',
+          highlight: true,
         ),
         _SummaryCard(
           icon: Icons.local_pizza_outlined,
-          title: 'Pedidos hoy',
-          value: '86',
-          badge: '↗ +12%',
-          badgeColor: Color(0xFFE5F4E8),
+          title: 'Pedidos completados hoy',
+          value: ventasListas ? '${completadasHoy.length}' : '—',
         ),
-        _SummaryCard(
-          icon: Icons.attach_money,
-          title: 'Ventas hoy',
-          value: '\$1.248.000',
-          badge: '↗ +8%',
-          badgeColor: Color(0xFFE5F4E8),
-          highlight: true,
+        ValueListenableBuilder<int>(
+          valueListenable: PendingSalesService.instance.count,
+          builder: (context, count, _) => _SummaryCard(
+            icon: Icons.schedule_outlined,
+            title: 'Ventas por verificar',
+            value: '$count',
+          ),
         ),
       ],
-    );
+      if (_puedeInsumos)
+        _SummaryCard(
+          icon: Icons.inventory_2_outlined,
+          title: 'Insumos en nivel mínimo',
+          value: insumosListos ? '$bajoMinimo' : '—',
+          warning: insumosListos && bajoMinimo > 0,
+        ),
+    ];
+
+    return [
+      const SizedBox(height: 28),
+      if (_ventasError != null)
+        _errorRow(_ventasError!, _loadVentas),
+      if (_insumosError != null)
+        _errorRow(_insumosError!, _loadInsumos),
+      GridView.count(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.45,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: cards,
+      ),
+    ];
   }
 
-  Widget _buildSalesCard() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(18, 20, 14, 16),
-      decoration: _cardDecoration(),
-      child: Column(
+  Widget _errorRow(String message, VoidCallback onRetry) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Text(
-                'Ventas',
-                style: GoogleFonts.poppins(
-                  color: ink,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const Spacer(),
-              _periodChip(
-                'Hoy',
-                onTap: () => setState(() => _selectedPeriod = 'Hoy'),
-                selected: _selectedPeriod == 'Hoy',
-              ),
-              const SizedBox(width: 8),
-              _periodChip(
-                '7 días',
-                onTap: () => setState(() => _selectedPeriod = '7 días'),
-                selected: _selectedPeriod == '7 días',
-              ),
-              const SizedBox(width: 8),
-              _periodChip(
-                '30 días',
-                onTap: () => setState(() => _selectedPeriod = '30 días'),
-                selected: _selectedPeriod == '30 días',
-              ),
-            ],
-          ),
-          const SizedBox(height: 22),
-          SizedBox(
-            height: 205,
-            child: _SalesChart(
-              values: _salesValues[_selectedPeriod]!,
-              labels: _salesLabels[_selectedPeriod]!,
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.poppins(color: red, fontSize: 14),
             ),
           ),
+          TextButton(onPressed: onRetry, child: const Text('Reintentar')),
         ],
       ),
     );
   }
 
-  Widget _periodChip(
-    String label, {
-    required VoidCallback onTap,
-    bool selected = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected ? red : const Color(0xFFFFF8F7),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: red.withValues(alpha: 0.35)),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.poppins(
-            color: selected ? Colors.white : muted,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
+  // --------------------------------------------------- actividad reciente
+
+  /// Las 5 ventas más recientes (el backend las entrega de la más nueva a la
+  /// más antigua). Solo con permiso de ventas.
+  List<Widget> _buildRecentSection() {
+    if (!_puedeVentas) return const [];
+    final recientes = _ventas.take(5).toList();
+    if (!_ventasLoading && _ventasError == null && recientes.isEmpty) {
+      return const [];
+    }
+    return [
+      const SizedBox(height: 34),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Actividad reciente',
+            style: GoogleFonts.poppins(
+              color: ink,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
+          GestureDetector(
+            onTap: () => openSalesManagement(context),
+            child: Text(
+              'Ver todos  →',
+              style: GoogleFonts.poppins(
+                color: ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
-    );
+      const SizedBox(height: 16),
+      if (_ventasLoading && _ventas.isEmpty)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ...recientes.map(_buildRecentSale),
+    ];
   }
 
-  Widget _buildRecentSale(_RecentSale sale) {
+  Widget _buildRecentSale(Venta sale) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       decoration: _cardDecoration(),
       child: Row(
         children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sale.codigo,
+                  style: GoogleFonts.poppins(color: ink, fontSize: 16),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  sale.clienteNombre,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                sale.id,
-                style: GoogleFonts.poppins(color: ink, fontSize: 16),
+                formatCop(sale.monto.round()),
+                style: GoogleFonts.poppins(
+                  color: ink,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
-                sale.customer,
-                style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                sale.estadoLabel,
+                style: GoogleFonts.poppins(color: muted, fontSize: 13),
               ),
             ],
-          ),
-          const Spacer(),
-          Text(
-            sale.amount,
-            style: GoogleFonts.poppins(
-              color: ink,
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-            ),
           ),
         ],
       ),
@@ -329,7 +443,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       decoration: BoxDecoration(
         color: page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
+        border: const Border(top: BorderSide(color: Color(0xFFEBCBC8))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -379,15 +493,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ],
     );
   }
-
-  static const _recentSales = [
-    _RecentSale('VEN-2024-0156', 'Maria González', '\$144.000'),
-    _RecentSale('VEN-2024-0155', 'Carlos Martínez', '\$92.000'),
-    _RecentSale('VEN-2024-0154', 'Ana Rodríguez', '\$110.000'),
-    _RecentSale('VEN-2024-0153', 'Jorge Vargas', '\$156.000'),
-    _RecentSale('VEN-2024-0152', 'Patricia Soto', '\$80.000'),
-    _RecentSale('VEN-2024-0151', 'Luis Herrera', '\$58.000'),
-  ];
 }
 
 class _SummaryCard extends StatelessWidget {
@@ -395,19 +500,15 @@ class _SummaryCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
-    required this.badge,
-    required this.badgeColor,
-    this.badgeTextColor,
     this.highlight = false,
+    this.warning = false,
   });
 
   final IconData icon;
   final String title;
   final String value;
-  final String badge;
-  final Color badgeColor;
-  final Color? badgeTextColor;
   final bool highlight;
+  final bool warning;
 
   @override
   Widget build(BuildContext context) {
@@ -421,147 +522,47 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: highlight
-                      ? AdminDashboardScreen.red
-                      : const Color(0xFFF2EEED),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: highlight ? Colors.white : AdminDashboardScreen.red,
-                  size: 20,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                decoration: BoxDecoration(
-                  color: badgeColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  badge,
-                  style: GoogleFonts.poppins(
-                    color: badgeTextColor ?? const Color(0xFF27803D),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: highlight
+                  ? AdminDashboardScreen.red
+                  : const Color(0xFFF2EEED),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: highlight ? Colors.white : AdminDashboardScreen.red,
+              size: 20,
+            ),
           ),
           const Spacer(),
           Text(
             title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.poppins(
               color: AdminDashboardScreen.muted,
               fontSize: 13,
             ),
           ),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              color: highlight ? AdminDashboardScreen.red : Colors.black,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: GoogleFonts.poppins(
+                color: highlight || warning
+                    ? AdminDashboardScreen.red
+                    : Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
       ),
     );
   }
-}
-
-class _SalesChart extends StatelessWidget {
-  const _SalesChart({required this.values, required this.labels});
-
-  final List<int> values;
-  final List<String> labels;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _SalesChartPainter(values: values, labels: labels),
-      child: const SizedBox.expand(),
-    );
-  }
-}
-
-class _SalesChartPainter extends CustomPainter {
-  const _SalesChartPainter({required this.values, required this.labels});
-
-  final List<int> values;
-  final List<String> labels;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const red = Color(0xFFB9000C);
-    final gridPaint = Paint()
-      ..color = const Color(0xFFD8D0CE)
-      ..strokeWidth = 1;
-    final barPaint = Paint()..color = red;
-
-    const left = 50.0;
-    const bottom = 178.0;
-    final chartWidth = size.width - left - 4;
-    final chartHeight = 148.0;
-
-    for (var i = 0; i <= 4; i++) {
-      final y = bottom - (chartHeight / 4 * i);
-      canvas.drawLine(Offset(left, y), Offset(size.width, y), gridPaint);
-      _drawText(
-        canvas,
-        '\$${i * 100}k',
-        Offset(0, y - 7),
-        const TextStyle(color: Color(0xFF6E6A68), fontSize: 11),
-      );
-    }
-    for (var i = 0; i < labels.length; i++) {
-      final x = left + chartWidth / labels.length * i;
-      canvas.drawLine(
-        Offset(x, bottom - chartHeight),
-        Offset(x, bottom),
-        gridPaint,
-      );
-      final barWidth = chartWidth / labels.length * 0.68;
-      final barHeight = values[i] / 450 * chartHeight;
-      final rect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(x + 5, bottom - barHeight, barWidth, barHeight),
-        const Radius.circular(4),
-      );
-      canvas.drawRRect(rect, barPaint);
-      _drawText(
-        canvas,
-        labels[i],
-        Offset(x + 2, bottom + 10),
-        const TextStyle(color: Color(0xFF6E6A68), fontSize: 11),
-      );
-    }
-  }
-
-  void _drawText(Canvas canvas, String text, Offset offset, TextStyle style) {
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    painter.paint(canvas, offset);
-  }
-
-  @override
-  bool shouldRepaint(covariant _SalesChartPainter oldDelegate) =>
-      oldDelegate.values != values || oldDelegate.labels != labels;
-}
-
-class _RecentSale {
-  const _RecentSale(this.id, this.customer, this.amount);
-
-  final String id;
-  final String customer;
-  final String amount;
 }

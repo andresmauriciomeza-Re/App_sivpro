@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,15 +11,25 @@ import '../../config/api_config.dart';
 import '../../network/api_exception.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
+import '../../shared/pending_sales_service.dart';
 import '../../shared/search.dart';
+import '../../shared/validators.dart';
 import '../../theme/app_colors.dart';
+import '../services/clients_repository.dart';
+import '../services/indicators_service.dart';
+import '../services/insumos_repository.dart';
+import '../services/no_conformes_repository.dart';
 import '../services/products_repository.dart';
+import '../services/providers_repository.dart';
 import '../services/production_repository.dart';
+import '../services/purchases_repository.dart';
 import '../services/sales_repository.dart';
+import '../services/ventas_repository.dart';
 import '../widgets/sales_pending_badge.dart';
 
 part 'purchases/admin_profile.dart';
 part 'purchases/clients.dart';
+part 'purchases/indicators.dart';
 part 'purchases/production.dart';
 part 'purchases/products.dart';
 part 'purchases/more_options.dart';
@@ -188,7 +201,7 @@ class PurchasesScreen extends StatelessWidget {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
+      initials: currentUserInitials(),
     );
   }
 

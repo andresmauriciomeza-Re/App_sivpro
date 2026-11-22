@@ -206,7 +206,7 @@ class _EmployeeReturnsScreenState extends State<EmployeeReturnsScreen> {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('María González'),
+      initials: currentUserInitials(),
     );
   }
 
@@ -1079,7 +1079,7 @@ class _ReturnManagementScreenState extends State<_ReturnManagementScreen> {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('María González'),
+      initials: currentUserInitials(),
     );
   }
 

@@ -99,7 +99,7 @@ class EmployeeSalesModulesScreen extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return AppHeader(
       title: 'La Sirena Pizza',
-      initials: getInitials('María González'),
+      initials: currentUserInitials(),
     );
   }
 

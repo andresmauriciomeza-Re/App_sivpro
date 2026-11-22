@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/auth_service.dart';
 import '../../network/api_exception.dart';
 import '../../shared/initials.dart';
+import '../../shared/validators.dart';
 import 'menu_screen.dart';
 import '../../auth/login_screen.dart';
 import '../widgets/bottom_nav.dart';
@@ -82,11 +83,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _guardarPerfil() async {
     if (_guardando) return;
     FocusScope.of(context).unfocus();
+    final correo = _correoController.text.trim();
+    final telefono = _telefonoController.text.trim();
+    final errorContacto = validateProfileContact(correo, telefono);
+    if (errorContacto != null) {
+      _showMessage(errorContacto);
+      return;
+    }
     setState(() => _guardando = true);
     try {
       final usuario = await AuthService.instance.actualizarPerfil(
-        correo: _correoController.text.trim(),
-        telefono: _telefonoController.text.trim(),
+        correo: correo,
+        telefono: telefono,
       );
       if (!mounted) return;
       setState(() {
@@ -270,13 +278,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 6),
                     _campoTexto(_nombreController.text),
                     const SizedBox(height: 16),
+                    _campoLabel(Icons.badge_outlined, 'Tipo de documento'),
+                    const SizedBox(height: 6),
+                    _campoTexto(_usuario?.tipoDocumento ?? ''),
+                    const SizedBox(height: 16),
+
+                    _campoLabel(Icons.badge_outlined, 'Número de documento'),
+                    const SizedBox(height: 6),
+                    _campoTexto(_usuario?.numeroDocumento ?? ''),
+                    const SizedBox(height: 16),
 
                     _campoLabel(Icons.email_outlined, 'Correo electrónico'),
                     const SizedBox(height: 6),
                     _campoEditable(
                       _correoController,
                       keyboardType: TextInputType.emailAddress,
-                      maxLength: 60,
+                      maxLength: 255,
                     ),
                     const SizedBox(height: 16),
 

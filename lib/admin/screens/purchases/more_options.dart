@@ -68,7 +68,7 @@ class MoreOptionsScreen extends StatelessWidget {
     return AppHeader(
       title: 'La Sirena Pizza',
       onBack: () => Navigator.of(context).pop(),
-      initials: getInitials('Gloria Inés Vargas'),
+      initials: currentUserInitials(),
     );
   }
 
@@ -94,7 +94,7 @@ class MoreOptionsScreen extends StatelessWidget {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    getInitials('Gloria Inés Vargas'),
+                    currentUserInitials(),
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 32,
@@ -108,7 +108,7 @@ class MoreOptionsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Gloria Inés Vargas',
+                        AuthService.instance.currentName ?? '',
                         style: GoogleFonts.poppins(
                           color: _ink,
                           fontSize: 23,
@@ -116,7 +116,7 @@ class MoreOptionsScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Administrador',
+                        AuthService.instance.usuario?.rol ?? '',
                         style: GoogleFonts.poppins(
                           color: _muted,
                           fontSize: 17,

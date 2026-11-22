@@ -207,6 +207,12 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
         _loading = false;
         _errorMessage = error.message;
       });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _errorMessage = 'No se pudo completar la operación.';
+      });
     }
   }
 
@@ -325,6 +331,38 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
     await _loadProducts();
   }
 
+  bool _changingState = false;
+
+  Future<void> _confirmChangeState(_Product product, String estado) async {
+    if (_changingState) return;
+    _changingState = true;
+    try {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Cambiar estado'),
+          content: Text(
+            '¿Cambiar el estado de ${product.name} a "$estado"?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Cambiar'),
+            ),
+          ],
+        ),
+      );
+      if (ok != true || !mounted) return;
+      await _changeState(product, estado);
+    } finally {
+      _changingState = false;
+    }
+  }
+
   Future<void> _changeState(_Product product, String estado) async {
     try {
       await ProductsRepository.instance.cambiarEstado(
@@ -337,6 +375,11 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No se pudo completar la operación.')));
     }
   }
 
@@ -349,7 +392,6 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
   }
 
   Widget _productCard(_Product product) {
-    final isLowStock = product.stock != null && product.stock! <= 25;
     return Container(
       padding: const EdgeInsets.fromLTRB(17, 17, 17, 14),
       decoration: BoxDecoration(
@@ -457,9 +499,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
               children: [
                 Icon(
                   Icons.inventory_2_outlined,
-                  color: isLowStock
-                      ? PurchasesScreen.red
-                      : const Color(0xFF167B27),
+                  color: PurchasesScreen.muted,
                   size: 21,
                 ),
                 const SizedBox(width: 6),
@@ -468,9 +508,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                       ? 'Stock: ${product.stockParts ?? '—'} partes'
                       : 'Stock: ${product.stock ?? '—'} ${product.unit}',
                   style: GoogleFonts.poppins(
-                    color: isLowStock
-                        ? PurchasesScreen.red
-                        : const Color(0xFF167B27),
+                    color: PurchasesScreen.ink,
                     fontSize: 17,
                   ),
                 ),
@@ -509,13 +547,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
 
   Widget _estadoBadge(_Product product) {
     final disponible = product.estado == 'Disponible';
-    return PopupMenuButton<String>(
-      onSelected: (estado) => _changeState(product, estado),
-      itemBuilder: (_) => const [
-        PopupMenuItem(value: 'Automático', child: Text('Automático')),
-        PopupMenuItem(value: 'Descontinuado', child: Text('Descontinuado')),
-      ],
-      child: Container(
+    final pill = Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
         decoration: BoxDecoration(
           color: disponible ? const Color(0xFFE3F2E5) : const Color(0xFFFFE8EB),
@@ -529,7 +561,16 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
-      ),
+      );
+    // Sin Producción > Productos > Editar la píldora solo informa.
+    if (!Permisos.puede('Producción', 'Productos', 'Editar')) return pill;
+    return PopupMenuButton<String>(
+      onSelected: (estado) => _confirmChangeState(product, estado),
+      itemBuilder: (_) => const [
+        PopupMenuItem(value: 'Automático', child: Text('Automático')),
+        PopupMenuItem(value: 'Descontinuado', child: Text('Descontinuado')),
+      ],
+      child: pill,
     );
   }
 
@@ -641,6 +682,12 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
       setState(() {
         _loadingDetail = false;
         _detailError = error.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingDetail = false;
+        _detailError = 'No se pudo completar la operación.';
       });
     }
   }
@@ -1172,6 +1219,12 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
         _loadingCategories = false;
         _categoryError = error.message;
       });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingCategories = false;
+        _categoryError = 'No se pudo completar la operación.';
+      });
     }
   }
 
@@ -1600,6 +1653,10 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       _avisar('Ingresa valores numéricos válidos.');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _avisar('No se pudo completar la operación.');
     }
   }
 
@@ -1687,6 +1744,9 @@ class _ProductFichaTecnicaEditorState
   final List<String> _pasos = [];
   String _medida = 'kg';
   String? _insumoSeleccionadoId;
+  List<Insumo> _catalogo = const [];
+  bool _cargandoCatalogo = true;
+  String? _errorCatalogo;
 
   @override
   void initState() {
@@ -1695,6 +1755,31 @@ class _ProductFichaTecnicaEditorState
     _porcionesController = TextEditingController(text: widget.ficha.porciones);
     _insumos.addAll(widget.ficha.insumos);
     _pasos.addAll(widget.ficha.pasos);
+    _cargarCatalogo();
+  }
+
+  /// Carga los insumos activos reales para poder elegirlos en la ficha.
+  Future<void> _cargarCatalogo() async {
+    setState(() {
+      _cargandoCatalogo = true;
+      _errorCatalogo = null;
+    });
+    try {
+      final insumos = await InsumosRepository.instance.listar(estado: true);
+      if (!mounted) return;
+      setState(() {
+        _catalogo = insumos;
+        _cargandoCatalogo = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _cargandoCatalogo = false;
+        _errorCatalogo = error is ApiException
+            ? error.message
+            : 'No se pudieron cargar los insumos.';
+      });
+    }
   }
 
   @override
@@ -1707,18 +1792,14 @@ class _ProductFichaTecnicaEditorState
     super.dispose();
   }
 
-  /// Catálogo de insumos de la pantalla de Insumos (misma biblioteca).
-  List<_Supply> get _insumosCatalogo => _SupplyManagementScreenState._supplies;
-
-  List<_Supply> get _insumosCoincidentes {
+  List<Insumo> get _insumosCoincidentes {
     final query = _insumoSearchController.text;
-    return _insumosCatalogo
+    return _catalogo
         .where(
-          (supply) => matchesSearchQuery(query, [
-            supply.id,
-            supply.categoryId,
-            supply.name,
-            supply.category,
+          (insumo) => matchesSearchQuery(query, [
+            insumo.codigo,
+            insumo.nombre,
+            insumo.categoriaNombre ?? '',
           ]),
         )
         .toList();
@@ -1727,9 +1808,9 @@ class _ProductFichaTecnicaEditorState
   bool get _mostrarResultadosInsumo =>
       _insumoSearchController.text.trim().isNotEmpty;
 
-  _Supply? get _insumoSeleccionado {
-    for (final supply in _insumosCatalogo) {
-      if (supply.id == _insumoSeleccionadoId) return supply;
+  Insumo? get _insumoSeleccionado {
+    for (final insumo in _catalogo) {
+      if (insumo.id.toString() == _insumoSeleccionadoId) return insumo;
     }
     return null;
   }
@@ -1750,14 +1831,18 @@ class _ProductFichaTecnicaEditorState
   void _onInsumoSearchChanged(String value) {
     final resultados = _insumosCoincidentes;
     setState(() {
-      _insumoSeleccionadoId = resultados.isEmpty ? null : resultados.first.id;
+      _insumoSeleccionadoId = resultados.isEmpty
+          ? null
+          : resultados.first.id.toString();
     });
   }
 
-  void _seleccionarInsumo(_Supply supply) {
+  void _seleccionarInsumo(Insumo insumo) {
     setState(() {
-      _insumoSeleccionadoId = supply.id;
-      _medida = _medidas.contains(supply.unit) ? supply.unit : _medidas.first;
+      _insumoSeleccionadoId = insumo.id.toString();
+      _medida = _medidas.contains(insumo.unidadMedida)
+          ? insumo.unidadMedida
+          : _medidas.first;
     });
   }
 
@@ -1775,8 +1860,8 @@ class _ProductFichaTecnicaEditorState
     setState(() {
       _insumos.add(
         _ProductFichaInsumo(
-          insumoId: insumo.id,
-          name: insumo.name,
+          insumoId: insumo.id.toString(),
+          name: insumo.nombre,
           cantidad: '$cantidad',
           medida: _medida,
         ),
@@ -1953,6 +2038,19 @@ class _ProductFichaTecnicaEditorState
   }
 
   Widget _buildInsumoResults() {
+    if (_cargandoCatalogo) return _emptyHint('Cargando insumos...');
+    final errorCatalogo = _errorCatalogo;
+    if (errorCatalogo != null) {
+      return Row(
+        children: [
+          Expanded(child: _emptyHint(errorCatalogo)),
+          TextButton(
+            onPressed: _cargarCatalogo,
+            child: const Text('Reintentar'),
+          ),
+        ],
+      );
+    }
     final resultados = _insumosCoincidentes;
     if (resultados.isEmpty) {
       return _emptyHint('No se encontraron insumos');
@@ -1987,7 +2085,7 @@ class _ProductFichaTecnicaEditorState
                   children: [
                     Expanded(
                       child: Text(
-                        '${visibles[i].id} · ${visibles[i].name}',
+                        '${visibles[i].codigo} · ${visibles[i].nombre}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
@@ -1996,7 +2094,7 @@ class _ProductFichaTecnicaEditorState
                         ),
                       ),
                     ),
-                    if (visibles[i].id == _insumoSeleccionadoId)
+                    if (visibles[i].id.toString() == _insumoSeleccionadoId)
                       const Icon(
                         Icons.check_circle,
                         color: PurchasesScreen.red,
