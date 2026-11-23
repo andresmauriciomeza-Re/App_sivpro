@@ -150,16 +150,24 @@ class LowStockNotificationService with WidgetsBindingObserver {
     _pluginListo = true;
   }
 
-  /// Abre Compras → Insumos si hay sesión y permiso de lectura.
+  /// Abre Insumos dentro del menú por permisos (sobre la pantalla de inicio,
+  /// con la misma barra inferior) si hay sesión de personal y permiso.
   void _alTocarNotificacion(NotificationResponse respuesta) {
     if (respuesta.payload != _payload) return;
     if (!AuthService.instance.isAuthenticated || !_puedeLeerInsumos) return;
-    SessionManager.instance.navigatorKey.currentState?.push(
-      MaterialPageRoute<void>(builder: (_) => insumosScreen()),
-    );
+    final navigator = SessionManager.instance.navigatorKey.currentState;
+    if (navigator == null) return;
+    navigator
+      ..popUntil((route) => route.isFirst)
+      ..push(MaterialPageRoute<void>(builder: (_) => insumosScreen()));
   }
 
-  bool get _puedeLeerInsumos => Permisos.puede('Compras', 'Insumos', 'Ver');
+  /// Solo personal (Administrador o Empleado) con Compras › Insumos › Ver.
+  bool get _puedeLeerInsumos {
+    final rol = AuthService.instance.rol;
+    final esPersonal = rol == UserRole.admin || rol == UserRole.empleado;
+    return esPersonal && Permisos.puede('Compras', 'Insumos', 'Ver');
+  }
 
   Future<void> _consultar() async {
     if (_consultando || !_activo || !_permitido) return;

@@ -122,6 +122,10 @@ class _Product {
   );
 }
 
+/// Producción › Productos › Editar: editar datos y cambiar estado.
+bool _puedeEditarProductos() =>
+    Permisos.puede('Producción', 'Productos', 'Editar');
+
 bool _isNetworkImage(String path) {
   return path.startsWith('http://') || path.startsWith('https://');
 }
@@ -233,7 +237,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -249,7 +253,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                     Text(
                       'Gestión Producto',
                       style: GoogleFonts.montserrat(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
                       ),
@@ -258,7 +262,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                     Text(
                       '${_products.length} productos registrados',
                       style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
+                        color: context.pal.secundario(PurchasesScreen.muted),
                         fontSize: 16,
                       ),
                     ),
@@ -278,7 +282,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                               _errorMessage!,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
-                                color: PurchasesScreen.red,
+                                color: context.pal.rojo(PurchasesScreen.red),
                               ),
                             ),
                             TextButton(
@@ -293,7 +297,9 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                         child: Text(
                           'No hay productos para mostrar.',
                           style: GoogleFonts.poppins(
-                            color: PurchasesScreen.muted,
+                            color: context.pal.secundario(
+                              PurchasesScreen.muted,
+                            ),
                           ),
                         ),
                       )
@@ -341,9 +347,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Cambiar estado'),
-          content: Text(
-            '¿Cambiar el estado de ${product.name} a "$estado"?',
-          ),
+          content: Text('¿Cambiar el estado de ${product.name} a "$estado"?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -377,9 +381,9 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
       ).showSnackBar(SnackBar(content: Text(error.message)));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('No se pudo completar la operación.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo completar la operación.')),
+      );
     }
   }
 
@@ -395,9 +399,9 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(17, 17, 17, 14),
       decoration: BoxDecoration(
-        color: PurchasesScreen.page,
+        color: context.pal.tarjeta(PurchasesScreen.page),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5BDB9)),
+        border: Border.all(color: context.pal.borde(Color(0xFFE5BDB9))),
       ),
       child: Column(
         children: [
@@ -419,7 +423,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                     Text(
                       product.name,
                       style: GoogleFonts.poppins(
-                        color: Colors.black,
+                        color: context.pal.texto(Colors.black),
                         fontSize: 23,
                         fontWeight: FontWeight.w700,
                       ),
@@ -435,7 +439,9 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                         Text(
                           product.category,
                           style: GoogleFonts.poppins(
-                            color: PurchasesScreen.muted,
+                            color: context.pal.secundario(
+                              PurchasesScreen.muted,
+                            ),
                             fontSize: 14,
                           ),
                         ),
@@ -446,18 +452,19 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
               ),
             ],
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
-            child: Divider(color: Color(0xFFE5BDB9), height: 1),
+            child: Divider(
+              color: context.pal.borde(Color(0xFFE5BDB9)),
+              height: 1,
+            ),
           ),
           Row(
             children: [
               Text(
-                product.price > 0
-                    ? '\$${_formatPrice(product.price)}'
-                    : 'Sin precio',
+                product.price > 0 ? _formatPrice(product.price) : 'Sin precio',
                 style: GoogleFonts.poppins(
-                  color: Colors.black,
+                  color: context.pal.texto(Colors.black),
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                 ),
@@ -466,10 +473,10 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                 const SizedBox(width: 8),
                 Text(
                   product.largePrice! > 0
-                      ? 'Grande \$${_formatPrice(product.largePrice!)}'
+                      ? 'Grande ${_formatPrice(product.largePrice!)}'
                       : 'Grande sin precio',
                   style: GoogleFonts.poppins(
-                    color: PurchasesScreen.muted,
+                    color: context.pal.secundario(PurchasesScreen.muted),
                     fontSize: 13,
                   ),
                 ),
@@ -477,20 +484,22 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
               const Spacer(),
               IconButton(
                 onPressed: () => _openDetailProduct(product),
-                icon: const Icon(
+                icon: Icon(
                   Icons.visibility_outlined,
-                  color: PurchasesScreen.muted,
+                  color: context.pal.secundario(PurchasesScreen.muted),
                   size: 29,
                 ),
               ),
-              IconButton(
-                onPressed: () => _openEditProduct(product),
-                icon: const Icon(
-                  Icons.edit_outlined,
-                  color: PurchasesScreen.muted,
-                  size: 29,
+              // Sin Producción > Productos > Editar el producto es de solo lectura.
+              if (_puedeEditarProductos())
+                IconButton(
+                  onPressed: () => _openEditProduct(product),
+                  icon: Icon(
+                    Icons.edit_outlined,
+                    color: context.pal.secundario(PurchasesScreen.muted),
+                    size: 29,
+                  ),
                 ),
-              ),
             ],
           ),
           Align(
@@ -499,7 +508,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
               children: [
                 Icon(
                   Icons.inventory_2_outlined,
-                  color: PurchasesScreen.muted,
+                  color: context.pal.secundario(PurchasesScreen.muted),
                   size: 21,
                 ),
                 const SizedBox(width: 6),
@@ -508,7 +517,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                       ? 'Stock: ${product.stockParts ?? '—'} partes'
                       : 'Stock: ${product.stock ?? '—'} ${product.unit}',
                   style: GoogleFonts.poppins(
-                    color: PurchasesScreen.ink,
+                    color: context.pal.texto(PurchasesScreen.ink),
                     fontSize: 17,
                   ),
                 ),
@@ -521,7 +530,7 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
               child: Text(
                 'Pizzas disponibles · Mediana: ${product.availableMedium ?? '—'} · Grande: ${product.availableLarge ?? '—'}',
                 style: GoogleFonts.poppins(
-                  color: PurchasesScreen.muted,
+                  color: context.pal.secundario(PurchasesScreen.muted),
                   fontSize: 14,
                 ),
               ),
@@ -535,12 +544,15 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0ECEB),
+        color: context.pal.campo(Color(0xFFF0ECEB)),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         text,
-        style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 13),
+        style: GoogleFonts.poppins(
+          color: context.pal.texto(PurchasesScreen.ink),
+          fontSize: 13,
+        ),
       ),
     );
   }
@@ -548,82 +560,40 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
   Widget _estadoBadge(_Product product) {
     final disponible = product.estado == 'Disponible';
     final pill = Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-        decoration: BoxDecoration(
-          color: disponible ? const Color(0xFFE3F2E5) : const Color(0xFFFFE8EB),
-          borderRadius: BorderRadius.circular(4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: disponible
+            ? context.pal.exitoFondo(Color(0xFFE3F2E5))
+            : context.pal.errorFondo(Color(0xFFFFE8EB)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        product.estado,
+        style: GoogleFonts.poppins(
+          color: disponible
+              ? context.pal.exitoTexto(Color(0xFF3D824B))
+              : context.pal.rojo(PurchasesScreen.red),
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
         ),
-        child: Text(
-          product.estado,
-          style: GoogleFonts.poppins(
-            color: disponible ? const Color(0xFF3D824B) : PurchasesScreen.red,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      );
+      ),
+    );
     // Sin Producción > Productos > Editar la píldora solo informa.
     if (!Permisos.puede('Producción', 'Productos', 'Editar')) return pill;
-    return PopupMenuButton<String>(
+    return MenuApp<String>(
+      opciones: const ['Automático', 'Descontinuado'],
+      etiqueta: (estado) => estado,
+      valor: product.estado == 'Descontinuado' ? 'Descontinuado' : 'Automático',
+      ancho: 200,
       onSelected: (estado) => _confirmChangeState(product, estado),
-      itemBuilder: (_) => const [
-        PopupMenuItem(value: 'Automático', child: Text('Automático')),
-        PopupMenuItem(value: 'Descontinuado', child: Text('Descontinuado')),
-      ],
       child: pill,
     );
   }
 
-  String _formatPrice(double price) {
-    return price
-        .toStringAsFixed(0)
-        .replaceAllMapped(RegExp(r'(?=(\d{3})+(?!\d))'), (match) => '.');
-  }
+  String _formatPrice(double price) => formatCop(price.round());
 
-  Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 2
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                      fontWeight: i == 2 ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildBottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 2);
 }
 
 class _ProductDetailScreen extends StatefulWidget {
@@ -707,21 +677,21 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     final product = _product;
 
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         child: Column(
           children: [
             _productAppHeader(context),
             SizedBox(
-              height: 72,
+              height: 60,
               child: Row(
                 children: [
                   const SizedBox(width: 24),
                   Text(
                     'Detalle',
                     style: GoogleFonts.montserrat(
-                      color: PurchasesScreen.ink,
-                      fontSize: 32,
+                      color: context.pal.texto(PurchasesScreen.ink),
+                      fontSize: 26,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -729,16 +699,16 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                   Text(
                     '—',
                     style: GoogleFonts.poppins(
-                      color: PurchasesScreen.muted,
-                      fontSize: 23,
+                      color: context.pal.secundario(PurchasesScreen.muted),
+                      fontSize: 19,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(
                     product.id,
                     style: GoogleFonts.poppins(
-                      color: PurchasesScreen.ink,
-                      fontSize: 17,
+                      color: context.pal.texto(PurchasesScreen.ink),
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -750,12 +720,22 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                 onRefresh: () => _loadDetail(showLoading: false),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 25, 24, 25),
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+                  // Misma tarjeta que Gestión Compras (radio, borde y sombra).
                   child: Container(
                     decoration: BoxDecoration(
-                      color: PurchasesScreen.page,
-                      borderRadius: BorderRadius.circular(17),
-                      border: Border.all(color: const Color(0xFFE5BDB9)),
+                      color: context.pal.tarjeta(PurchasesScreen.page),
+                      borderRadius: BorderRadius.circular(_radioTarjeta),
+                      border: Border.all(
+                        color: context.pal.borde(_bordeTarjeta),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: context.pal.sombra(Color(0x0A000000)),
+                          blurRadius: 3,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
@@ -764,8 +744,8 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                           'ID PRODUCTO',
                           product.id,
                           valueStyle: GoogleFonts.poppins(
-                            color: PurchasesScreen.ink,
-                            fontSize: 18,
+                            color: context.pal.texto(PurchasesScreen.ink),
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -773,18 +753,18 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                           'NOMBRE',
                           product.name,
                           valueStyle: GoogleFonts.poppins(
-                            color: PurchasesScreen.ink,
-                            fontSize: 25,
+                            color: context.pal.texto(PurchasesScreen.ink),
+                            fontSize: 19,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
                           child: SizedBox(
                             width: double.infinity,
-                            height: 190,
+                            height: 170,
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                               child: _productImageFor(
                                 product,
                                 fit: BoxFit.cover,
@@ -796,7 +776,7 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                           'ID CATEGORÍA',
                           '${product.idCategoria}  -  ${product.category}',
                           icon: Icons.category_outlined,
-                          valueColor: PurchasesScreen.red,
+                          valueColor: context.pal.rojo(PurchasesScreen.red),
                         ),
                         _detailSection('TIPO', product.type),
                         _detailSection(
@@ -804,25 +784,25 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                               ? 'PRECIO POR PORCIÓN MEDIANA'
                               : 'PRECIO UNITARIO',
                           product.price > 0
-                              ? '\$${_formatPrice(product.price)}'
+                              ? _formatPrice(product.price)
                               : 'Sin precio',
                           valueStyle: GoogleFonts.poppins(
-                            color: PurchasesScreen.red,
-                            fontSize: 27,
+                            color: context.pal.rojo(PurchasesScreen.red),
+                            fontSize: 20,
                             fontWeight: FontWeight.w700,
                           ),
-                          backgroundColor: const Color(0xFFF9F5F4),
+                          backgroundColor: context.pal.campo(Color(0xFFF9F5F4)),
                         ),
                         if (product.largePrice != null)
                           _detailSection(
                             'PRECIO POR PORCIÓN GRANDE',
                             product.largePrice! > 0
-                                ? '\$${_formatPrice(product.largePrice!)}'
+                                ? _formatPrice(product.largePrice!)
                                 : 'Sin precio',
                           ),
                         _detailSection('ESTADO', product.estado),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 25),
+                          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -831,8 +811,10 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                                   'UNIDAD DE VENTA',
                                   product.unit,
                                   GoogleFonts.poppins(
-                                    color: PurchasesScreen.ink,
-                                    fontSize: 20,
+                                    color: context.pal.texto(
+                                      PurchasesScreen.ink,
+                                    ),
+                                    fontSize: 15,
                                   ),
                                 ),
                               ),
@@ -842,15 +824,18 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                                     ? '${product.stockParts ?? '—'}'
                                     : '${product.stock ?? '—'} ${product.unit}',
                                 GoogleFonts.poppins(
-                                  color: PurchasesScreen.ink,
-                                  fontSize: 16,
+                                  color: context.pal.texto(PurchasesScreen.ink),
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                 ),
-                                valueBackground: const Color(0xFFE9E7E6),
+                                valueBackground: context.pal.campo(
+                                  Color(0xFFE9E7E6),
+                                ),
                               ),
                             ],
                           ),
                         ),
+                        _divisor(),
                         if (product.isPizza) ...[
                           _detailSection(
                             'PIZZAS DISPONIBLES MEDIANA',
@@ -892,7 +877,9 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
                                 Text(
                                   _detailError!,
                                   style: GoogleFonts.poppins(
-                                    color: PurchasesScreen.red,
+                                    color: context.pal.rojo(
+                                      PurchasesScreen.red,
+                                    ),
                                   ),
                                 ),
                                 TextButton(
@@ -911,63 +898,69 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
               child: Row(
                 children: [
                   Expanded(
                     child: SizedBox(
-                      height: 72,
+                      height: 44,
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(_product),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: PurchasesScreen.red,
-                          side: const BorderSide(
-                            color: PurchasesScreen.red,
+                          foregroundColor: context.pal.rojo(
+                            PurchasesScreen.red,
+                          ),
+                          side: BorderSide(
+                            color: context.pal.rojo(PurchasesScreen.red),
                             width: 1.5,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: Text(
                           'Cerrar',
                           style: GoogleFonts.poppins(
-                            fontSize: 25,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: SizedBox(
-                      height: 72,
-                      child: ElevatedButton.icon(
-                        onPressed: _openEdit,
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                        label: Text(
-                          'Editar',
-                          style: GoogleFonts.poppins(
+                  if (_puedeEditarProductos()) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 44,
+                        child: ElevatedButton.icon(
+                          onPressed: _openEdit,
+                          icon: const Icon(
+                            Icons.edit_outlined,
                             color: Colors.white,
-                            fontSize: 25,
-                            fontWeight: FontWeight.w700,
+                            size: 18,
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: PurchasesScreen.red,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
+                          label: Text(
+                            'Editar',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.pal.rojoBoton(
+                              PurchasesScreen.red,
+                            ),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -988,8 +981,8 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
           ficha.id,
           icon: Icons.menu_book_outlined,
           valueStyle: GoogleFonts.poppins(
-            color: PurchasesScreen.ink,
-            fontSize: 18,
+            color: context.pal.texto(PurchasesScreen.ink),
+            fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1009,49 +1002,64 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
 
   /// Lista de valores de la ficha técnica (insumos o pasos de preparación).
   Widget _fichaListSection(String label, List<String> items) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 23),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE5BDB9))),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: PurchasesScreen.muted,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 9),
-          if (items.isEmpty)
-            Text(
-              'Sin registros',
-              style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
-                fontSize: 17,
-              ),
-            )
-          else
-            for (final item in items)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  item,
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: _rellenoFila,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: _estiloEtiqueta()),
+              const SizedBox(height: 6),
+              if (items.isEmpty)
+                Text(
+                  'Sin registros',
                   style: GoogleFonts.poppins(
-                    color: PurchasesScreen.ink,
-                    fontSize: 17,
+                    color: context.pal.secundario(PurchasesScreen.muted),
+                    fontSize: 14,
                   ),
-                ),
-              ),
-        ],
-      ),
+                )
+              else
+                for (final item in items)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: Text(
+                      item,
+                      style: GoogleFonts.poppins(
+                        color: context.pal.texto(PurchasesScreen.ink),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+            ],
+          ),
+        ),
+        _divisor(),
+      ],
     );
   }
+
+  /// Tarjeta y divisores con el mismo borde suave de Gestión Compras.
+  static const double _radioTarjeta = 14;
+  static const Color _bordeTarjeta = Color(0xFFE8DDDB);
+  static const EdgeInsets _rellenoFila = EdgeInsets.fromLTRB(20, 14, 20, 14);
+
+  /// Línea divisoria sutil con margen a ambos lados.
+  Widget _divisor() => Divider(
+    height: 1,
+    thickness: 1,
+    indent: 20,
+    endIndent: 20,
+    color: context.pal.borde(_bordeTarjeta),
+  );
+
+  TextStyle _estiloEtiqueta() => GoogleFonts.poppins(
+    color: context.pal.secundario(PurchasesScreen.muted),
+    fontSize: 12,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.8,
+  );
 
   Widget _productAppHeader(BuildContext context) {
     return AppHeader(
@@ -1069,47 +1077,47 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     Color? valueColor,
     Color? backgroundColor,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 23),
-      decoration: BoxDecoration(
-        color: backgroundColor ?? PurchasesScreen.page,
-        border: const Border(bottom: BorderSide(color: Color(0xFFE5BDB9))),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: PurchasesScreen.muted,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 9),
-          Row(
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: _rellenoFila,
+          color: backgroundColor ?? context.pal.tarjeta(PurchasesScreen.page),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (icon != null) ...[
-                Icon(icon, color: PurchasesScreen.muted, size: 23),
-                const SizedBox(width: 10),
-              ],
-              Expanded(
-                child: Text(
-                  value,
-                  style:
-                      valueStyle ??
-                      GoogleFonts.poppins(
-                        color: valueColor ?? PurchasesScreen.ink,
-                        fontSize: 20,
-                      ),
-                ),
+              Text(label, style: _estiloEtiqueta()),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  if (icon != null) ...[
+                    Icon(
+                      icon,
+                      color: context.pal.secundario(PurchasesScreen.muted),
+                      size: 19,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      value,
+                      style:
+                          valueStyle ??
+                          GoogleFonts.poppins(
+                            color:
+                                valueColor ??
+                                context.pal.texto(PurchasesScreen.ink),
+                            fontSize: 15,
+                          ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        _divisor(),
+      ],
     );
   }
 
@@ -1122,16 +1130,8 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            color: PurchasesScreen.muted,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
-        ),
-        const SizedBox(height: 9),
+        Text(label, style: _estiloEtiqueta()),
+        const SizedBox(height: 6),
         Container(
           padding: valueBackground == null
               ? EdgeInsets.zero
@@ -1148,11 +1148,7 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     );
   }
 
-  String _formatPrice(double price) {
-    return price
-        .toStringAsFixed(0)
-        .replaceAllMapped(RegExp(r'(?=(\d{3})+(?!\d))'), (match) => '.');
-  }
+  String _formatPrice(double price) => formatCop(price.round());
 }
 
 class _ProductEditScreen extends StatefulWidget {
@@ -1180,27 +1176,38 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
   bool _saving = false;
   String? _categoryError;
 
+  /// Errores de validación local por campo (clave del backend).
+  Map<String, String> _errores = const {};
+
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.product.name);
     _imageUrlController = TextEditingController(text: widget.product.imagePath);
     _priceController = TextEditingController(
-      text: widget.product.price > 0 ? widget.product.price.toString() : '',
+      text: widget.product.price > 0
+          ? textoInicialNumero(widget.product.price)
+          : '',
     );
     _largePriceController = TextEditingController(
-      text: widget.product.largePrice?.toString() ?? '',
+      text: textoInicialNumero(widget.product.largePrice),
     );
     _unitController = TextEditingController(text: widget.product.unit);
     _contentController = TextEditingController(
-      text: widget.product.content?.toString() ?? '',
+      text: textoInicialNumero(widget.product.content),
     );
     _unitsPerPackageController = TextEditingController(
       text: widget.product.unitsPerPackage?.toString() ?? '',
     );
     _category = widget.product.idCategoria.toString();
-    _contentUnit = widget.product.contentUnit;
-    _purchaseUnit = widget.product.purchaseUnit;
+    // Un valor fuera de la lista dejaría el desplegable sin opción válida.
+    _contentUnit =
+        unidadesContenidoProducto.contains(widget.product.contentUnit)
+        ? widget.product.contentUnit
+        : null;
+    _purchaseUnit = unidadesCompraProducto.contains(widget.product.purchaseUnit)
+        ? widget.product.purchaseUnit
+        : null;
     _loadCategories();
   }
 
@@ -1243,7 +1250,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -1256,12 +1263,14 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(27, 28, 27, 28),
                   decoration: BoxDecoration(
-                    color: PurchasesScreen.page,
+                    color: context.pal.tarjeta(PurchasesScreen.page),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFE0D9D7)),
-                    boxShadow: const [
+                    border: Border.all(
+                      color: context.pal.borde(Color(0xFFE0D9D7)),
+                    ),
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x12000000),
+                        color: context.pal.sombra(Color(0x12000000)),
                         blurRadius: 8,
                         offset: Offset(0, 3),
                       ),
@@ -1271,13 +1280,20 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _fieldLabel('Nombre'),
-                      _textField(_nameController),
+                      _textField(
+                        _nameController,
+                        errorText: _errores['nombre'],
+                      ),
                       const SizedBox(height: 22),
                       _fieldLabel('Tipo'),
                       Text(widget.product.type),
                       const SizedBox(height: 22),
                       _fieldLabel('Imagen'),
-                      _textField(_imageUrlController, hintText: 'Imagen'),
+                      _textField(
+                        _imageUrlController,
+                        hintText: 'Imagen',
+                        errorText: _errores['imagen'],
+                      ),
                       const SizedBox(height: 18),
                       SizedBox(
                         width: double.infinity,
@@ -1300,8 +1316,8 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                           children: [
                             Text(
                               _categoryError!,
-                              style: const TextStyle(
-                                color: PurchasesScreen.red,
+                              style: TextStyle(
+                                color: context.pal.rojo(PurchasesScreen.red),
                               ),
                             ),
                             TextButton(
@@ -1316,6 +1332,9 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                         DropdownButtonFormField<String>(
                           initialValue: _category,
                           isExpanded: true,
+                          decoration: InputDecoration(
+                            errorText: _errores['id_categoria'],
+                          ),
                           items: _categories
                               .map(
                                 (item) => DropdownMenuItem(
@@ -1337,7 +1356,10 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                       if (widget.product.type == 'Reventa')
                         Text(widget.product.unit)
                       else
-                        _textField(_unitController),
+                        _textField(
+                          _unitController,
+                          errorText: _errores['unidad_venta'],
+                        ),
                       if (widget.product.type == 'Elaborado') ...[
                         const SizedBox(height: 22),
                         _fieldLabel(
@@ -1348,6 +1370,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                         _textField(
                           _priceController,
                           keyboardType: TextInputType.number,
+                          errorText: _errores['precio_venta'],
                         ),
                         if (widget.product.isPizza) ...[
                           const SizedBox(height: 22),
@@ -1355,6 +1378,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                           _textField(
                             _largePriceController,
                             keyboardType: TextInputType.number,
+                            errorText: _errores['precio_grande'],
                           ),
                         ],
                       ],
@@ -1364,12 +1388,14 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                         _textField(
                           _contentController,
                           keyboardType: TextInputType.number,
+                          errorText: _errores['contenido'],
                         ),
                         const SizedBox(height: 22),
                         _fieldLabel('Unidad del contenido'),
                         _dropdownField(
                           value: _contentUnit,
-                          items: const ['ml', 'L'],
+                          items: unidadesContenidoProducto,
+                          errorText: _errores['contenido_unidad'],
                           onChanged: (value) {
                             if (value != null) {
                               setState(() => _contentUnit = value);
@@ -1380,7 +1406,8 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                         _fieldLabel('Unidad de compra'),
                         _dropdownField(
                           value: _purchaseUnit,
-                          items: const ['und', 'paca', 'caja'],
+                          items: unidadesCompraProducto,
+                          errorText: _errores['unidad_compra'],
                           onChanged: (value) {
                             if (value != null) {
                               setState(() => _purchaseUnit = value);
@@ -1394,6 +1421,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                           _textField(
                             _unitsPerPackageController,
                             keyboardType: TextInputType.number,
+                            errorText: _errores['unidades_por_empaque'],
                           ),
                         ],
                       ],
@@ -1404,9 +1432,11 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                             child: OutlinedButton(
                               onPressed: () => Navigator.of(context).pop(),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: PurchasesScreen.red,
-                                side: const BorderSide(
-                                  color: PurchasesScreen.red,
+                                foregroundColor: context.pal.rojo(
+                                  PurchasesScreen.red,
+                                ),
+                                side: BorderSide(
+                                  color: context.pal.rojo(PurchasesScreen.red),
                                   width: 1.5,
                                 ),
                                 padding: const EdgeInsets.symmetric(
@@ -1427,7 +1457,9 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
                             child: ElevatedButton(
                               onPressed: _saving ? null : _saveProduct,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: PurchasesScreen.red,
+                                backgroundColor: context.pal.rojoBoton(
+                                  PurchasesScreen.red,
+                                ),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 17,
@@ -1482,7 +1514,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
           Text(
             'Editar',
             style: GoogleFonts.montserrat(
-              color: PurchasesScreen.ink,
+              color: context.pal.texto(PurchasesScreen.ink),
               fontSize: 32,
               fontWeight: FontWeight.w700,
             ),
@@ -1491,7 +1523,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
           Text(
             '—',
             style: GoogleFonts.poppins(
-              color: PurchasesScreen.muted,
+              color: context.pal.secundario(PurchasesScreen.muted),
               fontSize: 23,
             ),
           ),
@@ -1499,7 +1531,7 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
           Text(
             widget.product.id,
             style: GoogleFonts.poppins(
-              color: PurchasesScreen.ink,
+              color: context.pal.texto(PurchasesScreen.ink),
               fontSize: 17,
             ),
           ),
@@ -1508,8 +1540,8 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
             width: 40,
             height: 40,
             margin: const EdgeInsets.only(right: 16),
-            decoration: const BoxDecoration(
-              color: PurchasesScreen.red,
+            decoration: BoxDecoration(
+              color: context.pal.rojoBoton(PurchasesScreen.red),
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -1532,7 +1564,10 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         label,
-        style: GoogleFonts.poppins(color: PurchasesScreen.muted, fontSize: 20),
+        style: GoogleFonts.poppins(
+          color: context.pal.secundario(PurchasesScreen.muted),
+          fontSize: 20,
+        ),
       ),
     );
   }
@@ -1541,24 +1576,36 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     TextEditingController controller, {
     TextInputType? keyboardType,
     String? hintText,
+    String? errorText,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 21),
+      style: GoogleFonts.poppins(
+        color: context.pal.texto(PurchasesScreen.ink),
+        fontSize: 21,
+      ),
       decoration: InputDecoration(
         hintText: hintText,
+        errorText: errorText,
+        errorMaxLines: 3,
         filled: true,
-        fillColor: const Color(0xFFF7F8F9),
+        fillColor: context.pal.campo(Color(0xFFF7F8F9)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 27,
           vertical: 17,
         ),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: context.pal.borde(Color(0xFFDADADA)),
+            width: 2,
+          ),
         ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: context.pal.rojo(PurchasesScreen.red),
+            width: 2,
+          ),
         ),
       ),
     );
@@ -1568,22 +1615,33 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    String? errorText,
   }) {
     return DropdownButtonFormField<String>(
       initialValue: value,
       isExpanded: true,
       onChanged: onChanged,
       icon: const Icon(Icons.keyboard_arrow_down),
-      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 18),
-      decoration: const InputDecoration(
+      style: GoogleFonts.poppins(
+        color: context.pal.texto(PurchasesScreen.ink),
+        fontSize: 18,
+      ),
+      decoration: InputDecoration(
+        errorText: errorText,
         filled: true,
-        fillColor: Color(0xFFF7F8F9),
+        fillColor: context.pal.campo(Color(0xFFF7F8F9)),
         contentPadding: EdgeInsets.symmetric(horizontal: 27, vertical: 17),
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
+          borderSide: BorderSide(
+            color: context.pal.borde(Color(0xFFDADADA)),
+            width: 2,
+          ),
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
+          borderSide: BorderSide(
+            color: context.pal.rojo(PurchasesScreen.red),
+            width: 2,
+          ),
         ),
       ),
       items: [
@@ -1600,48 +1658,47 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
   }
 
   Future<void> _saveProduct() async {
-    final body = <String, Object?>{
-      'id_categoria': int.parse(_category),
-      'nombre': _nameController.text.trim(),
-      'unidad_venta': widget.product.type == 'Reventa'
-          ? 'und'
-          : _unitController.text.trim(),
-      'imagen': _imageUrlController.text.trim(),
-    };
+    if (_saving) return;
+    // PUT parcial: imagen solo si cambió (un '' la borraría); la galería
+    // (imagenes) nunca se envía desde la móvil.
+    final p = widget.product;
+    final edicion = construirEdicionProducto(
+      original: ProductoOriginal(
+        tipo: p.type,
+        esPizza: p.isPizza,
+        idCategoria: p.idCategoria,
+        nombre: p.name,
+        unidadVenta: p.unit,
+        imagen: p.imagePath,
+        precio: p.price,
+        precioGrande: p.largePrice,
+        contenido: p.content,
+        contenidoUnidad: p.contentUnit,
+        unidadCompra: p.purchaseUnit,
+        unidadesPorEmpaque: p.unitsPerPackage,
+      ),
+      idCategoria: _category,
+      nombre: _nameController.text,
+      unidadVenta: _unitController.text,
+      imagen: _imageUrlController.text,
+      precio: _priceController.text,
+      precioGrande: _largePriceController.text,
+      contenido: _contentController.text,
+      contenidoUnidad: _contentUnit,
+      unidadCompra: _purchaseUnit,
+      unidadesPorEmpaque: _unitsPerPackageController.text,
+    );
+    setState(() => _errores = edicion.errores);
+    if (!edicion.valido) {
+      _avisar(edicion.errores['_general'] ?? 'Revisa los campos marcados.');
+      return;
+    }
 
     try {
-      if (widget.product.type == 'Elaborado') {
-        final price = _priceController.text.trim();
-        final largePrice = _largePriceController.text.trim();
-        if (price.isNotEmpty) {
-          body['precio_venta'] = _parseNumber(price);
-        }
-        if (widget.product.isPizza && largePrice.isNotEmpty) {
-          body['precio_grande'] = _parseNumber(largePrice);
-        }
-      } else {
-        final content = _contentController.text.trim();
-        if (content.isNotEmpty) {
-          body['contenido'] = _parseNumber(content);
-        }
-        if (_contentUnit != null) {
-          body['contenido_unidad'] = _contentUnit;
-        }
-        if (_purchaseUnit != null) {
-          body['unidad_compra'] = _purchaseUnit;
-        }
-        final units = _unitsPerPackageController.text.trim();
-        if (_purchaseUnit != null &&
-            _purchaseUnit != 'und' &&
-            units.isNotEmpty) {
-          body['unidades_por_empaque'] = int.parse(units);
-        }
-      }
-
       setState(() => _saving = true);
       final updated = await ProductsRepository.instance.actualizar(
         int.parse(widget.product.id),
-        body,
+        edicion.cuerpo,
       );
       if (!mounted) return;
       Navigator.of(context).pop(_Product.fromApi(updated));
@@ -1649,10 +1706,6 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       _avisar(error.message);
-    } on FormatException {
-      if (!mounted) return;
-      setState(() => _saving = false);
-      _avisar('Ingresa valores numéricos válidos.');
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -1660,638 +1713,6 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     }
   }
 
-  double _parseNumber(String value) {
-    final number = double.tryParse(value);
-    if (number == null || !number.isFinite) throw const FormatException();
-    return number;
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 2
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                      fontWeight: i == 2 ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Editor de la ficha técnica de un producto (tiempo de preparación,
-/// porciones, insumos y pasos de preparación).
-///
-/// Solo se muestra cuando el producto ya tiene una ficha técnica registrada y
-/// avisa cada cambio al formulario de edición que lo contiene.
-class _ProductFichaTecnicaEditor extends StatefulWidget {
-  const _ProductFichaTecnicaEditor({
-    required this.ficha,
-    required this.onChanged,
-  });
-
-  final _ProductFichaTecnica ficha;
-  final ValueChanged<_ProductFichaTecnica> onChanged;
-
-  @override
-  State<_ProductFichaTecnicaEditor> createState() =>
-      _ProductFichaTecnicaEditorState();
-}
-
-class _ProductFichaTecnicaEditorState
-    extends State<_ProductFichaTecnicaEditor> {
-  static const _medidas = ['kg', 'g', 'l', 'ml', 'und'];
-
-  late final TextEditingController _prepTimeController;
-  late final TextEditingController _porcionesController;
-  final _insumoSearchController = TextEditingController();
-  final _cantidadController = TextEditingController();
-  final _pasoController = TextEditingController();
-  final List<_ProductFichaInsumo> _insumos = [];
-  final List<String> _pasos = [];
-  String _medida = 'kg';
-  String? _insumoSeleccionadoId;
-  List<Insumo> _catalogo = const [];
-  bool _cargandoCatalogo = true;
-  String? _errorCatalogo;
-
-  @override
-  void initState() {
-    super.initState();
-    _prepTimeController = TextEditingController(text: widget.ficha.prepTime);
-    _porcionesController = TextEditingController(text: widget.ficha.porciones);
-    _insumos.addAll(widget.ficha.insumos);
-    _pasos.addAll(widget.ficha.pasos);
-    _cargarCatalogo();
-  }
-
-  /// Carga los insumos activos reales para poder elegirlos en la ficha.
-  Future<void> _cargarCatalogo() async {
-    setState(() {
-      _cargandoCatalogo = true;
-      _errorCatalogo = null;
-    });
-    try {
-      final insumos = await InsumosRepository.instance.listar(estado: true);
-      if (!mounted) return;
-      setState(() {
-        _catalogo = insumos;
-        _cargandoCatalogo = false;
-      });
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _cargandoCatalogo = false;
-        _errorCatalogo = error is ApiException
-            ? error.message
-            : 'No se pudieron cargar los insumos.';
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _prepTimeController.dispose();
-    _porcionesController.dispose();
-    _insumoSearchController.dispose();
-    _cantidadController.dispose();
-    _pasoController.dispose();
-    super.dispose();
-  }
-
-  List<Insumo> get _insumosCoincidentes {
-    final query = _insumoSearchController.text;
-    return _catalogo
-        .where(
-          (insumo) => matchesSearchQuery(query, [
-            insumo.codigo,
-            insumo.nombre,
-            insumo.categoriaNombre ?? '',
-          ]),
-        )
-        .toList();
-  }
-
-  bool get _mostrarResultadosInsumo =>
-      _insumoSearchController.text.trim().isNotEmpty;
-
-  Insumo? get _insumoSeleccionado {
-    for (final insumo in _catalogo) {
-      if (insumo.id.toString() == _insumoSeleccionadoId) return insumo;
-    }
-    return null;
-  }
-
-  /// Propaga al formulario la ficha con los valores actuales.
-  void _notificar() {
-    widget.onChanged(
-      _ProductFichaTecnica(
-        id: widget.ficha.id,
-        prepTime: _prepTimeController.text.trim(),
-        porciones: _porcionesController.text.trim(),
-        insumos: List.unmodifiable(_insumos),
-        pasos: List.unmodifiable(_pasos),
-      ),
-    );
-  }
-
-  void _onInsumoSearchChanged(String value) {
-    final resultados = _insumosCoincidentes;
-    setState(() {
-      _insumoSeleccionadoId = resultados.isEmpty
-          ? null
-          : resultados.first.id.toString();
-    });
-  }
-
-  void _seleccionarInsumo(Insumo insumo) {
-    setState(() {
-      _insumoSeleccionadoId = insumo.id.toString();
-      _medida = _medidas.contains(insumo.unidadMedida)
-          ? insumo.unidadMedida
-          : _medidas.first;
-    });
-  }
-
-  void _agregarInsumo() {
-    final insumo = _insumoSeleccionado;
-    if (insumo == null) {
-      _avisar('Busca y selecciona un insumo de la lista.');
-      return;
-    }
-    final cantidad = int.tryParse(_cantidadController.text.trim()) ?? 0;
-    if (cantidad <= 0) {
-      _avisar('Ingresa una cantidad válida para el insumo.');
-      return;
-    }
-    setState(() {
-      _insumos.add(
-        _ProductFichaInsumo(
-          insumoId: insumo.id.toString(),
-          name: insumo.nombre,
-          cantidad: '$cantidad',
-          medida: _medida,
-        ),
-      );
-      _cantidadController.clear();
-    });
-    _notificar();
-  }
-
-  void _eliminarInsumo(int index) {
-    setState(() => _insumos.removeAt(index));
-    _notificar();
-  }
-
-  void _agregarPaso() {
-    final paso = _pasoController.text.trim();
-    if (paso.isEmpty) {
-      _avisar('Describe un paso de la elaboración.');
-      return;
-    }
-    setState(() {
-      _pasos.add(paso);
-      _pasoController.clear();
-    });
-    _notificar();
-  }
-
-  void _eliminarPaso(int index) {
-    setState(() => _pasos.removeAt(index));
-    _notificar();
-  }
-
-  void _avisar(String mensaje) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(mensaje)));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _label('Tiempo de preparación (min)'),
-        _textField(
-          _prepTimeController,
-          keyboardType: TextInputType.number,
-          onChanged: (_) => _notificar(),
-        ),
-        const SizedBox(height: 20),
-        _label('Porciones'),
-        _textField(
-          _porcionesController,
-          keyboardType: TextInputType.number,
-          onChanged: (_) => _notificar(),
-        ),
-        const SizedBox(height: 20),
-        _label('Insumos'),
-        const SizedBox(height: 10),
-        _buildInsumosList(),
-        const SizedBox(height: 12),
-        _buildInsumoAddRow(),
-        const SizedBox(height: 20),
-        _label('Preparación (pasos de elaboración)'),
-        const SizedBox(height: 10),
-        _buildPasosList(),
-        const SizedBox(height: 12),
-        _buildPasoAddRow(),
-      ],
-    );
-  }
-
-  Widget _buildInsumosList() {
-    if (_insumos.isEmpty) {
-      return _emptyHint('Sin insumos agregados');
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var i = 0; i < _insumos.length; i++)
-          Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE5BDB9)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${_insumos[i].name} — ${_insumos[i].cantidad} '
-                    '${_insumos[i].medida}',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      color: PurchasesScreen.ink,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => _eliminarInsumo(i),
-                  icon: const Icon(
-                    Icons.close,
-                    color: PurchasesScreen.muted,
-                    size: 20,
-                  ),
-                  tooltip: 'Quitar insumo',
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildInsumoAddRow() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppSearchField(
-          controller: _insumoSearchController,
-          hint: 'Buscar insumo...',
-          onChanged: _onInsumoSearchChanged,
-          showClearButton: true,
-        ),
-        if (_mostrarResultadosInsumo) ...[
-          const SizedBox(height: 8),
-          _buildInsumoResults(),
-        ],
-        const SizedBox(height: 12),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _label('Cantidad'),
-                  _textField(
-                    _cantidadController,
-                    keyboardType: TextInputType.number,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _label('Medida'),
-                  _dropdownField(
-                    value: _medida,
-                    items: _medidas,
-                    onChanged: (value) {
-                      if (value != null) setState(() => _medida = value);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Padding(
-              padding: const EdgeInsets.only(top: 32),
-              child: _roundAddButton(_agregarInsumo),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInsumoResults() {
-    if (_cargandoCatalogo) return _emptyHint('Cargando insumos...');
-    final errorCatalogo = _errorCatalogo;
-    if (errorCatalogo != null) {
-      return Row(
-        children: [
-          Expanded(child: _emptyHint(errorCatalogo)),
-          TextButton(
-            onPressed: _cargarCatalogo,
-            child: const Text('Reintentar'),
-          ),
-        ],
-      );
-    }
-    final resultados = _insumosCoincidentes;
-    if (resultados.isEmpty) {
-      return _emptyHint('No se encontraron insumos');
-    }
-    final visibles = resultados.take(4).toList();
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE5BDB9)),
-      ),
-      child: Column(
-        children: [
-          for (var i = 0; i < visibles.length; i++)
-            InkWell(
-              onTap: () => _seleccionarInsumo(visibles[i]),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: i == visibles.length - 1
-                          ? Colors.transparent
-                          : const Color(0xFFF0E2E0),
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${visibles[i].codigo} · ${visibles[i].nombre}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    if (visibles[i].id.toString() == _insumoSeleccionadoId)
-                      const Icon(
-                        Icons.check_circle,
-                        color: PurchasesScreen.red,
-                        size: 20,
-                      ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPasosList() {
-    if (_pasos.isEmpty) {
-      return _emptyHint('Sin pasos agregados');
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var i = 0; i < _pasos.length; i++)
-          Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE5BDB9)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${i + 1}.',
-                  style: GoogleFonts.poppins(
-                    color: PurchasesScreen.red,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    _pasos[i],
-                    style: GoogleFonts.poppins(
-                      color: PurchasesScreen.ink,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => _eliminarPaso(i),
-                  icon: const Icon(
-                    Icons.close,
-                    color: PurchasesScreen.muted,
-                    size: 20,
-                  ),
-                  tooltip: 'Quitar paso',
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildPasoAddRow() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _textField(
-            _pasoController,
-            hintText: 'Describe un paso de la elaboración...',
-          ),
-        ),
-        const SizedBox(width: 12),
-        Padding(
-          padding: const EdgeInsets.only(top: 6),
-          child: _roundAddButton(_agregarPaso),
-        ),
-      ],
-    );
-  }
-
-  Widget _roundAddButton(VoidCallback onPressed) {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.red,
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        onPressed: onPressed,
-        icon: const Icon(Icons.add, color: Colors.white, size: 28),
-        tooltip: 'Agregar',
-      ),
-    );
-  }
-
-  Widget _emptyHint(String text) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE5BDB9)),
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(color: PurchasesScreen.muted, fontSize: 14),
-      ),
-    );
-  }
-
-  Widget _label(String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(color: PurchasesScreen.muted, fontSize: 15),
-      ),
-    );
-  }
-
-  Widget _textField(
-    TextEditingController controller, {
-    TextInputType? keyboardType,
-    String? hintText,
-    ValueChanged<String>? onChanged,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      onChanged: onChanged,
-      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 16),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: GoogleFonts.poppins(
-          color: PurchasesScreen.muted,
-          fontSize: 15,
-        ),
-        filled: true,
-        fillColor: const Color(0xFFF7F8F9),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 15,
-        ),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
-        ),
-      ),
-    );
-  }
-
-  Widget _dropdownField({
-    required String? value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      key: ValueKey<String?>('$value'),
-      initialValue: value,
-      isExpanded: true,
-      onChanged: onChanged,
-      icon: const Icon(Icons.keyboard_arrow_down),
-      style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 15),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: const Color(0xFFF7F8F9),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 15,
-        ),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFDADADA), width: 2),
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: PurchasesScreen.red, width: 2),
-        ),
-      ),
-      items: [
-        for (final item in items)
-          DropdownMenuItem<String>(
-            value: item,
-            child: Text(item, maxLines: 1, overflow: TextOverflow.ellipsis),
-          ),
-      ],
-    );
-  }
+  Widget _buildBottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 2);
 }

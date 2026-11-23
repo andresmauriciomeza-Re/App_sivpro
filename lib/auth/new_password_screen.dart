@@ -76,6 +76,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
       Navigator.of(context).push(heroFadeRoute(const PasswordUpdatedScreen()));
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     } finally {
       if (mounted) setState(() => _guardando = false);
     }

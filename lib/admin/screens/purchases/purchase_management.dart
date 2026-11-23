@@ -86,7 +86,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -102,7 +102,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                     Text(
                       'Gestión Compras',
                       style: GoogleFonts.montserrat(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
                       ),
@@ -112,7 +112,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                           ? 'Cargando compras...'
                           : '${_purchases.length} compras registradas',
                       style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
+                        color: context.pal.secundario(PurchasesScreen.muted),
                         fontSize: 18,
                       ),
                     ),
@@ -152,16 +152,22 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? PurchasesScreen.red : PurchasesScreen.page,
+          color: selected
+              ? context.pal.rojoBoton(PurchasesScreen.red)
+              : context.pal.tarjeta(PurchasesScreen.page),
           border: Border.all(
-            color: selected ? PurchasesScreen.red : AppColors.cardBorder,
+            color: selected
+                ? context.pal.rojo(PurchasesScreen.red)
+                : context.pal.borde(AppColors.cardBorder),
           ),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: GoogleFonts.poppins(
-            color: selected ? Colors.white : PurchasesScreen.ink,
+            color: selected
+                ? Colors.white
+                : context.pal.texto(PurchasesScreen.ink),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -188,13 +194,15 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+                style: GoogleFonts.poppins(
+                  color: context.pal.secundario(PurchasesScreen.muted),
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: _load,
                 style: FilledButton.styleFrom(
-                  backgroundColor: PurchasesScreen.red,
+                  backgroundColor: context.pal.rojoBoton(PurchasesScreen.red),
                 ),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Reintentar'),
@@ -212,7 +220,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
             child: Text(
               'No se encontraron compras',
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: 14,
               ),
             ),
@@ -239,12 +247,12 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
         decoration: BoxDecoration(
-          color: PurchasesScreen.page,
+          color: context.pal.tarjeta(PurchasesScreen.page),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE8DDDB)),
-          boxShadow: const [
+          border: Border.all(color: context.pal.borde(Color(0xFFE8DDDB))),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0A000000),
+              color: context.pal.sombra(Color(0x0A000000)),
               blurRadius: 3,
               offset: Offset(0, 1),
             ),
@@ -260,7 +268,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                   child: Text(
                     purchase.proveedorNombre,
                     style: GoogleFonts.poppins(
-                      color: PurchasesScreen.ink,
+                      color: context.pal.texto(PurchasesScreen.ink),
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -281,7 +289,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                       Text(
                         purchase.fecha,
                         style: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
+                          color: context.pal.texto(PurchasesScreen.ink),
                           fontSize: 14,
                         ),
                       ),
@@ -296,7 +304,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                       Text(
                         purchase.nFactura,
                         style: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
+                          color: context.pal.texto(PurchasesScreen.ink),
                           fontSize: 14,
                         ),
                       ),
@@ -312,15 +320,15 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
                   child: Text(
                     _cop(purchase.total),
                     style: GoogleFonts.poppins(
-                      color: PurchasesScreen.red,
+                      color: context.pal.rojo(PurchasesScreen.red),
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.visibility_outlined,
-                  color: PurchasesScreen.muted,
+                  color: context.pal.secundario(PurchasesScreen.muted),
                 ),
               ],
             ),
@@ -342,7 +350,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
   Widget _label(String text) => Text(
     text,
     style: GoogleFonts.poppins(
-      color: PurchasesScreen.muted,
+      color: context.pal.secundario(PurchasesScreen.muted),
       fontSize: 11,
       fontWeight: FontWeight.w600,
     ),
@@ -357,10 +365,12 @@ class _PurchaseStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final received = estado.toLowerCase() == 'recibido';
-    final color = received ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F);
+    final color = received
+        ? context.pal.exitoTexto(Color(0xFF2E7D32))
+        : context.pal.errorTexto(Color(0xFFD32F2F));
     final background = received
-        ? const Color(0xFFE4F4E7)
-        : const Color(0xFFFFE3E6);
+        ? context.pal.exitoFondo(Color(0xFFE4F4E7))
+        : context.pal.errorFondo(Color(0xFFFFE3E6));
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
@@ -453,21 +463,21 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
   Widget build(BuildContext context) {
     final purchase = _purchase;
     return Scaffold(
-      backgroundColor: AppColors.page,
+      backgroundColor: context.pal.fondo(AppColors.page),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.pal.tarjeta(Colors.white),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.ink),
+          icon: Icon(Icons.arrow_back, color: context.pal.texto(AppColors.ink)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Detalle de Compra',
               style: TextStyle(
-                color: AppColors.ink,
+                color: context.pal.texto(AppColors.ink),
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
@@ -477,7 +487,7 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
-                color: AppColors.muted,
+                color: context.pal.secundario(AppColors.muted),
                 fontSize: 13,
               ),
             ),
@@ -508,7 +518,7 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
                     child: Text(
                       _error!,
                       style: GoogleFonts.poppins(
-                        color: AppColors.statusRedFg,
+                        color: context.pal.errorTexto(AppColors.statusRedFg),
                         fontSize: 13,
                       ),
                     ),
@@ -555,8 +565,10 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: PurchasesScreen.red,
-                    side: const BorderSide(color: PurchasesScreen.red),
+                    foregroundColor: context.pal.rojo(PurchasesScreen.red),
+                    side: BorderSide(
+                      color: context.pal.rojo(PurchasesScreen.red),
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
@@ -572,11 +584,15 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
 
   Widget _buildBanner() {
     final anulada = _purchase.esAnulado;
-    final bg = anulada ? const Color(0xFFFFEEF0) : AppColors.bannerGreenBg;
+    final bg = anulada
+        ? context.pal.errorFondo(Color(0xFFFFEEF0))
+        : context.pal.exitoFondo(AppColors.bannerGreenBg);
     final borderColor = anulada
-        ? const Color(0xFFF2B8BE)
-        : AppColors.bannerGreenBorder;
-    final fg = anulada ? const Color(0xFFB3261E) : AppColors.bannerGreenFg;
+        ? context.pal.errorFondo(Color(0xFFF2B8BE))
+        : context.pal.exitoFondo(AppColors.bannerGreenBorder);
+    final fg = anulada
+        ? context.pal.errorTexto(Color(0xFFB3261E))
+        : context.pal.exitoTexto(AppColors.bannerGreenFg);
     final texto = anulada
         ? 'Compra anulada'
               '${_purchase.fechaAnulacion != null ? ' el ${_purchase.fechaAnulacion}' : ''}'
@@ -614,7 +630,7 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
         Text(
           label,
           style: GoogleFonts.poppins(
-            color: AppColors.muted,
+            color: context.pal.secundario(AppColors.muted),
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -626,15 +642,18 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.fieldFill,
+            color: context.pal.campo(AppColors.fieldFill),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.fieldBorder),
+            border: Border.all(color: context.pal.borde(AppColors.fieldBorder)),
           ),
           child: Text(
             value.isEmpty ? '—' : value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
+            style: GoogleFonts.poppins(
+              color: context.pal.texto(AppColors.ink),
+              fontSize: 15,
+            ),
           ),
         ),
       ],
@@ -648,7 +667,7 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
         Text(
           'Detalle de la compra',
           style: GoogleFonts.montserrat(
-            color: AppColors.ink,
+            color: context.pal.texto(AppColors.ink),
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -656,9 +675,11 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.pal.tarjeta(Colors.white),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.headerDivider),
+            border: Border.all(
+              color: context.pal.borde(AppColors.headerDivider),
+            ),
           ),
           child: Column(
             children: [
@@ -668,17 +689,23 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
                   child: Text(
                     'Esta compra no tiene líneas de detalle.',
                     style: GoogleFonts.poppins(
-                      color: AppColors.muted,
+                      color: context.pal.secundario(AppColors.muted),
                       fontSize: 13,
                     ),
                   ),
                 ),
               for (var i = 0; i < purchase.detalle.length; i++) ...[
                 if (i > 0)
-                  const Divider(height: 1, color: AppColors.headerDivider),
+                  Divider(
+                    height: 1,
+                    color: context.pal.borde(AppColors.headerDivider),
+                  ),
                 _buildLineCard(purchase.detalle[i]),
               ],
-              const Divider(height: 1, color: AppColors.headerDivider),
+              Divider(
+                height: 1,
+                color: context.pal.borde(AppColors.headerDivider),
+              ),
               _buildTotals(purchase),
             ],
           ),
@@ -703,7 +730,7 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
                   child: Text(
                     item.nombre,
                     style: GoogleFonts.poppins(
-                      color: AppColors.ink,
+                      color: context.pal.texto(AppColors.ink),
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -713,7 +740,7 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
               Text(
                 _cop(item.subtotal),
                 style: GoogleFonts.poppins(
-                  color: AppColors.ink,
+                  color: context.pal.texto(AppColors.ink),
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
@@ -727,14 +754,14 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
               Text(
                 '${_purchaseQuantity(item.cantidad)} ${item.medida}',
                 style: GoogleFonts.poppins(
-                  color: AppColors.muted,
+                  color: context.pal.secundario(AppColors.muted),
                   fontSize: 13,
                 ),
               ),
               Text(
                 '${_cop(item.precioUnitario)} c/u',
                 style: GoogleFonts.poppins(
-                  color: AppColors.muted,
+                  color: context.pal.secundario(AppColors.muted),
                   fontSize: 13,
                 ),
               ),
@@ -744,7 +771,10 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
           Text(
             'IVA: ${_cop(item.montoIva)}'
             '${item.esNoSolicitado ? '  •  No solicitado' : ''}',
-            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 12),
+            style: GoogleFonts.poppins(
+              color: context.pal.secundario(AppColors.muted),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -760,7 +790,7 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
           Text(
             label,
             style: GoogleFonts.poppins(
-              color: AppColors.ink,
+              color: context.pal.texto(AppColors.ink),
               fontSize: 15,
               fontWeight: strong ? FontWeight.w700 : FontWeight.w400,
             ),
@@ -768,7 +798,9 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
           Text(
             _cop(value),
             style: GoogleFonts.poppins(
-              color: strong ? PurchasesScreen.red : AppColors.ink,
+              color: strong
+                  ? context.pal.rojo(PurchasesScreen.red)
+                  : context.pal.texto(AppColors.ink),
               fontSize: 15,
               fontWeight: FontWeight.w700,
             ),
@@ -781,8 +813,8 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
   Widget _buildTotals(Compra purchase) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: AppColors.fieldFill,
+      decoration: BoxDecoration(
+        color: context.pal.campo(AppColors.fieldFill),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(14),
           bottomRight: Radius.circular(14),
@@ -879,8 +911,8 @@ class _AnularCompraDialogState extends State<_AnularCompraDialog> {
               const SizedBox(height: 6),
               Text(
                 _error!,
-                style: const TextStyle(
-                  color: AppColors.statusRedFg,
+                style: TextStyle(
+                  color: context.pal.errorTexto(AppColors.statusRedFg),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -895,7 +927,9 @@ class _AnularCompraDialogState extends State<_AnularCompraDialog> {
         ),
         FilledButton(
           onPressed: _saving ? null : _submit,
-          style: FilledButton.styleFrom(backgroundColor: PurchasesScreen.red),
+          style: FilledButton.styleFrom(
+            backgroundColor: context.pal.rojoBoton(PurchasesScreen.red),
+          ),
           child: _saving
               ? const SizedBox(
                   width: 18,

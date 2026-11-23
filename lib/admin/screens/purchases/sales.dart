@@ -6,117 +6,94 @@ class SalesScreen extends StatelessWidget {
   static const _modules = [
     (
       icon: Icons.groups_outlined,
-
       title: 'Gestión Clientes',
-
       description: 'Administrar base de clientes',
-
-      highlighted: false,
     ),
-
     (
       icon: Icons.receipt_long_outlined,
-
       title: 'Gestión Ventas',
-
-      description: 'Registro y control de pedidos',
-
-      highlighted: false,
+      description: 'Consulta y cambio de estado de pedidos',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<int>(
-      valueListenable: PendingSalesService.instance.count,
+    final modules = [
+      if (Permisos.ventasClientes) _modules[0],
+      if (Permisos.ventas) _modules[1],
+    ];
 
-      builder: (context, pendingCount, _) {
-        final modules = <({
-          IconData icon,
-          String title,
-          String description,
-          bool highlighted,
-        })>[
-          if (Permisos.ventasClientes) _modules[0],
-          if (Permisos.ventas) _modules[1],
-        ];
+    return Scaffold(
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
 
-        return Scaffold(
-          backgroundColor: PurchasesScreen.page,
+      body: SafeArea(
+        bottom: false,
 
-          body: SafeArea(
-            bottom: false,
+        child: Column(
+          children: [
+            _buildHeader(context),
 
-            child: Column(
-              children: [
-                _buildHeader(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
 
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Gestión de Ventas',
 
-                      children: [
-                        Text(
-                          'Gestión de Ventas',
+                      style: GoogleFonts.montserrat(
+                        color: context.pal.texto(PurchasesScreen.ink),
 
-                          style: GoogleFonts.montserrat(
-                            color: PurchasesScreen.ink,
+                        fontSize: 26,
 
-                            fontSize: 26,
-
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        Text(
-                          'Seleccione el módulo que desea gestionar.',
-
-                          style: GoogleFonts.poppins(
-                            color: PurchasesScreen.muted,
-
-                            fontSize: 15,
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        for (var i = 0; i < modules.length; i++) ...[
-                          _salesModuleCard(
-                            context,
-
-                            icon: modules[i].icon,
-
-                            title: modules[i].title,
-
-                            description: modules[i].description,
-
-                            highlighted: modules[i].highlighted,
-
-                            pendingCount:
-                                modules[i].title == 'Gestión Clientes'
-                                ? 0
-                                : pendingCount,
-                          ),
-
-                          if (i != modules.length - 1)
-                            const SizedBox(height: 24),
-                        ],
-                      ],
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                ),
 
-                _buildBottomNavigation(context),
-              ],
+                    const SizedBox(height: 6),
+
+                    Text(
+                      'Seleccione el módulo que desea gestionar.',
+
+                      style: GoogleFonts.poppins(
+                        color: context.pal.secundario(PurchasesScreen.muted),
+
+                        fontSize: 15,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    for (var i = 0; i < modules.length; i++) ...[
+                      ModuleCard(
+                        icon: modules[i].icon,
+                        title: modules[i].title,
+                        description: modules[i].description,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => switch (modules[i].title) {
+                              'Gestión Clientes' =>
+                                const _ClientManagementScreen(),
+                              _ => const _SalesManagementScreen(),
+                            },
+                          ),
+                        ),
+                      ),
+
+                      if (i != modules.length - 1) const SizedBox(height: 24),
+                    ],
+                  ],
+                ),
+              ),
             ),
-          ),
-        );
-      },
+
+            _buildBottomNavigation(context),
+          ],
+        ),
+      ),
     );
   }
 
@@ -130,258 +107,8 @@ class SalesScreen extends StatelessWidget {
     );
   }
 
-  Widget _salesModuleCard(
-    BuildContext context, {
-
-    required IconData icon,
-
-    required String title,
-
-    required String description,
-
-    required bool highlighted,
-
-    required int pendingCount,
-  }) {
-    final hasPending = pendingCount > 0;
-
-    return GestureDetector(
-      onTap: title == 'Gestión Clientes'
-          ? () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const _ClientManagementScreen(),
-              ),
-            )
-          : () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const _SalesManagementScreen()),
-            ),
-
-      child: Container(
-        height: 270,
-
-        width: double.infinity,
-
-        clipBehavior: Clip.antiAlias,
-
-        decoration: BoxDecoration(
-          color: PurchasesScreen.page,
-
-          borderRadius: BorderRadius.circular(17),
-
-          border: Border.all(
-            color: hasPending
-                ? const Color(0xFFE39A94)
-                : const Color(0xFFE5BDB9),
-
-            width: hasPending ? 2.5 : 1.5,
-          ),
-        ),
-
-        child: Stack(
-          children: [
-            Positioned(
-              top: -74,
-
-              right: -46,
-
-              child: Container(
-                width: 180,
-
-                height: 180,
-
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0ECEB),
-
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-
-            if (hasPending)
-              Positioned(
-                top: 14,
-
-                right: 14,
-
-                child: SalesPendingBadge(
-                  count: pendingCount,
-
-                  fontSize: 13,
-
-                  borderColor: PurchasesScreen.page,
-                ),
-              ),
-
-            if (hasPending)
-              Positioned(
-                top: 22,
-
-                right: 62,
-
-                child: Icon(
-                  Icons.notifications_active_outlined,
-
-                  color: const Color(0xFFB85A52),
-
-                  size: 20,
-                ),
-              ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(34, 53, 20, 20),
-
-              child: Row(
-                children: [
-                  Container(
-                    width: 96,
-
-                    height: 96,
-
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAE8E8),
-
-                      shape: BoxShape.circle,
-                    ),
-
-                    child: Icon(icon, color: PurchasesScreen.red, size: 50),
-                  ),
-
-                  const SizedBox(width: 25),
-
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-
-                      mainAxisAlignment: MainAxisAlignment.center,
-
-                      children: [
-                        Text(
-                          title,
-
-                          style: GoogleFonts.montserrat(
-                            color: PurchasesScreen.ink,
-
-                            fontSize: 25,
-
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        Text(
-                          description,
-
-                          style: GoogleFonts.poppins(
-                            color: PurchasesScreen.muted,
-
-                            fontSize: 16,
-                          ),
-                        ),
-
-                        if (hasPending) ...[
-                          const SizedBox(height: 12),
-
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-
-                            children: [
-                              const Icon(
-                                Icons.schedule_outlined,
-
-                                color: Color(0xFFB85A52),
-
-                                size: 18,
-                              ),
-
-                              const SizedBox(width: 7),
-
-                              Text(
-                                '$pendingCount por verificar',
-
-                                style: GoogleFonts.poppins(
-                                  color: const Color(0xFFB85A52),
-
-                                  fontSize: 14,
-
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-
-      (Icons.shopping_cart_outlined, 'Compras'),
-
-      (Icons.factory_outlined, 'Producción'),
-
-      (Icons.receipt_long_outlined, 'Ventas'),
-
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-
-                    color: i == 3 ? PurchasesScreen.red : PurchasesScreen.muted,
-
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-
-                  Text(
-                    items[i].$2,
-
-                    style: GoogleFonts.poppins(
-                      color: i == 3
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-
-                      fontSize: 12,
-
-                      fontWeight: i == 3 ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildBottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 3);
 }
 
 class _SalesHeaderBar extends StatelessWidget {
@@ -404,10 +131,12 @@ class _SalesHeaderBar extends StatelessWidget {
 
       padding: const EdgeInsets.symmetric(horizontal: 28),
 
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
+      decoration: BoxDecoration(
+        color: context.pal.tarjeta(PurchasesScreen.page),
 
-        border: Border(bottom: BorderSide(color: Color(0xFFEBCBC8))),
+        border: Border(
+          bottom: BorderSide(color: context.pal.borde(Color(0xFFEBCBC8))),
+        ),
       ),
 
       child: Stack(
@@ -425,10 +154,10 @@ class _SalesHeaderBar extends StatelessWidget {
 
                 behavior: HitTestBehavior.opaque,
 
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_back,
 
-                  color: Colors.black,
+                  color: context.pal.texto(Colors.black),
 
                   size: 27,
                 ),
@@ -449,7 +178,7 @@ class _SalesHeaderBar extends StatelessWidget {
                 textAlign: TextAlign.center,
 
                 style: GoogleFonts.montserrat(
-                  color: Colors.black,
+                  color: context.pal.texto(Colors.black),
 
                   fontSize: 24,
 
@@ -474,8 +203,8 @@ class _SalesHeaderBar extends StatelessWidget {
 
                 alignment: Alignment.center,
 
-                decoration: const BoxDecoration(
-                  color: PurchasesScreen.red,
+                decoration: BoxDecoration(
+                  color: context.pal.rojoBoton(PurchasesScreen.red),
 
                   shape: BoxShape.circle,
                 ),
@@ -502,50 +231,51 @@ class _SalesHeaderBar extends StatelessWidget {
 
 /// Colores (fondo, borde y texto) del badge de cada estado de venta.
 ({Color background, Color border, Color foreground}) _ventaEstadoColors(
+  BuildContext context,
   EstadoVenta? estado,
 ) {
   switch (estado) {
     case EstadoVenta.porVerificar:
       return (
-        background: const Color(0xFFFFF1D6),
-        border: const Color(0xFFEFC978),
-        foreground: const Color(0xFFA66500),
+        background: context.pal.avisoFondo(Color(0xFFFFF1D6)),
+        border: context.pal.avisoFondo(Color(0xFFEFC978)),
+        foreground: context.pal.avisoTexto(Color(0xFFA66500)),
       );
     case EstadoVenta.enEspera:
       return (
-        background: const Color(0xFFEDE7FA),
-        border: const Color(0xFFC9B9EE),
-        foreground: const Color(0xFF5B3FA8),
+        background: context.pal.infoFondo(Color(0xFFEDE7FA)),
+        border: context.pal.infoFondo(Color(0xFFC9B9EE)),
+        foreground: context.pal.infoTexto(Color(0xFF5B3FA8)),
       );
     case EstadoVenta.porEntregar:
       return (
-        background: const Color(0xFFE3EDFC),
-        border: const Color(0xFFAECBF0),
-        foreground: const Color(0xFF2A5FA8),
+        background: context.pal.infoFondo(Color(0xFFE3EDFC)),
+        border: context.pal.infoFondo(Color(0xFFAECBF0)),
+        foreground: context.pal.infoTexto(Color(0xFF2A5FA8)),
       );
     case EstadoVenta.completado:
       return (
-        background: const Color(0xFFD3F1D8),
-        border: const Color(0xFF7CC287),
-        foreground: const Color(0xFF1F6B29),
+        background: context.pal.exitoFondo(Color(0xFFD3F1D8)),
+        border: context.pal.exitoFondo(Color(0xFF7CC287)),
+        foreground: context.pal.exitoTexto(Color(0xFF1F6B29)),
       );
     case EstadoVenta.devolucion:
       return (
-        background: const Color(0xFFFFE9D6),
-        border: const Color(0xFFF0B98A),
-        foreground: const Color(0xFFA14A00),
+        background: context.pal.avisoFondo(Color(0xFFFFE9D6)),
+        border: context.pal.avisoFondo(Color(0xFFF0B98A)),
+        foreground: context.pal.avisoTexto(Color(0xFFA14A00)),
       );
     case EstadoVenta.anulado:
       return (
-        background: const Color(0xFFFFE3E6),
-        border: const Color(0xFFF2B8BE),
-        foreground: const Color(0xFFB3261E),
+        background: context.pal.errorFondo(Color(0xFFFFE3E6)),
+        border: context.pal.errorFondo(Color(0xFFF2B8BE)),
+        foreground: context.pal.errorTexto(Color(0xFFB3261E)),
       );
     case null:
       return (
-        background: const Color(0xFFECEAE9),
-        border: const Color(0xFFC9C3C1),
-        foreground: const Color(0xFF5B4643),
+        background: context.pal.campo(Color(0xFFECEAE9)),
+        border: context.pal.borde(Color(0xFFC9C3C1)),
+        foreground: context.pal.secundario(Color(0xFF5B4643)),
       );
   }
 }
@@ -557,7 +287,7 @@ class _VentaEstadoBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = _ventaEstadoColors(venta.estado);
+    final colors = _ventaEstadoColors(context, venta.estado);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -579,7 +309,10 @@ class _VentaEstadoBadge extends StatelessWidget {
 
 /// Lista de ventas del admin (solo consulta).
 class _SalesManagementScreen extends StatefulWidget {
-  const _SalesManagementScreen();
+  const _SalesManagementScreen({this.estadoInicial});
+
+  /// Filtro de estado con el que abre la lista (null = todas).
+  final EstadoVenta? estadoInicial;
 
   @override
   State<_SalesManagementScreen> createState() => _SalesManagementScreenState();
@@ -588,7 +321,7 @@ class _SalesManagementScreen extends StatefulWidget {
 class _SalesManagementScreenState extends State<_SalesManagementScreen> {
   final _searchController = TextEditingController();
   String _query = '';
-  EstadoVenta? _estadoFilter; // null = todos
+  late EstadoVenta? _estadoFilter = widget.estadoInicial; // null = todos
   List<Venta> _sales = const [];
   bool _loading = true;
   String? _error;
@@ -655,7 +388,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -675,7 +408,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                     Text(
                       'Gestión Ventas',
                       style: GoogleFonts.montserrat(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
                       ),
@@ -685,7 +418,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                           ? 'Cargando ventas...'
                           : '${_sales.length} ventas registradas',
                       style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
+                        color: context.pal.secundario(PurchasesScreen.muted),
                         fontSize: 16,
                       ),
                     ),
@@ -730,16 +463,22 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? PurchasesScreen.red : PurchasesScreen.page,
+          color: selected
+              ? context.pal.rojoBoton(PurchasesScreen.red)
+              : context.pal.tarjeta(PurchasesScreen.page),
           border: Border.all(
-            color: selected ? PurchasesScreen.red : AppColors.cardBorder,
+            color: selected
+                ? context.pal.rojo(PurchasesScreen.red)
+                : context.pal.borde(AppColors.cardBorder),
           ),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: GoogleFonts.poppins(
-            color: selected ? Colors.white : PurchasesScreen.ink,
+            color: selected
+                ? Colors.white
+                : context.pal.texto(PurchasesScreen.ink),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -766,13 +505,15 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+                style: GoogleFonts.poppins(
+                  color: context.pal.secundario(PurchasesScreen.muted),
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: _load,
                 style: FilledButton.styleFrom(
-                  backgroundColor: PurchasesScreen.red,
+                  backgroundColor: context.pal.rojoBoton(PurchasesScreen.red),
                 ),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Reintentar'),
@@ -790,7 +531,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
             child: Text(
               'No se encontraron ventas.',
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: 16,
               ),
             ),
@@ -799,7 +540,10 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
       ];
     }
     return [
-      for (final sale in filtered) ...[_saleCard(sale), const SizedBox(height: 18)],
+      for (final sale in filtered) ...[
+        _saleCard(sale),
+        const SizedBox(height: 18),
+      ],
     ];
   }
 
@@ -808,22 +552,22 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1D6),
+        color: context.pal.avisoFondo(Color(0xFFFFF1D6)),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEFC978)),
+        border: Border.all(color: context.pal.avisoFondo(Color(0xFFEFC978))),
       ),
       child: Row(
         children: [
           Container(
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFE1A8),
+            decoration: BoxDecoration(
+              color: context.pal.avisoFondo(Color(0xFFFFE1A8)),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.schedule_outlined,
-              color: Color(0xFFA66500),
+              color: context.pal.avisoTexto(Color(0xFFA66500)),
               size: 22,
             ),
           ),
@@ -832,7 +576,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
             child: Text(
               '$count pedido${count == 1 ? '' : 's'} pendiente${count == 1 ? '' : 's'} por verificar',
               style: GoogleFonts.poppins(
-                color: const Color(0xFF8A5600),
+                color: context.pal.avisoTexto(Color(0xFF8A5600)),
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -849,8 +593,8 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(15, 16, 14, 13),
         decoration: BoxDecoration(
-          color: PurchasesScreen.page,
-          border: Border.all(color: const Color(0xFFE5BDB9)),
+          color: context.pal.tarjeta(PurchasesScreen.page),
+          border: Border.all(color: context.pal.borde(Color(0xFFE5BDB9))),
           borderRadius: BorderRadius.circular(11),
         ),
         child: Column(
@@ -866,7 +610,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                       Text(
                         sale.codigo,
                         style: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
+                          color: context.pal.texto(PurchasesScreen.ink),
                           fontSize: 22,
                           fontWeight: FontWeight.w500,
                         ),
@@ -891,7 +635,9 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _saleInfo('MONTO', formatCop(sale.monto.round()))),
+                Expanded(
+                  child: _saleInfo('MONTO', formatCop(sale.monto.round())),
+                ),
                 Expanded(
                   child: _saleInfo(
                     sale.ventaLocal ? 'ORIGEN' : 'RECOGIDA',
@@ -902,29 +648,24 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
                 ),
               ],
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 14, bottom: 8),
-              child: Divider(height: 1, color: Color(0xFFE5D9D7)),
+              child: Divider(
+                height: 1,
+                color: context.pal.borde(Color(0xFFE5D9D7)),
+              ),
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Ver detalle',
-                    style: GoogleFonts.poppins(
-                      color: PurchasesScreen.muted,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(
-                    Icons.visibility_outlined,
-                    color: PurchasesScreen.muted,
-                    size: 21,
-                  ),
-                ],
+              child: IconButton(
+                onPressed: () => _openDetail(sale),
+                tooltip: 'Ver detalle',
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                icon: Icon(
+                  Icons.visibility_outlined,
+                  color: context.pal.secundario(PurchasesScreen.muted),
+                  size: 21,
+                ),
               ),
             ),
           ],
@@ -934,9 +675,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
   }
 
   void _openDetail(Venta sale) {
-    Navigator.of(
-      context,
-    ).push(
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => _SaleDetailScreen(sale: sale, onUpdated: _replace),
       ),
@@ -953,8 +692,10 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
     setState(() => _sales = sales);
   }
 
-  TextStyle _labelStyle() =>
-      GoogleFonts.poppins(color: PurchasesScreen.muted, fontSize: 12);
+  TextStyle _labelStyle() => GoogleFonts.poppins(
+    color: context.pal.secundario(PurchasesScreen.muted),
+    fontSize: 12,
+  );
 
   Widget _saleInfo(String label, String value) {
     return Column(
@@ -966,70 +707,17 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
           value,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 15),
+          style: GoogleFonts.poppins(
+            color: context.pal.texto(PurchasesScreen.ink),
+            fontSize: 15,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildBottomNavigation() {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 3 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 3
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                      fontWeight: i == 3 ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildBottomNavigation() => const ModuleBottomNav(selected: 3);
 }
-
-const List<String> _motivosRechazo = [
-  'Comprobante falso',
-  'La imagen no corresponde a un comprobante',
-  'Comprobante borroso',
-];
-
-const List<String> _motivosAnulacion = [
-  'Cliente canceló el pedido',
-  'Error al registrar el pedido',
-  'Producto no disponible',
-];
 
 /// Detalle de una venta: consulta y cambios de estado.
 class _SaleDetailScreen extends StatefulWidget {
@@ -1064,11 +752,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
     return restantes > 0 ? restantes : 0;
   }
 
-  bool get _puedeAnular =>
-      _segundosRestantes > 0 &&
-      (_sale.estado == EstadoVenta.porVerificar ||
-          _sale.estado == EstadoVenta.enEspera ||
-          _sale.estado == EstadoVenta.porEntregar);
+  bool get _puedeAnular => ventaAnulable(_sale.estado, _segundosRestantes);
 
   @override
   void initState() {
@@ -1216,7 +900,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
     title: 'Rechazar venta ${_sale.codigo}',
     message: 'La venta pasará a "Anulado". Elige el motivo del rechazo.',
     confirmLabel: 'Rechazar venta',
-    motivos: _motivosRechazo,
+    motivos: motivosRechazoVenta,
     destructive: true,
     exito: 'Venta rechazada.',
     accion: (motivo, _) async {
@@ -1243,7 +927,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
         'Con "Cliente canceló el pedido" se reembolsa el 80 % del monto; con '
         'los demás motivos, el 100 %.',
     confirmLabel: 'Anular venta',
-    motivos: _motivosAnulacion,
+    motivos: motivosAnulacionVenta,
     destructive: true,
     exito: 'Venta anulada.',
     accion: (motivo, _) async {
@@ -1276,7 +960,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
   Widget build(BuildContext context) {
     final s = _sale;
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -1299,7 +983,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                           child: Text(
                             'Venta ${s.codigo}',
                             style: GoogleFonts.montserrat(
-                              color: PurchasesScreen.ink,
+                              color: context.pal.texto(PurchasesScreen.ink),
                               fontSize: 26,
                               fontWeight: FontWeight.w700,
                             ),
@@ -1316,7 +1000,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                             child: Text(
                               _error!,
                               style: GoogleFonts.poppins(
-                                color: PurchasesScreen.red,
+                                color: context.pal.rojo(PurchasesScreen.red),
                                 fontSize: 13,
                               ),
                             ),
@@ -1333,7 +1017,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                     if (_canEdit && _actionsAvailable) _actionsCard(),
                     if (s.estado == EstadoVenta.anulado)
                       _sectionCard(
-                        background: const Color(0xFFFFEEF0),
+                        background: context.pal.errorFondo(Color(0xFFFFEEF0)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1372,9 +1056,9 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                           _row(
                             'Documento',
                             [
-                              s.tipoDocumento,
-                              s.documento,
-                            ].whereType<String>().join(' ').trim().isEmpty
+                                  s.tipoDocumento,
+                                  s.documento,
+                                ].whereType<String>().join(' ').trim().isEmpty
                                 ? '—'
                                 : [
                                     s.tipoDocumento,
@@ -1403,7 +1087,11 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                             'Orden de producción',
                             s.estadoOrden ?? 'Sin orden',
                           ),
-                          _row('Monto', formatCop(s.monto.round()), strong: true),
+                          _row(
+                            'Monto',
+                            formatCop(s.monto.round()),
+                            strong: true,
+                          ),
                         ],
                       ),
                     ),
@@ -1413,7 +1101,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                 ),
               ),
             ),
-            _suppliesBottomNavigation(context),
+            const ModuleBottomNav(selected: 3),
           ],
         ),
       ),
@@ -1445,7 +1133,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                   child: Text(
                     _resumenError!,
                     style: GoogleFonts.poppins(
-                      color: PurchasesScreen.red,
+                      color: context.pal.rojo(PurchasesScreen.red),
                       fontSize: 13,
                     ),
                   ),
@@ -1468,7 +1156,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
             if (resumen.saldoAFavor > 0)
               _row('Saldo a favor', formatCop(resumen.saldoAFavor.round())),
             for (final pago in resumen.pagos) ...[
-              const Divider(height: 22, color: Color(0xFFE5D9D7)),
+              Divider(height: 22, color: context.pal.borde(Color(0xFFE5D9D7))),
               _row('Pago', pago.tipo ?? '#${pago.id}'),
               _row('Estado', pago.estado ?? '—'),
               _row(
@@ -1517,7 +1205,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                   'Faltan ${formatCop(resumen.falta.round())} por recibir. '
                   'Confirma los pagos para poder aceptar la venta.',
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFF8A5600),
+                    color: context.pal.avisoTexto(Color(0xFF8A5600)),
                     fontSize: 13,
                   ),
                 ),
@@ -1574,7 +1262,9 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
     bool destructive = false,
     bool compact = false,
   }) {
-    final color = destructive ? PurchasesScreen.red : PurchasesScreen.ink;
+    final color = destructive
+        ? context.pal.rojo(PurchasesScreen.red)
+        : context.pal.texto(PurchasesScreen.ink);
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(compact ? 20 : 25),
     );
@@ -1591,7 +1281,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
             icon: Icon(icon, size: 19),
             label: child,
             style: FilledButton.styleFrom(
-              backgroundColor: PurchasesScreen.red,
+              backgroundColor: context.pal.rojoBoton(PurchasesScreen.red),
               shape: shape,
             ),
           )
@@ -1602,7 +1292,9 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
             style: OutlinedButton.styleFrom(
               foregroundColor: color,
               side: BorderSide(
-                color: onPressed == null ? const Color(0xFFD8D0CE) : color,
+                color: onPressed == null
+                    ? context.pal.borde(Color(0xFFD8D0CE))
+                    : color,
               ),
               shape: shape,
             ),
@@ -1617,9 +1309,9 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
       decoration: BoxDecoration(
-        color: background ?? PurchasesScreen.page,
+        color: background ?? context.pal.tarjeta(PurchasesScreen.page),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5BDB9)),
+        border: Border.all(color: context.pal.borde(Color(0xFFE5BDB9))),
       ),
       child: child,
     );
@@ -1631,7 +1323,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
       child: Text(
         title,
         style: GoogleFonts.montserrat(
-          color: PurchasesScreen.ink,
+          color: context.pal.texto(PurchasesScreen.ink),
           fontSize: 18,
           fontWeight: FontWeight.w700,
         ),
@@ -1650,7 +1342,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
             child: Text(
               label,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: 14,
               ),
             ),
@@ -1662,7 +1354,9 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
               value,
               textAlign: TextAlign.right,
               style: GoogleFonts.poppins(
-                color: strong ? PurchasesScreen.red : PurchasesScreen.ink,
+                color: strong
+                    ? context.pal.rojo(PurchasesScreen.red)
+                    : context.pal.texto(PurchasesScreen.ink),
                 fontSize: strong ? 17 : 14,
                 fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -1683,12 +1377,13 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
             Text(
               'Sin productos registrados.',
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: 13,
               ),
             ),
           for (var i = 0; i < s.detalles.length; i++) ...[
-            if (i > 0) const Divider(height: 18, color: Color(0xFFE5D9D7)),
+            if (i > 0)
+              Divider(height: 18, color: context.pal.borde(Color(0xFFE5D9D7))),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1699,7 +1394,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                       Text(
                         s.detalles[i].nombre,
                         style: GoogleFonts.poppins(
-                          color: PurchasesScreen.ink,
+                          color: context.pal.texto(PurchasesScreen.ink),
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1709,7 +1404,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                         '${formatCop(s.detalles[i].precioUnitario.round())}'
                         '${s.detalles[i].tamano != null ? '  •  ${s.detalles[i].tamano}' : ''}',
                         style: GoogleFonts.poppins(
-                          color: PurchasesScreen.muted,
+                          color: context.pal.secundario(PurchasesScreen.muted),
                           fontSize: 13,
                         ),
                       ),
@@ -1720,7 +1415,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
                 Text(
                   formatCop(s.detalles[i].subTotal.round()),
                   style: GoogleFonts.poppins(
-                    color: PurchasesScreen.ink,
+                    color: context.pal.texto(PurchasesScreen.ink),
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1743,12 +1438,13 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
             Text(
               'Sin pagos registrados.',
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: 13,
               ),
             ),
           for (var i = 0; i < s.pagos.length; i++) ...[
-            if (i > 0) const Divider(height: 24, color: Color(0xFFE5D9D7)),
+            if (i > 0)
+              Divider(height: 24, color: context.pal.borde(Color(0xFFE5D9D7))),
             _row('Tipo', s.pagos[i].tipo ?? '—'),
             _row('Estado', s.pagos[i].estado ?? '—'),
             if (s.pagos[i].fecha != null)
@@ -1776,7 +1472,7 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
               Text(
                 'Comprobante',
                 style: GoogleFonts.poppins(
-                  color: PurchasesScreen.muted,
+                  color: context.pal.secundario(PurchasesScreen.muted),
                   fontSize: 14,
                 ),
               ),
@@ -1822,8 +1518,8 @@ class _SaleActionDialog extends StatefulWidget {
 }
 
 class _SaleActionDialogState extends State<_SaleActionDialog> {
-  static const String _otro = 'Otro';
-  static const int _maxOtro = 80;
+  static const String _otro = motivoOtroVenta;
+  static const int _maxOtro = maxDetalleMotivoVenta;
 
   late final TextEditingController _otroController = TextEditingController();
   late final TextEditingController _amountController = TextEditingController(
@@ -1857,7 +1553,7 @@ class _SaleActionDialogState extends State<_SaleActionDialog> {
           setState(() => _error = 'Escribe el detalle del motivo.');
           return;
         }
-        motivo = 'Otro: $detalle';
+        motivo = motivoVentaParaEnviar(_otro, detalle);
       } else {
         motivo = _selected;
       }
@@ -1908,8 +1604,8 @@ class _SaleActionDialogState extends State<_SaleActionDialog> {
               const SizedBox(height: 10),
               Text(
                 widget.warning!,
-                style: const TextStyle(
-                  color: Color(0xFF8A5600),
+                style: TextStyle(
+                  color: context.pal.avisoTexto(Color(0xFF8A5600)),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1918,7 +1614,9 @@ class _SaleActionDialogState extends State<_SaleActionDialog> {
               const SizedBox(height: 12),
               for (final opcion in [...motivos, _otro])
                 InkWell(
-                  onTap: _saving ? null : () => setState(() => _selected = opcion),
+                  onTap: _saving
+                      ? null
+                      : () => setState(() => _selected = opcion),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
@@ -1929,8 +1627,8 @@ class _SaleActionDialogState extends State<_SaleActionDialog> {
                               : Icons.radio_button_off,
                           size: 20,
                           color: _selected == opcion
-                              ? PurchasesScreen.red
-                              : PurchasesScreen.muted,
+                              ? context.pal.rojo(PurchasesScreen.red)
+                              : context.pal.secundario(PurchasesScreen.muted),
                         ),
                         const SizedBox(width: 10),
                         Expanded(child: Text(opcion)),
@@ -1969,8 +1667,8 @@ class _SaleActionDialogState extends State<_SaleActionDialog> {
               const SizedBox(height: 10),
               Text(
                 _error!,
-                style: const TextStyle(
-                  color: AppColors.statusRedFg,
+                style: TextStyle(
+                  color: context.pal.errorTexto(AppColors.statusRedFg),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -2005,8 +1703,8 @@ class _SaleActionDialogState extends State<_SaleActionDialog> {
           onPressed: _saving ? null : _submit,
           style: FilledButton.styleFrom(
             backgroundColor: widget.destructive
-                ? PurchasesScreen.red
-                : PurchasesScreen.ink,
+                ? context.pal.rojoBoton(PurchasesScreen.red)
+                : context.pal.borde(PurchasesScreen.ink),
           ),
           child: _saving
               ? const SizedBox(
@@ -2046,11 +1744,12 @@ class _ReceiptImage extends StatelessWidget {
     final raw = value;
     if (raw == null) {
       return _message(
+        context,
         loading ? 'Cargando comprobante...' : 'Comprobante no disponible.',
       );
     }
     if (raw is! String || raw.trim().isEmpty) {
-      return _message('Formato de comprobante no reconocido.');
+      return _message(context, 'Formato de comprobante no reconocido.');
     }
     final text = raw.trim();
 
@@ -2065,17 +1764,19 @@ class _ReceiptImage extends StatelessWidget {
                 height: 120,
                 child: Center(child: CircularProgressIndicator()),
               ),
-        errorBuilder: (_, _, _) => _message('No se pudo cargar el comprobante.'),
+        errorBuilder: (_, _, _) =>
+            _message(context, 'No se pudo cargar el comprobante.'),
       );
     } else {
       final bytes = _decodeBytes(text);
       if (bytes == null) {
-        return _message('Formato de comprobante no reconocido.');
+        return _message(context, 'Formato de comprobante no reconocido.');
       }
       image = Image.memory(
         bytes,
         fit: BoxFit.contain,
-        errorBuilder: (_, _, _) => _message('No se pudo mostrar el comprobante.'),
+        errorBuilder: (_, _, _) =>
+            _message(context, 'No se pudo mostrar el comprobante.'),
       );
     }
     return ClipRRect(borderRadius: BorderRadius.circular(10), child: image);
@@ -2097,17 +1798,20 @@ class _ReceiptImage extends StatelessWidget {
     }
   }
 
-  Widget _message(String text) {
+  Widget _message(BuildContext context, String text) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.fieldFill,
+        color: context.pal.campo(AppColors.fieldFill),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         text,
-        style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 13),
+        style: GoogleFonts.poppins(
+          color: context.pal.secundario(AppColors.muted),
+          fontSize: 13,
+        ),
       ),
     );
   }

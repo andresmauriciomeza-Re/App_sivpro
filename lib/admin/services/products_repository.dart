@@ -1,5 +1,6 @@
 import '../../network/api_client.dart';
 import '../../network/api_exception.dart';
+import '../../shared/numeros.dart';
 
 class ProductoGestion {
   const ProductoGestion({
@@ -53,17 +54,17 @@ class ProductoGestion {
       precioVenta: _requiredDouble(json, 'precio_venta'),
       precioGrande: _optionalDouble(json['precio_grande']),
       unidadVenta: _requiredString(json, 'unidad_venta'),
-      imagen: json['imagen'] as String?,
+      imagen: _optionalString(json['imagen']),
       tieneImagen: json['tiene_imagen'] == true,
       estado: _requiredString(json, 'estado'),
-      categoriaNombre: json['categoria_nombre'] as String?,
+      categoriaNombre: _optionalString(json['categoria_nombre']),
       stock: _optionalInt(json['stock']),
       stockPartes: _optionalInt(json['stock_partes']),
       disponiblesMediana: _optionalInt(json['disponibles_mediana']),
       disponiblesGrande: _optionalInt(json['disponibles_grande']),
       contenido: _optionalDouble(json['contenido']),
-      contenidoUnidad: json['contenido_unidad'] as String?,
-      unidadCompra: json['unidad_compra'] as String?,
+      contenidoUnidad: _optionalString(json['contenido_unidad']),
+      unidadCompra: _optionalString(json['unidad_compra']),
       unidadesPorEmpaque: _optionalInt(json['unidades_por_empaque']),
     );
   }
@@ -123,7 +124,7 @@ class FichaProducto {
       vigente: json['vigente'] == true,
       cantidad: _requiredDouble(json, 'cantidad'),
       medida: _requiredString(json, 'medida'),
-      fechaInicio: json['fecha_inicio'] as String?,
+      fechaInicio: _optionalString(json['fecha_inicio']),
       porciones: _optionalDouble(json['porciones']),
       tiempoPreparacion: _optionalDouble(json['tiempo_preparacion']),
       pasos: pasosJson is List
@@ -166,19 +167,13 @@ class ProductsRepository {
 
   static final ProductsRepository instance = ProductsRepository._();
 
+  /// Un producto con datos inválidos se omite en lugar de tumbar la lista.
   Future<List<ProductoGestion>> listar() async {
     final data = await ApiClient.instance.get('/productos/gestion');
     if (data is! List) {
       throw const ApiException('Respuesta inesperada del servidor.');
     }
-    return data
-        .map((item) {
-          if (item is! Map<String, dynamic>) {
-            throw const ApiException('Respuesta inesperada del servidor.');
-          }
-          return ProductoGestion.fromJson(item);
-        })
-        .toList(growable: false);
+    return productosGestionDesde(data);
   }
 
   Future<List<CategoriaProductoOpcion>> listarCategorias() async {
@@ -265,12 +260,31 @@ double _requiredDouble(Map<String, dynamic> json, String key) {
 
 double? _optionalDouble(dynamic value) {
   if (value == null) return null;
-  if (value is num && value.isFinite) return value.toDouble();
-  if (value is String) {
-    final parsed = double.tryParse(value);
-    if (parsed != null && parsed.isFinite) return parsed;
-  }
+  if (value is String && value.trim().isEmpty) return null;
+  final numero = numeroTolerante(value);
+  if (numero != null) return numero;
   throw const ApiException('Respuesta inesperada del servidor.');
+}
+
+/// Convierte cada elemento válido; omite los que no son objetos o fallan.
+List<ProductoGestion> productosGestionDesde(List<dynamic> data) {
+  final productos = <ProductoGestion>[];
+  for (final item in data) {
+    if (item is! Map<String, dynamic>) continue;
+    try {
+      productos.add(ProductoGestion.fromJson(item));
+    } on ApiException {
+      // Producto con datos incompletos o con tipos inesperados: se omite.
+    }
+  }
+  return List.unmodifiable(productos);
+}
+
+/// Texto opcional tolerante: cualquier tipo con toString; vacío -> null.
+String? _optionalString(dynamic value) {
+  if (value == null) return null;
+  final text = value.toString();
+  return text.isEmpty ? null : text;
 }
 
 String _requiredString(Map<String, dynamic> json, String key) {

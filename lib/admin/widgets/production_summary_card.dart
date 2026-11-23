@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../network/api_exception.dart';
 import '../services/production_summary_service.dart';
+import '../../theme/paleta_app.dart';
 
 /// Tarjeta "Resumen de Hoy" con las órdenes de producción reales.
 class ProductionSummaryCard extends StatefulWidget {
@@ -58,9 +59,9 @@ class _ProductionSummaryCardState extends State<ProductionSummaryCard> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(36, 34, 36, 36),
       decoration: BoxDecoration(
-        color: _page,
+        color: context.pal.tarjeta(_page),
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: const Color(0xFFE8C7C4)),
+        border: Border.all(color: context.pal.borde(Color(0xFFE8C7C4))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +69,7 @@ class _ProductionSummaryCardState extends State<ProductionSummaryCard> {
           Text(
             'Resumen de Hoy',
             style: GoogleFonts.poppins(
-              color: _ink,
+              color: context.pal.texto(_ink),
               fontSize: 24,
               fontWeight: FontWeight.w700,
             ),
@@ -118,14 +119,20 @@ class _ProductionSummaryCardState extends State<ProductionSummaryCard> {
         Text(
           label,
           style: GoogleFonts.poppins(
-            color: _muted,
+            color: context.pal.secundario(_muted),
             fontSize: 13,
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 10),
         Text(value, style: GoogleFonts.poppins(color: color, fontSize: 42)),
-        Text(hint, style: GoogleFonts.poppins(color: _muted, fontSize: 12)),
+        Text(
+          hint,
+          style: GoogleFonts.poppins(
+            color: context.pal.secundario(_muted),
+            fontSize: 12,
+          ),
+        ),
       ],
     );
   }

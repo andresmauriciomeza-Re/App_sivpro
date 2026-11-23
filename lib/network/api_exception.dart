@@ -9,10 +9,6 @@ class ApiException implements Exception {
   /// Objeto `error` completo del backend (por ejemplo, con `faltantes`).
   final Map<String, dynamic>? data;
 
-  bool get isUnauthorized => statusCode == 401;
-
-  bool get isForbidden => statusCode == 403;
-
   /// Códigos 401 con los que el backend informa de una sesión inservible.
   static const Set<String> sessionCodes = {
     'TOKEN_EXPIRADO',

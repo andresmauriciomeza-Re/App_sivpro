@@ -1,5 +1,6 @@
 import '../../network/api_client.dart';
 import '../../network/api_exception.dart';
+import '../../shared/numeros.dart';
 
 class OrdenProduccionLinea {
   const OrdenProduccionLinea({
@@ -279,11 +280,9 @@ double _requiredDouble(Map<String, dynamic> json, String key) {
 
 double? _optionalDouble(dynamic value) {
   if (value == null) return null;
-  if (value is num && value.isFinite) return value.toDouble();
-  if (value is String) {
-    final parsed = double.tryParse(value);
-    if (parsed != null && parsed.isFinite) return parsed;
-  }
+  if (value is String && value.trim().isEmpty) return null;
+  final numero = numeroTolerante(value);
+  if (numero != null) return numero;
   throw const ApiException('Respuesta inesperada del servidor.');
 }
 

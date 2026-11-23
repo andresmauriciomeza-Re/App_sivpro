@@ -2,18 +2,18 @@ import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/auth_service.dart';
 import '../../auth/permisos.dart';
-import '../../client/screens/home_screen.dart' hide AppColors;
 import '../../network/api_exception.dart';
 import '../../shared/initials.dart';
 import '../../shared/pending_sales_service.dart';
 import '../../theme/app_colors.dart';
 import '../services/indicators_service.dart';
 import '../services/insumos_repository.dart';
-import '../services/sales_repository.dart' show formatCop;
+import '../../shared/formato.dart';
 import '../services/ventas_repository.dart';
 import '../widgets/production_summary_card.dart';
-import '../widgets/sales_pending_badge.dart';
+import '../widgets/summary_cards_grid.dart';
 import 'purchases_screen.dart';
+import '../../theme/paleta_app.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -114,7 +114,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: page,
+      backgroundColor: context.pal.fondo(page),
       bottomNavigationBar: _buildBottomNavigation(context),
       body: SafeArea(
         bottom: false,
@@ -132,21 +132,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     children: [
                       Text(
                         _saludo(),
-                        style: GoogleFonts.montserrat(color: ink, fontSize: 29),
+                        style: GoogleFonts.montserrat(
+                          color: context.pal.texto(ink),
+                          fontSize: 29,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Resumen del día — ${fechaLargaBogota()}',
-                        style: GoogleFonts.poppins(color: muted, fontSize: 15),
+                        style: GoogleFonts.poppins(
+                          color: context.pal.secundario(muted),
+                          fontSize: 15,
+                        ),
                       ),
-                      if (Permisos.ventas ||
-                          Permisos.produccionNoConformes) ...[
+                      if (Permisos.indicadores) ...[
                         const SizedBox(height: 22),
                         _buildIndicatorsButton(),
                       ],
                       ..._buildSummarySection(),
-                      const SizedBox(height: 34),
-                      ProductionSummaryCard(key: ValueKey(_refreshTick)),
+                      // Solo con Producción › Orden de Producción › Ver: sin
+                      // permiso no se monta la tarjeta ni se llama al backend.
+                      if (Permisos.produccionOrdenes) ...[
+                        const SizedBox(height: 34),
+                        ProductionSummaryCard(key: ValueKey(_refreshTick)),
+                      ],
                       ..._buildRecentSection(),
                     ],
                   ),
@@ -166,35 +175,46 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   /// Acceso a la pantalla de Indicadores.
-  Widget _buildIndicatorsButton() {
+  Widget _buildIndicatorsButton() => _buildAccesoButton(
+    Icons.insights_outlined,
+    'Ver indicadores',
+    const IndicatorsScreen(),
+  );
+
+  /// Botón de acceso a una pantalla desde el Dashboard.
+  Widget _buildAccesoButton(IconData icono, String texto, Widget destino) {
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () => Navigator.of(
         context,
-      ).push(MaterialPageRoute(builder: (_) => const IndicatorsScreen())),
+      ).push(MaterialPageRoute(builder: (_) => destino)),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
-          color: page,
+          color: context.pal.tarjeta(page),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE5BDB9)),
+          border: Border.all(color: context.pal.borde(Color(0xFFE5BDB9))),
         ),
         child: Row(
           children: [
-            Icon(Icons.insights_outlined, color: red, size: 30),
+            Icon(icono, color: context.pal.rojo(red), size: 30),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                'Ver indicadores',
+                texto,
                 style: GoogleFonts.poppins(
-                  color: ink,
+                  color: context.pal.texto(ink),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: muted, size: 18),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: context.pal.secundario(muted),
+              size: 18,
+            ),
           ],
         ),
       ),
@@ -204,8 +224,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildHeader() {
     return Container(
       height: 52,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: context.pal.borde(AppColors.headerDivider)),
+        ),
       ),
       child: Row(
         children: [
@@ -213,23 +235,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Text(
             'La Sirena Pizza',
             style: GoogleFonts.montserrat(
-              color: ink,
+              color: context.pal.texto(ink),
               fontSize: 20,
               fontWeight: FontWeight.w700,
             ),
           ),
           const Spacer(),
-          IconButton(
-            tooltip: 'Ir a la tienda',
-            onPressed: _goToStore,
-            icon: Icon(Icons.storefront, color: red, size: 26),
-          ),
-          const SizedBox(width: 4),
           Container(
             width: 36,
             height: 36,
             margin: const EdgeInsets.only(right: 18),
-            decoration: BoxDecoration(color: red, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: context.pal.rojoBoton(red),
+              shape: BoxShape.circle,
+            ),
             alignment: Alignment.center,
             child: Text(
               currentUserInitials(),
@@ -243,13 +262,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ],
       ),
     );
-  }
-
-  void _goToStore() {
-    AuthService.instance.startStoreSession();
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
   // ------------------------------------------------------------ resumen
@@ -269,52 +281,58 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final ventasListas = !_ventasLoading && _ventasError == null;
     final insumosListos = !_insumosLoading && _insumosError == null;
 
+    // Tocar abre el módulo con el mismo mecanismo del menú. Ventas exige
+    // Ventas › Ventas › Ver e Insumos, Compras › Insumos › Ver; sin permiso la
+    // tarjeta queda sin efecto de toque.
+    VoidCallback? abrirVentas(EstadoVenta estado) => Permisos.ventas
+        ? () => openSalesManagement(context, estado: estado)
+        : null;
+    final VoidCallback? abrirInsumos = Permisos.comprasInsumos
+        ? () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute<void>(builder: (_) => insumosScreen()))
+        : null;
+
     final cards = <Widget>[
       if (_puedeVentas) ...[
-        _SummaryCard(
+        SummaryCard(
           icon: Icons.attach_money,
           title: 'Ventas completadas hoy',
           value: ventasListas ? formatCop(totalHoy.round()) : '—',
           highlight: true,
+          onTap: abrirVentas(EstadoVenta.completado),
         ),
-        _SummaryCard(
+        SummaryCard(
           icon: Icons.local_pizza_outlined,
           title: 'Pedidos completados hoy',
           value: ventasListas ? '${completadasHoy.length}' : '—',
+          onTap: abrirVentas(EstadoVenta.completado),
         ),
         ValueListenableBuilder<int>(
           valueListenable: PendingSalesService.instance.count,
-          builder: (context, count, _) => _SummaryCard(
+          builder: (context, count, _) => SummaryCard(
             icon: Icons.schedule_outlined,
             title: 'Ventas por verificar',
             value: '$count',
+            onTap: abrirVentas(EstadoVenta.porVerificar),
           ),
         ),
       ],
       if (_puedeInsumos)
-        _SummaryCard(
+        SummaryCard(
           icon: Icons.inventory_2_outlined,
           title: 'Insumos en nivel mínimo',
           value: insumosListos ? '$bajoMinimo' : '—',
           warning: insumosListos && bajoMinimo > 0,
+          onTap: abrirInsumos,
         ),
     ];
 
     return [
       const SizedBox(height: 28),
-      if (_ventasError != null)
-        _errorRow(_ventasError!, _loadVentas),
-      if (_insumosError != null)
-        _errorRow(_insumosError!, _loadInsumos),
-      GridView.count(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 1.45,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        children: cards,
-      ),
+      if (_ventasError != null) _errorRow(_ventasError!, _loadVentas),
+      if (_insumosError != null) _errorRow(_insumosError!, _loadInsumos),
+      SummaryCardsGrid(cards: cards),
     ];
   }
 
@@ -326,7 +344,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Expanded(
             child: Text(
               message,
-              style: GoogleFonts.poppins(color: red, fontSize: 14),
+              style: GoogleFonts.poppins(
+                color: context.pal.rojo(red),
+                fontSize: 14,
+              ),
             ),
           ),
           TextButton(onPressed: onRetry, child: const Text('Reintentar')),
@@ -353,7 +374,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Text(
             'Actividad reciente',
             style: GoogleFonts.poppins(
-              color: ink,
+              color: context.pal.texto(ink),
               fontSize: 20,
               fontWeight: FontWeight.w700,
             ),
@@ -363,7 +384,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Text(
               'Ver todos  →',
               style: GoogleFonts.poppins(
-                color: ink,
+                color: context.pal.texto(ink),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -394,14 +415,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 Text(
                   sale.codigo,
-                  style: GoogleFonts.poppins(color: ink, fontSize: 16),
+                  style: GoogleFonts.poppins(
+                    color: context.pal.texto(ink),
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   sale.clienteNombre,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                    color: context.pal.secundario(muted),
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
@@ -413,7 +440,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Text(
                 formatCop(sale.monto.round()),
                 style: GoogleFonts.poppins(
-                  color: ink,
+                  color: context.pal.texto(ink),
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                 ),
@@ -421,7 +448,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 4),
               Text(
                 sale.estadoLabel,
-                style: GoogleFonts.poppins(color: muted, fontSize: 13),
+                style: GoogleFonts.poppins(
+                  color: context.pal.secundario(muted),
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -430,139 +460,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildBottomNavigation(BuildContext context) {
-    final items = <(IconData, String, int)>[
-      if (Permisos.dashboard) (Icons.home_outlined, 'Inicio', 0),
-      if (Permisos.compras) (Icons.shopping_cart_outlined, 'Compras', 1),
-      if (Permisos.produccion) (Icons.factory_outlined, 'Producción', 2),
-      if (Permisos.ventasAdministracion)
-        (Icons.receipt_long_outlined, 'Ventas', 3),
-      (Icons.person_outline, 'Mi Perfil', 4),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: BoxDecoration(
-        color: page,
-        border: const Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (final item in items)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, item.$3),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: item.$1,
-                    color: item.$3 == 0 ? red : muted,
-                    size: 25,
-                    showPendingBadge: item.$3 == adminSalesNavIndex,
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    item.$2,
-                    style: GoogleFonts.poppins(
-                      color: item.$3 == 0 ? red : muted,
-                      fontSize: 12,
-                      fontWeight: item.$3 == 0
-                          ? FontWeight.w700
-                          : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildBottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 0);
 
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
-      color: page,
+      color: context.pal.tarjeta(page),
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: const Color(0xFFE8DDDB)),
-      boxShadow: const [
+      border: Border.all(color: context.pal.borde(Color(0xFFE8DDDB))),
+      boxShadow: [
         BoxShadow(
-          color: Color(0x0A000000),
+          color: context.pal.sombra(Color(0x0A000000)),
           blurRadius: 3,
           offset: Offset(0, 1),
         ),
       ],
-    );
-  }
-}
-
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-    this.highlight = false,
-    this.warning = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String value;
-  final bool highlight;
-  final bool warning;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 10, 12),
-      decoration: BoxDecoration(
-        color: AdminDashboardScreen.page,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE8DDDB)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: highlight
-                  ? AdminDashboardScreen.red
-                  : const Color(0xFFF2EEED),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: highlight ? Colors.white : AdminDashboardScreen.red,
-              size: 20,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(
-              color: AdminDashboardScreen.muted,
-              fontSize: 13,
-            ),
-          ),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: GoogleFonts.poppins(
-                color: highlight || warning
-                    ? AdminDashboardScreen.red
-                    : Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

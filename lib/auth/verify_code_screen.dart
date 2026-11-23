@@ -73,6 +73,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       );
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     } finally {
       if (mounted) setState(() => _verificando = false);
     }
@@ -88,6 +90,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       if (mounted) _showMessage(mensaje);
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     } finally {
       if (mounted) setState(() => _reenviando = false);
     }
