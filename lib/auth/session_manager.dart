@@ -53,6 +53,8 @@ class SessionManager with WidgetsBindingObserver {
 
   Future<void> _cerrarPorInactividad() async {
     if (!AuthService.instance.isAuthenticated) return;
+    // El cliente no se desconecta por inactividad: su sesión dura lo que el token.
+    if (AuthService.instance.rol == UserRole.cliente) return;
     await AuthService.instance.logout();
     _irAlLogin('Tu sesión se cerró por inactividad. Inicia sesión nuevamente.');
   }

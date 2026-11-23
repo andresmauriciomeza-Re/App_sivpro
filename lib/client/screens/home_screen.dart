@@ -1,79 +1,94 @@
 ﻿import 'package:material_ui/material_ui.dart';
 
-//Mis importaciones
-import '../widgets/bottom_nav.dart';
-import 'menu_screen.dart';
-import 'category_products_screen.dart';
-import '../../shared/menu_item.dart';
 import '../../auth/auth_service.dart';
+import '../../network/api_exception.dart';
+import '../../shared/formato.dart';
+import '../../theme/paleta_app.dart';
+import '../../theme/tema_panel.dart';
+import '../models/producto_catalogo.dart';
+import '../services/catalogo_repository.dart';
+import '../services/horario_local.dart';
+import '../widgets/bottom_nav.dart';
+import '../widgets/imagen_producto.dart';
+import 'category_products_screen.dart';
+import 'product_detail_screen.dart';
 
-// ============================================================
-// PALETA Y CONSTANTES DE DISEÑO
-// Ajusta estos valores si tu marca usa otros tonos exactos.
-// ============================================================
-class AppColors {
-  static const Color primaryRed = Color(0xFFE0472B);
-  static const Color darkText = Color(0xFF1F1B1B);
-  static const Color greyText = Color(0xFF8A8A8A);
-  static const Color background = Color(0xFFF7F5F2);
-  static const Color cardBackground = Colors.white;
-  static const Color openGreen = Color(0xFF2E7D32);
-  static const Color linkBlue = Color(0xFF2F6FE0);
-}
+// Colores de Inicio en claro (en oscuro se usan los de la paleta).
+const Color _rojoInicio = Color(0xFFE0472B);
+const Color _textoInicio = Color(0xFF1F1B1B);
+const Color _grisInicio = Color(0xFF8A8A8A);
+const Color _fondoInicio = Color(0xFFF7F5F2);
+const Color _verdeAbierto = Color(0xFF2E7D32);
 
-// ============================================================
-// MODELO SIMPLE PARA LOS PRODUCTOS DESTACADOS
-// Reemplaza las rutas de imagen por tus assets reales cuando
-// tengas las fotos de cada pizza en assets/img/
-// ============================================================
-class FeaturedItem {
-  final String name;
-  final String category;
-  final String price;
-  final String imageAsset; // ej: 'assets/img/pepperoni.png'
-
-  const FeaturedItem({
-    required this.name,
-    required this.category,
-    required this.price,
-    required this.imageAsset,
-  });
-}
-
-class HomeScreen extends StatefulWidget {
-  final String userName;
-
-  const HomeScreen({super.key, this.userName = 'Sebastian'});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) => const TemaCliente(child: _Inicio());
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+/// Cuerpo de Inicio, bajo [TemaCliente] para que `context.pal` vea su tema.
+class _Inicio extends StatefulWidget {
+  const _Inicio();
+
+  @override
+  State<_Inicio> createState() => _InicioState();
+}
+
+class _InicioState extends State<_Inicio> {
   int _selectedCategoryIndex = 0;
-  // (el índice de la barra de navegación ahora lo maneja AppBottomNav)
 
-  final List<String> _categories = const ['Pizzas', 'Lasañas', 'Favoritas'];
-
-  final List<FeaturedItem> _featuredItems = const [
-    FeaturedItem(
-      name: 'Pepperoni Clasica',
-      category: 'Pizzas',
-      price: '\$14.000',
-      imageAsset: 'assets/img/pizza_peperoni.png',
-    ),
-    FeaturedItem(
-      name: 'Pizza Tocineta',
-      category: 'Pizzas',
-      price: '\$16.000',
-      imageAsset: 'assets/img/pizza_tocineta.png',
-    ),
+  static const List<String> _categories = [
+    seccionPizzas,
+    seccionLasanas,
+    seccionFavoritas,
   ];
+
+  /// Las dos primeras Favoritas del catálogo real.
+  List<ProductoCatalogo>? _destacadas;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargar();
+  }
+
+  Future<void> _cargar({bool recargar = false}) async {
+    try {
+      final productos = await CatalogoRepository.instance.productos(
+        recargar: recargar,
+      );
+      if (!mounted) return;
+      setState(() {
+        _destacadas = (seccionesMenu(productos)[seccionFavoritas] ?? const [])
+            .take(2)
+            .toList();
+        _error = null;
+      });
+    } on ApiException catch (error) {
+      if (mounted) setState(() => _error = error.message);
+    }
+  }
+
+  void _reintentar() {
+    setState(() => _error = null);
+    _cargar(recargar: true);
+  }
+
+  void _abrirSeccion(String seccion) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CategoryProductsScreen.catalogo(categoryName: seccion),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.pal.fondo(_fondoInicio),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -87,12 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
               _buildSectionHeader(
                 'Destacadas',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const MenuScreen()),
-                  );
-                },
+                onTap: () => _abrirSeccion(seccionFavoritas),
               ),
               const SizedBox(height: 12),
               _buildFeaturedList(),
@@ -115,6 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // TOP BAR: logo circular + nombre + slogan
   // ----------------------------------------------------------
   Widget _buildTopBar() {
+    final pal = context.pal;
     return Row(
       children: [
         CircleAvatar(
@@ -127,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 44,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.local_pizza, color: AppColors.primaryRed),
+                  const Icon(Icons.local_pizza, color: _rojoInicio),
             ),
           ),
         ),
@@ -140,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: AppColors.darkText,
+                color: pal.texto(_textoInicio),
               ),
             ),
             Text(
@@ -149,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 11,
                 letterSpacing: 1,
                 fontWeight: FontWeight.w600,
-                color: AppColors.greyText,
+                color: pal.secundario(_grisInicio),
               ),
             ),
           ],
@@ -162,12 +173,13 @@ class _HomeScreenState extends State<HomeScreen> {
   // BANNER PRINCIPAL: foto de fondo + saludo personalizado
   // ----------------------------------------------------------
   Widget _buildHeroBanner() {
+    final nombre = AuthService.instance.currentName?.trim();
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: context.pal.sombra(Colors.black.withValues(alpha: 0.05)),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -189,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 alignment: const Alignment(0.3, 0),
                 cacheWidth: 736,
                 errorBuilder: (context, error, stackTrace) =>
-                    Container(color: AppColors.darkText),
+                    Container(color: _textoInicio),
               ),
             ),
             // Capa 2a: velo vertical (abajo -> arriba) para que el texto se lea
@@ -225,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // Capa 3: contenido actual (misma posicion, tipografia y colores)
+            // Capa 3: etiqueta y saludo
             Positioned(
               left: 20,
               right: 20,
@@ -262,7 +274,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Hola, ${AuthService.instance.currentName ?? widget.userName}',
+                        nombre == null || nombre.isEmpty
+                            ? 'Hola'
+                            : 'Hola, $nombre',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -295,24 +309,25 @@ class _HomeScreenState extends State<HomeScreen> {
   // ENCABEZADOS DE SECCIÓN CON "Ver todas →"
   // ----------------------------------------------------------
   Widget _buildSectionHeader(String title, {VoidCallback? onTap}) {
+    final pal = context.pal;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
-            color: AppColors.darkText,
+            color: pal.texto(_textoInicio),
           ),
         ),
         if (onTap != null)
           GestureDetector(
             onTap: onTap,
-            child: const Text(
+            child: Text(
               'Ver todas →',
               style: TextStyle(
-                color: AppColors.primaryRed,
+                color: pal.rojo(_rojoInicio),
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
               ),
@@ -323,27 +338,71 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ----------------------------------------------------------
-  // LISTA HORIZONTAL DE PRODUCTOS DESTACADOS
+  // DESTACADAS: las dos primeras Favoritas del catálogo real
   // ----------------------------------------------------------
   Widget _buildFeaturedList() {
-    return SizedBox(
-      height: 248,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: _featuredItems.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final item = _featuredItems[index];
-          return _FeaturedCard(item: item);
-        },
+    final pal = context.pal;
+    final destacadas = _destacadas;
+    final error = _error;
+    if (destacadas == null && error != null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: pal.tarjeta(Colors.white),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          children: [
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: pal.texto(_textoInicio)),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: _reintentar,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: pal.rojo(_rojoInicio),
+                side: BorderSide(color: pal.rojo(_rojoInicio)),
+              ),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+    if (destacadas == null) {
+      return SizedBox(
+        height: 248,
+        child: Center(
+          child: CircularProgressIndicator(color: pal.rojo(_rojoInicio)),
+        ),
+      );
+    }
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final producto in destacadas) ...[
+            if (producto != destacadas.first) const SizedBox(width: 12),
+            _FeaturedCard(
+              producto: producto,
+              alVerTodas: () => _abrirSeccion(seccionFavoritas),
+            ),
+          ],
+        ],
       ),
     );
   }
 
   // ----------------------------------------------------------
-  // CHIPS DE CATEGORÍAS (Pizzas / Lasañas / Bebidas)
+  // CHIPS DE CATEGORÍAS (Pizzas / Lasañas / Favoritas)
   // ----------------------------------------------------------
   Widget _buildCategoryChips() {
+    final pal = context.pal;
+    final rojo = pal.rojo(_rojoInicio);
     return SizedBox(
       height: 42,
       child: ListView.separated(
@@ -355,34 +414,23 @@ class _HomeScreenState extends State<HomeScreen> {
           return GestureDetector(
             onTap: () {
               setState(() => _selectedCategoryIndex = index);
-              final categoria = _categories[index];
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CategoryProductsScreen(
-                    categoryName: categoria,
-                    items: categoriasMenu[categoria] ?? [],
-                  ),
-                ),
-              );
+              _abrirSeccion(_categories[index]);
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryRed : Colors.white,
+                color: isSelected ? rojo : pal.tarjeta(Colors.white),
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.primaryRed
-                      : Colors.grey.shade300,
+                  color: isSelected ? rojo : pal.borde(Colors.grey.shade300),
                 ),
               ),
               child: Text(
                 _categories[index],
                 style: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.darkText,
+                  color: isSelected ? Colors.white : pal.texto(_textoInicio),
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),
@@ -395,18 +443,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ----------------------------------------------------------
-  // TARJETA DE INFORMACIÓN DEL LOCAL
+  // TARJETA DE INFORMACIÓN DEL LOCAL (datos de la web)
   // ----------------------------------------------------------
   Widget _buildRestaurantInfoCard() {
+    final pal = context.pal;
+    final abierto = HorarioLocal.abierto();
+    final colorEstado = abierto
+        ? pal.exitoTexto(_verdeAbierto)
+        : pal.errorTexto(_rojoInicio);
+    final rojo = pal.rojo(_rojoInicio);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: pal.tarjeta(Colors.white),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: pal.sombra(Colors.black.withValues(alpha: 0.04)),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -418,12 +472,14 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'La Sirena Pizza',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.darkText,
+              Flexible(
+                child: Text(
+                  'La Sirena Pizza',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: pal.texto(_textoInicio),
+                  ),
                 ),
               ),
               Container(
@@ -432,18 +488,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.openGreen.withValues(alpha: 0.12),
+                  color: colorEstado.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.circle, size: 8, color: AppColors.openGreen),
-                    SizedBox(width: 5),
+                  children: [
+                    Icon(Icons.circle, size: 8, color: colorEstado),
+                    const SizedBox(width: 5),
                     Text(
-                      'Abierto',
+                      abierto ? 'Abierto' : 'Cerrado',
                       style: TextStyle(
-                        color: AppColors.openGreen,
+                        color: colorEstado,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -456,43 +512,32 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 14),
           _infoRow(
             Icons.access_time,
-            'Mar–Dom · 12:00 – 21:00',
-            color: AppColors.primaryRed,
+            'Jue–Dom · ${HorarioLocal.texto(HorarioLocal.apertura)} – '
+            '${HorarioLocal.texto(HorarioLocal.cierre)}',
+            color: rojo,
           ),
           const SizedBox(height: 10),
-          _infoRow(
-            Icons.location_on_outlined,
-            'Cra 45 #72-30, Medellin, Antioquia',
-            color: AppColors.primaryRed,
-            textColor: AppColors.darkText,
-          ),
+          _infoRow(Icons.location_on_outlined, direccionLocal, color: rojo),
           const SizedBox(height: 10),
-          _infoRow(
-            Icons.phone_outlined,
-            '604 234 5678',
-            color: AppColors.primaryRed,
-          ),
+          _infoRow(Icons.phone_outlined, telefonoLocal, color: rojo),
         ],
       ),
     );
   }
 
-  Widget _infoRow(
-    IconData icon,
-    String text, {
-    required Color color,
-    Color? textColor,
-  }) {
+  Widget _infoRow(IconData icon, String text, {required Color color}) {
     return Row(
       children: [
         Icon(icon, size: 18, color: color),
         const SizedBox(width: 10),
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: 13.5,
-            color: textColor ?? AppColors.darkText,
-            fontWeight: FontWeight.w500,
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13.5,
+              color: context.pal.texto(_textoInicio),
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],
@@ -501,31 +546,37 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 // ============================================================
-// TARJETA DE PRODUCTO DESTACADO (usada en la lista horizontal)
+// TARJETA DE PRODUCTO DESTACADO
 // ============================================================
 class _FeaturedCard extends StatelessWidget {
-  final FeaturedItem item;
+  const _FeaturedCard({required this.producto, required this.alVerTodas});
 
-  const _FeaturedCard({required this.item});
+  final ProductoCatalogo producto;
+  final VoidCallback alVerTodas;
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.pal;
+    Widget respaldo(BuildContext context) => Container(
+      color: pal.campo(Colors.grey.shade200),
+      child: Icon(Icons.local_pizza, color: pal.rojo(_rojoInicio), size: 32),
+    );
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const MenuScreen()),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductDetailScreen(producto: producto),
+        ),
+      ),
       child: Container(
         width: 165,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: pal.tarjeta(Colors.white),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: pal.sombra(Colors.black.withValues(alpha: 0.05)),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -534,64 +585,53 @@ class _FeaturedCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Container(
-                      color: Colors.grey.shade100,
-                      child: Image.asset(
-                        item.imageAsset,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(
-                            Icons.local_pizza,
-                            color: AppColors.primaryRed,
-                            size: 32,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Container(
+                  color: pal.campo(Colors.grey.shade100),
+                  child: ImagenProducto(producto: producto, respaldo: respaldo),
                 ),
-              ],
+              ),
             ),
             const SizedBox(height: 8),
             Text(
-              item.category,
-              style: const TextStyle(
+              producto.esPizza ? seccionPizzas : seccionLasanas,
+              style: TextStyle(
                 fontSize: 10,
-                color: AppColors.greyText,
+                color: pal.secundario(_grisInicio),
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 2),
             Text(
-              item.name,
+              producto.nombre,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.darkText,
+                color: pal.texto(_textoInicio),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              formatCop(producto.precioBase),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: pal.texto(_textoInicio),
               ),
             ),
             const SizedBox(height: 2),
             GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MenuScreen()),
-                );
-              },
-              child: const Text(
+              onTap: alVerTodas,
+              child: Text(
                 'Ver todas →',
                 style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.primaryRed,
+                  color: pal.rojo(_rojoInicio),
                   fontWeight: FontWeight.w700,
                 ),
               ),

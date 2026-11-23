@@ -8,6 +8,7 @@ import '../screens/my_orders_screen.dart';
 import '../screens/profile_screen.dart';
 import '../../shared/client_notification_service.dart';
 import '../../shared/pending_sales_badge.dart';
+import '../../theme/paleta_app.dart';
 
 // ============================================================
 // Barra de navegación inferior ÚNICA para toda la app.
@@ -18,11 +19,23 @@ import '../../shared/pending_sales_badge.dart';
 
 const Color kSplashRojo = Color(0xE6C32828);
 
-class AppBottomNav extends StatelessWidget {
+class AppBottomNav extends StatefulWidget {
   const AppBottomNav({super.key, required this.currentIndex});
 
   /// 0 = Inicio, 1 = Menú, 2 = Carrito, 3 = Mis pedidos, 4 = Perfil
   final int currentIndex;
+
+  static const Duration duracion = Duration(milliseconds: 260);
+
+  /// Último ítem mostrado como activo. Cada pestaña es una pantalla nueva,
+  /// así que la barra nueva desliza la píldora desde él.
+  static int? _ultimo;
+
+  /// Barras montadas: al llegar a 0 se olvida [_ultimo].
+  static int _montadas = 0;
+
+  /// Al terminar la sesión: la primera barra de la siguiente no anima.
+  static void olvidarUltimo() => _ultimo = null;
 
   static const List<_NavItemData> _items = [
     _NavItemData(
@@ -52,17 +65,83 @@ class AppBottomNav extends StatelessWidget {
     ),
   ];
 
+  @override
+  State<AppBottomNav> createState() => _AppBottomNavState();
+}
+
+class _AppBottomNavState extends State<AppBottomNav>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _control = AnimationController(
+    vsync: this,
+    duration: AppBottomNav.duracion,
+    value: 1,
+  );
+  late final Animation<double> _avance = CurvedAnimation(
+    parent: _control,
+    curve: Curves.easeOut,
+  );
+
+  /// Ítem desde el que se desliza la píldora; null si no hay deslizamiento.
+  int? _desde;
+  bool _visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    AppBottomNav._montadas++;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // También al volver a una pantalla que estaba debajo (atrás).
+    final visible = ModalRoute.isCurrentOf(context) ?? true;
+    if (visible && !_visible) _alAparecer();
+    _visible = visible;
+  }
+
+  @override
+  void dispose() {
+    _control.dispose();
+    if (--AppBottomNav._montadas == 0) AppBottomNav._ultimo = null;
+    super.dispose();
+  }
+
+  void _alAparecer() {
+    final anterior = AppBottomNav._ultimo;
+    AppBottomNav._ultimo = widget.currentIndex;
+    final desliza =
+        anterior != null &&
+        anterior != widget.currentIndex &&
+        !MediaQuery.disableAnimationsOf(context);
+    _desde = desliza ? anterior : null;
+    if (desliza) {
+      _control.forward(from: 0);
+    } else {
+      _control.value = 1;
+    }
+  }
+
   void _onTap(BuildContext context, int index) {
-    if (index == currentIndex) return;
+    if (index == widget.currentIndex) return;
     switch (index) {
       case 0:
-        Navigator.pushReplacement(context, noAnimationRoute(const HomeScreen()));
+        Navigator.pushReplacement(
+          context,
+          noAnimationRoute(const HomeScreen()),
+        );
         break;
       case 1:
-        Navigator.pushReplacement(context, noAnimationRoute(const MenuScreen()));
+        Navigator.pushReplacement(
+          context,
+          noAnimationRoute(const MenuScreen()),
+        );
         break;
       case 2:
-        Navigator.pushReplacement(context, noAnimationRoute(const CartScreen()));
+        Navigator.pushReplacement(
+          context,
+          noAnimationRoute(const CartScreen()),
+        );
         break;
       case 3:
         Navigator.pushReplacement(
@@ -81,6 +160,9 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.pal;
+    final destino = widget.currentIndex;
+    final origen = _desde ?? destino;
     return SafeArea(
       top: false,
       minimum: const EdgeInsets.only(bottom: 12),
@@ -92,24 +174,71 @@ class AppBottomNav extends StatelessWidget {
               height: 64,
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: pal.tarjeta(Colors.white),
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: pal.sombra(Colors.black.withValues(alpha: 0.08)),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
                 ],
               ),
-              child: ListenableBuilder(
-                listenable: CartService.instance,
-                builder: (context, _) {
-                  return Row(
-                    children: [
-                      for (var i = 0; i < _items.length; i++)
-                        _buildNavItem(context, i),
-                    ],
+              // En oscuro (pantallas migradas), borde fino en lugar de sombra.
+              foregroundDecoration: pal.oscuro
+                  ? BoxDecoration(
+                      borderRadius: BorderRadius.circular(32),
+                      border: Border.all(color: PaletaApp.bordeOscuro),
+                    )
+                  : null,
+              child: LayoutBuilder(
+                builder: (context, caja) {
+                  final ancho = caja.maxWidth / AppBottomNav._items.length;
+                  return AnimatedBuilder(
+                    animation: _avance,
+                    builder: (context, _) {
+                      final t = _avance.value;
+                      final posicion = origen + (destino - origen) * t;
+                      return Stack(
+                        children: [
+                          Positioned(
+                            left: posicion * ancho + 4,
+                            top: 0,
+                            bottom: 0,
+                            width: ancho - 8,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: pal.rojoBoton(kSplashRojo),
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: ListenableBuilder(
+                              listenable: CartService.instance,
+                              builder: (context, _) {
+                                return Row(
+                                  children: [
+                                    for (
+                                      var i = 0;
+                                      i < AppBottomNav._items.length;
+                                      i++
+                                    )
+                                      _buildNavItem(
+                                        context,
+                                        i,
+                                        cobertura: (1 - (posicion - i).abs())
+                                            .clamp(0.0, 1.0),
+                                        t: t,
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 },
               ),
@@ -121,53 +250,62 @@ class AppBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index) {
-    final _NavItemData item = _items[index];
-    final bool isActive = index == currentIndex;
+  /// [cobertura]: cuánto tapa la píldora este ítem (0 a 1); el icono y el
+  /// texto pasan del gris inactivo al blanco a medida que llega.
+  Widget _buildNavItem(
+    BuildContext context,
+    int index, {
+    required double cobertura,
+    required double t,
+  }) {
+    final _NavItemData item = AppBottomNav._items[index];
+    final bool isActive = index == widget.currentIndex;
+    final color = Color.lerp(
+      context.pal.secundario(Colors.black38),
+      Colors.white,
+      cobertura,
+    )!;
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: GestureDetector(
           onTap: () => _onTap(context, index),
           behavior: HitTestBehavior.opaque,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 260),
-            curve: Curves.easeOut,
-            decoration: BoxDecoration(
-              color: isActive ? kSplashRojo : Colors.transparent,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildIcon(item, isActive, index),
-                const SizedBox(height: 3),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    item.label,
-                    maxLines: 1,
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                      color: isActive ? Colors.white : Colors.black38,
-                    ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildIcon(item, isActive, index, color, t),
+              const SizedBox(height: 3),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  item.label,
+                  maxLines: 1,
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                    color: color,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildIcon(_NavItemData item, bool isActive, int index) {
+  Widget _buildIcon(
+    _NavItemData item,
+    bool isActive,
+    int index,
+    Color color,
+    double t,
+  ) {
     final IconData icon = isActive ? item.activeIcon : item.icon;
-    final Widget icono = Icon(
-      icon,
-      size: 22,
-      color: isActive ? Colors.white : Colors.black38,
+    final Widget icono = Transform.scale(
+      scale: isActive ? 0.9 + 0.1 * t : 1,
+      child: Icon(icon, size: 22, color: color),
     );
 
     if (index == 2) {
@@ -186,7 +324,9 @@ class AppBottomNav extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isActive ? Colors.white : kSplashRojo,
+                color: isActive
+                    ? Colors.white
+                    : context.pal.rojoBoton(kSplashRojo),
                 borderRadius: BorderRadius.circular(9),
               ),
               child: Text(
@@ -194,7 +334,9 @@ class AppBottomNav extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
-                  color: isActive ? kSplashRojo : Colors.white,
+                  color: isActive
+                      ? context.pal.rojoBoton(kSplashRojo)
+                      : Colors.white,
                 ),
               ),
             ),
@@ -271,7 +413,7 @@ class _ReadyOrderListenerState extends State<_ReadyOrderListener> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                '¡Tu pedido ${order.numero} está listo para recoger!',
+                '¡Tu pedido #${order.id} está listo para recoger!',
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

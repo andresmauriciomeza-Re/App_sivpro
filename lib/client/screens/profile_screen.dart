@@ -4,19 +4,31 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/auth_service.dart';
 import '../../network/api_exception.dart';
 import '../../shared/initials.dart';
+import '../../shared/modo_oscuro_controller.dart';
+import '../../shared/tarjeta_modo_oscuro.dart';
 import '../../shared/validators.dart';
+import '../../theme/paleta_app.dart';
+import '../../theme/tema_panel.dart';
 import 'menu_screen.dart';
 import '../../auth/login_screen.dart';
 import '../widgets/bottom_nav.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  Widget build(BuildContext context) => const TemaCliente(child: _Perfil());
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+/// Cuerpo del perfil, bajo [TemaCliente] para que `context.pal` vea su tema.
+class _Perfil extends StatefulWidget {
+  const _Perfil();
+
+  @override
+  State<_Perfil> createState() => _PerfilState();
+}
+
+class _PerfilState extends State<_Perfil> {
   static const Color splashRojo = Color(0xE6C32828);
   static const Color fondoClaro = Color(0xFFFCF7F5);
 
@@ -83,9 +95,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _guardarPerfil() async {
     if (_guardando) return;
     FocusScope.of(context).unfocus();
-    final correo = _correoController.text.trim();
+    final correo = _correoController.text.trim().toLowerCase();
     final telefono = _telefonoController.text.trim();
-    final errorContacto = validateProfileContact(correo, telefono);
+    // Mismas reglas que PUT /auth/perfil: correo de hasta 60 caracteres con
+    // el formato del backend y teléfono de 7 a 15 dígitos.
+    final errorContacto = correo.isEmpty
+        ? 'El correo es obligatorio'
+        : telefono.isEmpty
+        ? 'El teléfono es obligatorio'
+        : emailValidator(correo) ?? phoneValidator(telefono);
     if (errorContacto != null) {
       _showMessage(errorContacto);
       return;
@@ -133,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: fondoClaro,
+      backgroundColor: context.pal.fondo(fondoClaro),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -144,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 'Mi Perfil',
                 style: GoogleFonts.montserrat(
                   fontSize: 26,
-                  color: Colors.black87,
+                  color: context.pal.texto(Colors.black87),
                 ),
               ),
               const SizedBox(height: 4),
@@ -152,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 'Tu información de cuenta',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
-                  color: Colors.black,
+                  color: context.pal.texto(Colors.black),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -165,7 +183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.pal.tarjeta(Colors.white),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -201,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
+                                    color: context.pal.texto(Colors.black87),
                                   ),
                                 ),
                               ),
@@ -213,8 +231,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ? _guardarPerfil
                                           : _iniciarEdicion),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.black,
-                                  side: const BorderSide(color: Colors.black12),
+                                  foregroundColor: context.pal.texto(
+                                    Colors.black,
+                                  ),
+                                  side: BorderSide(
+                                    color: context.pal.borde(Colors.black12),
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -241,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: context.pal.campo(Colors.white),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -249,7 +271,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                                color: context.pal.texto(Colors.black),
                               ),
                             ),
                           ),
@@ -268,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.pal.tarjeta(Colors.white),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -293,7 +315,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _campoEditable(
                       _correoController,
                       keyboardType: TextInputType.emailAddress,
-                      maxLength: 255,
+                      maxLength: 60,
                     ),
                     const SizedBox(height: 16),
 
@@ -309,6 +331,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              ValueListenableBuilder<bool>(
+                valueListenable: ModoOscuroController.instance.oscuro,
+                builder: (context, oscuro, _) => TarjetaModoOscuro(
+                  oscuro: oscuro,
+                  onChanged: ModoOscuroController.instance.cambiar,
+                  radio: 16,
+                  bordeEnClaro: false,
                 ),
               ),
               const SizedBox(height: 20),
@@ -330,8 +362,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _regresarAlPanel,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: splashRojo,
-                      side: const BorderSide(color: splashRojo),
+                      foregroundColor: context.pal.rojo(splashRojo),
+                      side: BorderSide(color: context.pal.rojo(splashRojo)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -361,8 +393,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black87,
-                        side: const BorderSide(color: Colors.black12),
+                        foregroundColor: context.pal.texto(Colors.black87),
+                        side: BorderSide(
+                          color: context.pal.borde(Colors.black12),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -383,8 +417,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _cerrarSesion,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        side: const BorderSide(color: Colors.black12),
+                        foregroundColor: context.pal.texto(Colors.black),
+                        side: BorderSide(
+                          color: context.pal.borde(Colors.black12),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -413,14 +449,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _campoLabel(IconData icon, String texto) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: Colors.black),
+        Icon(icon, size: 14, color: context.pal.texto(Colors.black)),
         const SizedBox(width: 6),
         Text(
           texto,
           style: GoogleFonts.poppins(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: Colors.black54,
+            color: context.pal.secundario(Colors.black54),
           ),
         ),
       ],
@@ -432,12 +468,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F2),
+        color: context.pal.campo(const Color(0xFFF2F2F2)),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         valor,
-        style: GoogleFonts.poppins(fontSize: 13.5, color: Colors.black54),
+        style: GoogleFonts.poppins(
+          fontSize: 13.5,
+          color: context.pal.secundario(Colors.black54),
+        ),
       ),
     );
   }
@@ -454,10 +493,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       keyboardType: keyboardType,
       maxLength: maxLength,
       inputFormatters: inputFormatters,
-      style: GoogleFonts.poppins(fontSize: 13.5, color: Colors.black87),
+      style: GoogleFonts.poppins(
+        fontSize: 13.5,
+        color: context.pal.texto(Colors.black87),
+      ),
       decoration: InputDecoration(
         filled: true,
-        fillColor: const Color(0xFFF2F2F2),
+        fillColor: context.pal.campo(const Color(0xFFF2F2F2)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,

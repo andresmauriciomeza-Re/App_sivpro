@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../network/api_exception.dart';
 import '../shared/page_transitions.dart';
+import '../shared/validators.dart';
 import 'auth_service.dart';
 import 'verify_code_screen.dart';
 
@@ -33,9 +34,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _onEnviarCodigo() async {
     if (_loading) return;
-    final correo = _emailController.text.trim();
+    final correo = _emailController.text.trim().toLowerCase();
     if (correo.isEmpty) {
       _showMessage('Ingresa tu correo electrónico');
+      return;
+    }
+    if (emailValidator(correo) != null) {
+      _showMessage(correoInvalidoMensaje);
       return;
     }
 

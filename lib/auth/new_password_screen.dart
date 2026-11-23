@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../network/api_exception.dart';
 import '../shared/page_transitions.dart';
+import '../shared/validators.dart';
 import 'auth_service.dart';
 import 'password_updated_screen.dart';
 
@@ -73,7 +74,11 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
         password,
       );
       if (!mounted) return;
-      Navigator.of(context).push(heroFadeRoute(const PasswordUpdatedScreen()));
+      // Sin pantallas intermedias: atrás vuelve al login (la raíz).
+      Navigator.of(context).pushAndRemoveUntil(
+        heroFadeRoute(const PasswordUpdatedScreen()),
+        (route) => route.isFirst,
+      );
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
     } catch (_) {
@@ -83,11 +88,12 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     }
   }
 
-  bool _hasValidLength(String p) => p.length >= 8 && p.length <= 72;
-  bool _hasUpperCase(String p) => RegExp(r'[A-Z]').hasMatch(p);
-  bool _hasLowerCase(String p) => RegExp(r'[a-z]').hasMatch(p);
-  bool _hasNumber(String p) => RegExp(r'[0-9]').hasMatch(p);
-  bool _hasNoWhitespace(String p) => !RegExp(r'\s').hasMatch(p);
+  // Mismas reglas que el registro y el backend (Ñ y tildes cuentan).
+  bool _hasValidLength(String p) => contrasenaLongitudValida(p);
+  bool _hasUpperCase(String p) => contrasenaTieneMayuscula(p);
+  bool _hasLowerCase(String p) => contrasenaTieneMinuscula(p);
+  bool _hasNumber(String p) => contrasenaTieneNumero(p);
+  bool _hasNoWhitespace(String p) => contrasenaSinEspacios(p);
 
   InputDecoration _dec(String hint, VoidCallback toggle, bool obscure) {
     return InputDecoration(

@@ -1,22 +1,84 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'menu_screen.dart';
+import '../../network/api_exception.dart';
+import '../../shared/formato.dart';
+import '../../theme/paleta_app.dart';
+import '../../theme/tema_panel.dart';
+import '../models/producto_catalogo.dart';
 import '../services/cart_service.dart';
+import '../services/catalogo_repository.dart';
+import '../services/validacion_carrito.dart';
+import 'menu_screen.dart';
 import 'payment_method_screen.dart';
 import '../widgets/bottom_nav.dart';
 
-class CartScreen extends StatefulWidget {
+class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
+  Widget build(BuildContext context) => const TemaCliente(child: _Carrito());
 }
 
-class _CartScreenState extends State<CartScreen> {
+/// Cuerpo del carrito, bajo [TemaCliente] para que `context.pal` vea su tema.
+class _Carrito extends StatefulWidget {
+  const _Carrito();
+
+  @override
+  State<_Carrito> createState() => _CarritoState();
+}
+
+class _CarritoState extends State<_Carrito> {
   static const Color splashRojo = Color(0xE6C32828);
   static const Color fondoClaro = Color(0xFFFCF7F5);
 
+  /// Catálogo recién cargado para revisar el carrito; null si aún no llega.
+  List<ProductoCatalogo>? _catalogo;
+  String? _errorCatalogo;
+  bool _abriendoPago = false;
+
   // (el índice de la barra de navegación ahora lo maneja AppBottomNav)
+
+  @override
+  void initState() {
+    super.initState();
+    _revisar();
+  }
+
+  /// Recarga el catálogo (sin caché) para revisar disponibilidad y stock.
+  Future<void> _revisar() async {
+    try {
+      final catalogo = await CatalogoRepository.instance.productos(
+        recargar: true,
+      );
+      if (!mounted) return;
+      setState(() {
+        _catalogo = catalogo;
+        _errorCatalogo = null;
+      });
+    } on ApiException catch (error) {
+      if (mounted) setState(() => _errorCatalogo = error.message);
+    }
+  }
+
+  Map<String, EstadoLinea> _estados(CartService cart) {
+    final catalogo = _catalogo;
+    return catalogo == null ? const {} : validarCarrito(cart.items, catalogo);
+  }
+
+  /// Justo antes de pagar se vuelve a revisar el carrito. Si el catálogo no
+  /// carga no se bloquea: el servidor valida igual al crear el pedido.
+  Future<void> _irAPagar() async {
+    if (_abriendoPago) return;
+    setState(() => _abriendoPago = true);
+    await _revisar();
+    if (!mounted) return;
+    setState(() => _abriendoPago = false);
+    if (_estados(CartService.instance).values.any((e) => e.bloquea)) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PaymentMethodScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +88,7 @@ class _CartScreenState extends State<CartScreen> {
         final cart = CartService.instance;
 
         return Scaffold(
-          backgroundColor: fondoClaro,
+          backgroundColor: context.pal.fondo(fondoClaro),
           body: SafeArea(
             child: cart.estaVacio
                 ? _buildEmptyState(context)
@@ -42,6 +104,7 @@ class _CartScreenState extends State<CartScreen> {
   // Estado 1: carrito vacío
   // ----------------------------------------------------------
   Widget _buildEmptyState(BuildContext context) {
+    final pal = context.pal;
     return Column(
       children: [
         Padding(
@@ -50,7 +113,7 @@ class _CartScreenState extends State<CartScreen> {
             'La Sirena',
             style: GoogleFonts.montserrat(
               fontSize: 20,
-              color: Colors.black87,
+              color: pal.texto(Colors.black87),
             ),
           ),
         ),
@@ -64,14 +127,14 @@ class _CartScreenState extends State<CartScreen> {
                   Icon(
                     Icons.shopping_cart_outlined,
                     size: 90,
-                    color: splashRojo.withValues(alpha: 0.35),
+                    color: pal.rojo(splashRojo).withValues(alpha: 0.35),
                   ),
                   const SizedBox(height: 24),
                   Text(
                     'Tu carrito está vacío',
                     style: GoogleFonts.montserrat(
                       fontSize: 22,
-                      color: Colors.black87,
+                      color: pal.texto(Colors.black87),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -80,7 +143,7 @@ class _CartScreenState extends State<CartScreen> {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: Colors.black54,
+                      color: pal.secundario(Colors.black54),
                       height: 1.4,
                     ),
                   ),
@@ -95,7 +158,7 @@ class _CartScreenState extends State<CartScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: splashRojo,
+                        backgroundColor: pal.rojoBoton(splashRojo),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -120,10 +183,61 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  /// Aviso sobre la lista: catálogo que no cargó o líneas que bloquean.
+  Widget _aviso({
+    required String texto,
+    required Color fondo,
+    required Color color,
+    VoidCallback? reintentar,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
+        decoration: BoxDecoration(
+          color: fondo,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, size: 18, color: color),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                texto,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ),
+            if (reintentar != null)
+              TextButton(
+                onPressed: reintentar,
+                child: Text(
+                  'Reintentar',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ----------------------------------------------------------
   // Estado 2: carrito con productos
   // ----------------------------------------------------------
   Widget _buildItemsState(BuildContext context, CartService cart) {
+    final pal = context.pal;
+    final estados = _estados(cart);
+    final bloqueado = estados.values.any((e) => e.bloquea);
     return Column(
       children: [
         Padding(
@@ -132,18 +246,33 @@ class _CartScreenState extends State<CartScreen> {
             children: [
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                icon: Icon(Icons.arrow_back, color: pal.texto(Colors.black87)),
               ),
               Text(
                 'Carrito',
                 style: GoogleFonts.montserrat(
                   fontSize: 22,
-                  color: const Color(0xFF1A1A1A),
+                  color: pal.texto(const Color(0xFF1A1A1A)),
                 ),
               ),
             ],
           ),
         ),
+        if (_errorCatalogo != null)
+          _aviso(
+            texto: 'No pudimos revisar la disponibilidad. $_errorCatalogo',
+            fondo: pal.avisoFondo(const Color(0xFFFFF4E5)),
+            color: pal.avisoTexto(const Color(0xFF8A5A00)),
+            reintentar: _revisar,
+          ),
+        if (bloqueado)
+          _aviso(
+            texto:
+                'Algunos productos se agotaron o ya no tienen stock '
+                'suficiente. Revisa tu carrito.',
+            fondo: pal.errorFondo(const Color(0xFFFFEBEE)),
+            color: pal.errorTexto(const Color(0xFFC62828)),
+          ),
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -151,15 +280,19 @@ class _CartScreenState extends State<CartScreen> {
             separatorBuilder: (_, _) => const SizedBox(height: 14),
             itemBuilder: (context, index) {
               final item = cart.items[index];
-              return _CartItemCard(item: item, key: ValueKey(item.id));
+              return _CartItemCard(
+                item: item,
+                estado: estados[item.id] ?? EstadoLinea.correcta,
+                key: ValueKey(item.id),
+              );
             },
           ),
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(top: BorderSide(color: Colors.black12)),
+            color: pal.tarjeta(Colors.white),
+            border: Border(top: BorderSide(color: pal.borde(Colors.black12))),
           ),
           child: Column(
             children: [
@@ -170,14 +303,14 @@ class _CartScreenState extends State<CartScreen> {
                     'Subtotal',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: Colors.black54,
+                      color: pal.secundario(Colors.black54),
                     ),
                   ),
                   Text(
-                    '\$${formatoMiles(cart.subtotal)}',
+                    formatCop(cart.subtotal),
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: Colors.black54,
+                      color: pal.secundario(Colors.black54),
                     ),
                   ),
                 ],
@@ -191,15 +324,15 @@ class _CartScreenState extends State<CartScreen> {
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: pal.texto(Colors.black87),
                     ),
                   ),
                   Text(
-                    '\$${formatoMiles(cart.total)}',
+                    formatCop(cart.total),
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w800,
                       fontSize: 18,
-                      color: Colors.black87,
+                      color: pal.texto(Colors.black87),
                     ),
                   ),
                 ],
@@ -208,16 +341,9 @@ class _CartScreenState extends State<CartScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PaymentMethodScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: bloqueado || _abriendoPago ? null : _irAPagar,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: splashRojo,
+                    backgroundColor: pal.rojoBoton(splashRojo),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -239,26 +365,42 @@ class _CartScreenState extends State<CartScreen> {
       ],
     );
   }
-
 }
 
 class _CartItemCard extends StatelessWidget {
-  const _CartItemCard({required this.item, super.key});
+  const _CartItemCard({required this.item, required this.estado, super.key});
 
   final CartItem item;
+  final EstadoLinea estado;
 
   static const Color splashRojo = Color(0xE6C32828);
 
+  bool get _esPizza =>
+      item.tamanoNombre == 'Mediana' || item.tamanoNombre == 'Grande';
+
   @override
   Widget build(BuildContext context) {
+    final pal = context.pal;
+    final maximo = estado.maximo;
+    final puedeSumar =
+        !estado.noDisponible && (maximo == null || item.cantidad < maximo);
+    final colorError = pal.errorTexto(const Color(0xFFC62828));
+    final mensaje = estado.mensaje;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: pal.tarjeta(Colors.white),
         borderRadius: BorderRadius.circular(16),
+        // La línea que bloquea el pago se marca en rojo; en oscuro, borde
+        // fino en lugar de sombra.
+        border: estado.bloquea
+            ? Border.all(color: colorError, width: 1.2)
+            : pal.oscuro
+            ? Border.all(color: PaletaApp.bordeOscuro)
+            : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: pal.sombra(Colors.black.withValues(alpha: 0.05)),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -277,10 +419,10 @@ class _CartItemCard extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) => Container(
                 width: 60,
                 height: 60,
-                color: Colors.grey.shade200,
-                child: const Icon(
+                color: pal.campo(Colors.grey.shade200),
+                child: Icon(
                   Icons.local_pizza,
-                  color: splashRojo,
+                  color: pal.rojo(splashRojo),
                   size: 24,
                 ),
               ),
@@ -296,30 +438,48 @@ class _CartItemCard extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
-                    color: Colors.black87,
+                    color: pal.texto(Colors.black87),
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  'Size: ${item.tamanoNombre}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: Colors.black87,
-                  ),
-                ),
-                if (item.adicionesTexto.isNotEmpty)
+                if (item.tamanoNombre.isNotEmpty)
                   Text(
-                    'Additions: ${item.adicionesTexto}',
+                    _esPizza
+                        ? 'Tamaño: ${item.tamanoNombre} · '
+                              '${item.cantidad == 1 ? '1 porción' : '${item.cantidad} porciones'}'
+                        : 'Tamaño: ${item.tamanoNombre}',
                     style: GoogleFonts.poppins(
                       fontSize: 11,
-                      color: Colors.black87,
+                      color: pal.texto(Colors.black87),
+                    ),
+                  ),
+                if (item.adicionesTexto.isNotEmpty)
+                  Text(
+                    'Adiciones: ${item.adicionesTexto}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: pal.texto(Colors.black87),
+                    ),
+                  ),
+                if (mensaje != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      mensaje,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: colorError,
+                      ),
                     ),
                   ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     _stepButton(
+                      context,
                       icon: Icons.remove,
+                      etiqueta: 'Quitar uno de ${item.nombre}',
                       onTap: () => CartService.instance.updateQuantity(
                         item.id,
                         item.cantidad - 1,
@@ -328,13 +488,18 @@ class _CartItemCard extends StatelessWidget {
                     _CartQuantityStepper(
                       itemId: item.id,
                       cantidad: item.cantidad,
+                      maximo: estado.noDisponible ? item.cantidad : maximo,
                     ),
                     _stepButton(
+                      context,
                       icon: Icons.add,
-                      onTap: () => CartService.instance.updateQuantity(
-                        item.id,
-                        item.cantidad + 1,
-                      ),
+                      etiqueta: 'Agregar uno de ${item.nombre}',
+                      onTap: puedeSumar
+                          ? () => CartService.instance.updateQuantity(
+                              item.id,
+                              item.cantidad + 1,
+                            )
+                          : null,
                     ),
                   ],
                 ),
@@ -346,9 +511,10 @@ class _CartItemCard extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () => CartService.instance.removeItem(item.id),
-                icon: const Icon(
+                tooltip: 'Quitar del carrito',
+                icon: Icon(
                   Icons.delete_outline,
-                  color: splashRojo,
+                  color: pal.rojo(splashRojo),
                   size: 20,
                 ),
                 padding: EdgeInsets.zero,
@@ -356,11 +522,11 @@ class _CartItemCard extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                '\$${formatoMiles(item.subtotal)}',
+                formatCop(item.subtotal),
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w800,
                   fontSize: 14,
-                  color: Colors.black87,
+                  color: pal.texto(Colors.black87),
                 ),
               ),
             ],
@@ -370,28 +536,55 @@ class _CartItemCard extends StatelessWidget {
     );
   }
 
-  Widget _stepButton({required IconData icon, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: splashRojo.withValues(alpha: 0.15),
-          shape: BoxShape.circle,
+  Widget _stepButton(
+    BuildContext context, {
+    required IconData icon,
+    required String etiqueta,
+    VoidCallback? onTap,
+  }) {
+    final pal = context.pal;
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: etiqueta,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: onTap == null
+                ? pal.campo(Colors.black12)
+                : pal.rojoSuave(splashRojo.withValues(alpha: 0.15)),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: 14,
+            color: onTap == null
+                ? pal.atenuado(Colors.black38)
+                : pal.rojo(splashRojo),
+          ),
         ),
-        child: Icon(icon, size: 14, color: splashRojo),
       ),
     );
   }
 }
 
 class _CartQuantityStepper extends StatefulWidget {
-  const _CartQuantityStepper({required this.itemId, required this.cantidad});
+  const _CartQuantityStepper({
+    required this.itemId,
+    required this.cantidad,
+    required this.maximo,
+  });
 
   final String itemId;
   final int cantidad;
+
+  /// Tope al escribir la cantidad; null = sin límite.
+  final int? maximo;
 
   @override
   State<_CartQuantityStepper> createState() => _CartQuantityStepperState();
@@ -434,7 +627,15 @@ class _CartQuantityStepperState extends State<_CartQuantityStepper> {
       _controller.text = '${widget.cantidad}';
       return;
     }
-    CartService.instance.updateQuantity(widget.itemId, parsed);
+    // Escribiendo no se pasa del máximo (como la web: se ajusta sola).
+    final maximo = widget.maximo;
+    final cantidad = maximo != null && parsed > maximo
+        ? (maximo < 1 ? widget.cantidad : maximo)
+        : parsed;
+    _controller.text = '$cantidad';
+    if (cantidad != widget.cantidad) {
+      CartService.instance.updateQuantity(widget.itemId, cantidad);
+    }
   }
 
   void _onSubmitted(String value) {
@@ -451,10 +652,7 @@ class _CartQuantityStepperState extends State<_CartQuantityStepper> {
         focusNode: _focusNode,
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(
-          fontWeight: FontWeight.w700,
-          fontSize: 14,
-        ),
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 14),
         decoration: const InputDecoration(
           border: InputBorder.none,
           isDense: true,

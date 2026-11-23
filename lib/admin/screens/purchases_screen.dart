@@ -33,7 +33,7 @@ import '../services/ventas_repository.dart';
 import '../widgets/barra_navegacion_admin.dart';
 import '../widgets/module_card.dart';
 import '../widgets/period_selector.dart';
-import '../widgets/tarjeta_modo_oscuro.dart';
+import '../../shared/tarjeta_modo_oscuro.dart';
 import 'admin_dashboard_screen.dart';
 
 part 'purchases/admin_profile.dart';

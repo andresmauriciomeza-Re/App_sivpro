@@ -1,25 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/services.dart';
 
-// ignore: constant_identifier_names
-const List<String> ALLOWED_EMAIL_DOMAINS = <String>[
-  'gmail.com',
-  'outlook.com',
-  'hotmail.com',
-  'lasirena.com',
-];
-
-const String allowedEmailMessage =
-    'Solo se permiten correos @gmail.com, @outlook.com, @hotmail.com o @lasirena.com';
-
-/// Login: el backend solo exige correo no vacío (sin restricción de dominio).
+/// Login: correo no vacío y de hasta 255 caracteres, como el backend.
 String? loginEmailValidator(String? value) {
   if (value == null || value.trim().isEmpty) return 'Ingresa tu correo';
+  if (value.length > 255) return 'El correo no puede superar 255 caracteres';
   return null;
 }
 
-/// Login: el backend solo exige contraseña no vacía.
+/// Login: contraseña no vacía y de hasta 255 caracteres, como el backend.
 String? loginPasswordValidator(String? value) {
   if (value == null || value.isEmpty) return 'Ingresa tu contraseña';
+  if (value.length > 255) {
+    return 'La contraseña no puede superar 255 caracteres';
+  }
   return null;
 }
 
@@ -55,49 +50,96 @@ String? validateProfileContact(String correo, String telefono) {
   return profileEmailValidator(correo) ?? profilePhoneValidator(telefono);
 }
 
-String? documentValidator(String? value) {
+// ---- Registro: mismas reglas que validarRegistro del backend ----
+
+/// Largo del número de documento por tipo (CC, CE y PP de pasaporte).
+const Map<String, (int, int)> limitesDocumento = {
+  'CC': (6, 10),
+  'CE': (6, 12),
+  'PP': (6, 12),
+};
+
+/// Letras del nombre: incluye tildes, Ñ y Ü (mismo rango que el backend).
+const String _letra = r'[A-Za-zÁ-ÖØ-Üá-öø-ü]';
+
+final RegExp _nombre = RegExp('^$_letra+(?: $_letra+)*\$');
+
+final RegExp _correo = RegExp(
+  r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$',
+);
+
+const String correoInvalidoMensaje = 'Ingresa un correo válido y sin espacios.';
+
+String? documentValidator(String? value, String tipo) {
   if (value == null || value.isEmpty) return 'Este campo es obligatorio';
   if (!RegExp(r'^\d+$').hasMatch(value)) return 'Solo se permiten números';
-  if (value.length < 6 || value.length > 15) {
-    return 'El documento debe tener entre 6 y 15 dígitos';
+  final (minimo, maximo) = limitesDocumento[tipo]!;
+  if (value.length < minimo || value.length > maximo) {
+    return 'El documento debe tener entre $minimo y $maximo dígitos';
   }
   return null;
 }
 
+/// Se valida recortado: al backend se envía sin espacios al inicio ni al final.
 String? nameValidator(String? value) {
-  if (value == null || value.isEmpty) return 'Este campo es obligatorio';
-  if (!RegExp(
-    r'^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$',
-  ).hasMatch(value)) {
-    return 'Solo se permiten letras';
+  final nombre = value?.trim() ?? '';
+  if (nombre.isEmpty) return 'Este campo es obligatorio';
+  if (!_nombre.hasMatch(nombre)) {
+    return 'Solo se permiten letras separadas por un espacio';
+  }
+  if (nombre.length < 2 || nombre.length > 100) {
+    return 'El nombre debe tener entre 2 y 100 caracteres';
   }
   return null;
 }
 
+/// Sin lista de dominios; máximo 60 caracteres y la parte local no empieza
+/// ni termina en punto.
 String? emailValidator(String? value) {
-  if (value == null || value.isEmpty) return 'Este campo es obligatorio';
-  final email = value.toLowerCase();
-  final match = RegExp(
-    r'^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?@([a-z0-9-]+\.[a-z]{2,})$',
-  ).firstMatch(email);
-  if (match == null || !ALLOWED_EMAIL_DOMAINS.contains(match.group(1))) {
-    return allowedEmailMessage;
+  final correo = value?.trim() ?? '';
+  if (correo.isEmpty) return 'Este campo es obligatorio';
+  final local = correo.split('@').first;
+  if (correo.length > 60 ||
+      !_correo.hasMatch(correo) ||
+      local.startsWith('.') ||
+      local.endsWith('.')) {
+    return correoInvalidoMensaje;
   }
   return null;
 }
 
 String? phoneValidator(String? value) {
   if (value == null || value.isEmpty) return 'Este campo es obligatorio';
-  if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-    return 'El teléfono debe tener 10 dígitos numéricos';
+  if (!RegExp(r'^\d{7,15}$').hasMatch(value)) {
+    return 'El teléfono debe tener solo números, entre 7 y 15 dígitos.';
   }
   return null;
 }
 
+// Reglas de contraseña (registro y nueva contraseña): 8 a 72 caracteres y
+// como mucho 72 bytes, sin espacios, con minúscula, mayúscula (Unicode: Ñ y
+// tildes cuentan) y número.
+bool contrasenaLongitudValida(String p) =>
+    p.length >= 8 && p.length <= 72 && utf8.encode(p).length <= 72;
+bool contrasenaTieneMayuscula(String p) =>
+    RegExp(r'\p{Lu}', unicode: true).hasMatch(p);
+bool contrasenaTieneMinuscula(String p) =>
+    RegExp(r'\p{Ll}', unicode: true).hasMatch(p);
+bool contrasenaTieneNumero(String p) => RegExp(r'\d').hasMatch(p);
+bool contrasenaSinEspacios(String p) => !RegExp(r'\s').hasMatch(p);
+
 String? passwordValidator(String? value) {
   if (value == null || value.isEmpty) return 'Este campo es obligatorio';
-  if (value.length < 8) {
-    return 'La contraseña debe tener al menos 8 caracteres';
+  if (!contrasenaSinEspacios(value)) {
+    return 'La contraseña no puede tener espacios';
+  }
+  if (!contrasenaLongitudValida(value)) {
+    return 'La contraseña debe tener entre 8 y 72 caracteres';
+  }
+  if (!contrasenaTieneMayuscula(value) ||
+      !contrasenaTieneMinuscula(value) ||
+      !contrasenaTieneNumero(value)) {
+    return 'Incluye al menos una mayúscula, una minúscula y un número';
   }
   return null;
 }
@@ -108,10 +150,10 @@ String? confirmPasswordValidator(String? value, String password) {
   return null;
 }
 
+/// Letras separadas por un único espacio; deja escribir el espacio final
+/// mientras se teclea la palabra siguiente.
 class NameInputFormatter extends TextInputFormatter {
-  static final _allowed = RegExp(
-    r'^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]*(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]*)?$',
-  );
+  static final _allowed = RegExp('^(?:$_letra+(?: $_letra+)* ?)?\$');
 
   @override
   TextEditingValue formatEditUpdate(
@@ -123,7 +165,7 @@ class NameInputFormatter extends TextInputFormatter {
 }
 
 class EmailInputFormatter extends TextInputFormatter {
-  static final _allowed = RegExp(r'^[A-Za-z0-9._@-]*$');
+  static final _allowed = RegExp(r'^[A-Za-z0-9._%+@-]*$');
 
   @override
   TextEditingValue formatEditUpdate(
