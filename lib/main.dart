@@ -4,10 +4,13 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'auth/auth_service.dart';
 import 'auth/session_manager.dart';
 import 'auth/splash_screen.dart';
+import 'client/services/limpieza_sesion_cliente.dart';
+import 'shared/client_notification_service.dart';
 import 'shared/low_stock_notification_service.dart';
 import 'shared/modo_oscuro_controller.dart';
 import 'shared/pending_sales_service.dart';
 import 'theme/app_theme.dart';
+import 'theme/tema_panel.dart';
 
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -16,24 +19,17 @@ Future<void> main() async {
   SessionManager.instance.start();
   LowStockNotificationService.instance.start();
   PendingSalesService.instance.start();
+  ClientNotificationService.instance.start();
   ModoOscuroController.instance.cargar();
+  registrarLimpiezaCliente();
   runApp(const SivproApp());
 }
 
-/// Modo oscuro activo: solo con la preferencia encendida y sesión de
-/// Administrador (login, splash, empleado y cliente siguen en claro).
-bool get _oscuroAdmin =>
-    ModoOscuroController.instance.oscuro.value &&
-    AuthService.instance.rol == UserRole.admin;
-
-/// Barra de estado del modo oscuro (iconos claros). Al salir se restaura el
-/// estilo claro en iOS; en Android no se fija nada en modo claro.
-const SystemUiOverlayStyle _barraOscura = SystemUiOverlayStyle(
-  statusBarIconBrightness: Brightness.light,
-  statusBarBrightness: Brightness.dark,
-);
-const SystemUiOverlayStyle _barraClaraIos = SystemUiOverlayStyle(
-  statusBarBrightness: Brightness.light,
+/// Modo oscuro del panel de personal (Administrador y Empleado) con la
+/// preferencia encendida; splash, login y cliente siguen en claro.
+bool get _oscuroPanel => temaOscuroActivo(
+  preferencia: ModoOscuroController.instance.oscuro.value,
+  rol: AuthService.instance.rol,
 );
 
 class SivproApp extends StatefulWidget {
@@ -49,7 +45,7 @@ class _SivproAppState extends State<SivproApp> {
     AuthService.instance,
   ]);
   final GlobalKey _claveNavegador = GlobalKey();
-  bool _oscuro = _oscuroAdmin;
+  bool _oscuro = _oscuroPanel;
 
   @override
   void initState() {
@@ -64,9 +60,9 @@ class _SivproAppState extends State<SivproApp> {
   }
 
   void _alCambiar() {
-    final oscuro = _oscuroAdmin;
+    final oscuro = _oscuroPanel;
     if (oscuro == _oscuro) return;
-    if (!oscuro) SystemChrome.setSystemUIOverlayStyle(_barraClaraIos);
+    if (!oscuro) SystemChrome.setSystemUIOverlayStyle(barraEstadoClaraIos);
     setState(() => _oscuro = oscuro);
   }
 
@@ -86,7 +82,7 @@ class _SivproAppState extends State<SivproApp> {
           final navegador = KeyedSubtree(key: _claveNavegador, child: child!);
           return _oscuro
               ? AnnotatedRegion<SystemUiOverlayStyle>(
-                  value: _barraOscura,
+                  value: barraEstadoOscura,
                   child: navegador,
                 )
               : navegador;

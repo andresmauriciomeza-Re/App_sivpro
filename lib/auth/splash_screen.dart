@@ -13,6 +13,7 @@ import '../admin/screens/purchases_screen.dart' show adminHomeScreen;
 import '../client/screens/home_screen.dart';
 import '../network/api_exception.dart';
 import 'auth_service.dart';
+import '../theme/tema_panel.dart';
 
 /// Calidad de la animación del splash según el dispositivo.
 ///
@@ -655,9 +656,11 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final textScaler = media.textScaler.clamp(maxScaleFactor: 1.15);
-    return MediaQuery(
-      data: media.copyWith(textScaler: textScaler),
-      child: _buildSplash(media),
+    return TemaSiempreClaro(
+      child: MediaQuery(
+        data: media.copyWith(textScaler: textScaler),
+        child: _buildSplash(media),
+      ),
     );
   }
 

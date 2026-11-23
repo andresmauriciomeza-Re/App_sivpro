@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
@@ -19,7 +21,11 @@ class ApiClient {
 
   static final ApiClient instance = ApiClient._();
 
-  final http.Client _client = http.Client();
+  http.Client _client = http.Client();
+
+  /// Permite a las pruebas responder sin llamar al backend real.
+  @visibleForTesting
+  set clienteHttp(http.Client cliente) => _client = cliente;
 
   TokenProvider? tokenProvider;
   SessionExpiredHandler? onSessionExpired;
@@ -28,27 +34,15 @@ class ApiClient {
     return _send('GET', path, auth: auth);
   }
 
-  Future<dynamic> post(
-    String path, {
-    Object? body,
-    bool auth = true,
-  }) {
+  Future<dynamic> post(String path, {Object? body, bool auth = true}) {
     return _send('POST', path, body: body, auth: auth);
   }
 
-  Future<dynamic> put(
-    String path, {
-    Object? body,
-    bool auth = true,
-  }) {
+  Future<dynamic> put(String path, {Object? body, bool auth = true}) {
     return _send('PUT', path, body: body, auth: auth);
   }
 
-  Future<dynamic> patch(
-    String path, {
-    Object? body,
-    bool auth = true,
-  }) {
+  Future<dynamic> patch(String path, {Object? body, bool auth = true}) {
     return _send('PATCH', path, body: body, auth: auth);
   }
 
@@ -64,19 +58,78 @@ class ApiClient {
       headers['Content-Type'] = 'application/json';
     }
 
+    final sentToken = _agregarToken(headers, auth);
+    final request = http.Request(method, uri)..headers.addAll(headers);
+    if (body != null) {
+      request.body = jsonEncode(body);
+    }
+    return _enviar(request, path, sentToken, ApiConfig.timeout);
+  }
+
+  /// Sube un archivo como `multipart/form-data` (siempre con token). El
+  /// [tipoContenido] del archivo debe ser el real: el backend lo compara con
+  /// los primeros bytes.
+  Future<dynamic> postMultipart(
+    String path, {
+    required Map<String, String> campos,
+    required String campoArchivo,
+    required List<int> bytes,
+    required String nombreArchivo,
+    required String tipoContenido,
+  }) {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+    final limite = 'sivpro-${DateTime.now().microsecondsSinceEpoch}';
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      'Content-Type': 'multipart/form-data; boundary=$limite',
+    };
+    final sentToken = _agregarToken(headers, true);
+    // Nombre seguro para la cabecera (sin comillas ni caracteres raros).
+    final nombre = nombreArchivo.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    final cuerpo = BytesBuilder()
+      ..add(
+        utf8.encode(
+          [
+            for (final campo in campos.entries)
+              '--$limite\r\n'
+                  'Content-Disposition: form-data; name="${campo.key}"\r\n\r\n'
+                  '${campo.value}\r\n',
+            '--$limite\r\n'
+                'Content-Disposition: form-data; name="$campoArchivo"; '
+                'filename="$nombre"\r\n'
+                'Content-Type: $tipoContenido\r\n\r\n',
+          ].join(),
+        ),
+      )
+      ..add(bytes)
+      ..add(utf8.encode('\r\n--$limite--\r\n'));
+    final request = http.Request('POST', uri)
+      ..headers.addAll(headers)
+      ..bodyBytes = cuerpo.takeBytes();
+    return _enviar(request, path, sentToken, tiempoSubida);
+  }
+
+  /// Las subidas pesan más (hasta 5 MB): esperan más que el resto.
+  static const Duration tiempoSubida = Duration(seconds: 60);
+
+  bool _agregarToken(Map<String, String> headers, bool auth) {
     final token = tokenProvider?.call();
     final sentToken = auth && token != null && token.isNotEmpty;
     if (sentToken) {
       headers['Authorization'] = 'Bearer $token';
     }
+    return sentToken;
+  }
 
+  Future<dynamic> _enviar(
+    http.BaseRequest request,
+    String path,
+    bool sentToken,
+    Duration tiempo,
+  ) async {
     http.Response response;
     try {
-      final request = http.Request(method, uri)..headers.addAll(headers);
-      if (body != null) {
-        request.body = jsonEncode(body);
-      }
-      final streamed = await _client.send(request).timeout(ApiConfig.timeout);
+      final streamed = await _client.send(request).timeout(tiempo);
       response = await http.Response.fromStream(streamed);
     } on TimeoutException {
       throw const ApiException(
@@ -145,7 +198,29 @@ class ApiClient {
     );
   }
 
+  /// Textos de respaldo por ruta, solo cuando el backend no manda mensaje.
+  static const Map<String, Map<int, String>> _respaldoPorRuta = {
+    '/auth/recuperar/solicitar': {
+      429: 'Espera un momento antes de pedir otro código.',
+    },
+    '/auth/recuperar/verificar': {400: 'El código es incorrecto o venció.'},
+    '/auth/register': {
+      400: 'Revisa los datos del formulario.',
+      409: 'Este correo o documento ya está registrado.',
+      429:
+          'Alcanzaste el límite de registros desde esta conexión. '
+          'Intenta de nuevo más tarde.',
+      503: 'El servicio no está disponible. Inténtalo de nuevo más tarde.',
+    },
+    '/auth/verificacion/reenviar': {
+      429: 'Espera un momento antes de pedir otro correo de confirmación.',
+      503: 'El servicio no está disponible. Inténtalo de nuevo más tarde.',
+    },
+  };
+
   String _fallbackMessage(int statusCode, {String? code, String? path}) {
+    final porRuta = _respaldoPorRuta[path]?[statusCode];
+    if (porRuta != null) return porRuta;
     if (statusCode == 401) {
       if (path == '/auth/login') return 'Correo o contraseña incorrectos.';
       return ApiException.sessionMessageFor(code);

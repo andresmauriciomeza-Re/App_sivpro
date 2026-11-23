@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sivpro_app/admin/screens/purchases_screen.dart';
 import 'package:sivpro_app/admin/widgets/module_card.dart';
-import 'package:sivpro_app/admin/widgets/tarjeta_modo_oscuro.dart';
+import 'package:sivpro_app/shared/tarjeta_modo_oscuro.dart';
 import 'package:sivpro_app/shared/modo_oscuro_controller.dart';
 import 'package:sivpro_app/theme/app_colors.dart';
 import 'package:sivpro_app/theme/app_theme.dart';

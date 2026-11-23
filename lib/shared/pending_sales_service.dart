@@ -42,13 +42,16 @@ class PendingSalesService with WidgetsBindingObserver {
   }
 
   void _alCambiarSesion() {
-    final autenticado = AuthService.instance.isAuthenticated;
-    if (autenticado && !_activo) {
+    // Solo personal: con sesión de Cliente no se consulta ni se programa nada.
+    final personal =
+        AuthService.instance.isAuthenticated &&
+        AuthService.instance.rol != UserRole.cliente;
+    if (personal && !_activo) {
       _activo = true;
       _generacion++;
       _programarTemporizador();
       refrescar();
-    } else if (!autenticado && _activo) {
+    } else if (!personal && _activo) {
       _activo = false;
       _generacion++;
       _timer?.cancel();

@@ -24,6 +24,7 @@ class AuthService extends ChangeNotifier {
   Usuario? _usuario;
   bool _fromPanel = false;
   bool _manejandoExpiracion = false;
+  final List<VoidCallback> _limpiezas = [];
 
   /// Se invoca cuando el backend invalida una sesión que estaba activa.
   void Function(String message)? onSessionExpired;
@@ -38,6 +39,7 @@ class AuthService extends ChangeNotifier {
     if (nombre.isEmpty) return '';
     return nombre.split(RegExp(r'\s+')).first;
   }
+
   UserRole? get rol => _usuario?.userRole;
   bool get isAuthenticated => _usuario != null && _token != null;
 
@@ -45,6 +47,17 @@ class AuthService extends ChangeNotifier {
   bool get fromPanel => _fromPanel;
 
   void endStoreSession() => _fromPanel = false;
+
+  /// Registra la limpieza de un estado ligado al usuario (por ejemplo, el
+  /// carrito del cliente). Se ejecuta al terminar una sesión y al iniciar otra.
+  void addSessionClearedListener(VoidCallback limpiar) =>
+      _limpiezas.add(limpiar);
+
+  void _ejecutarLimpiezas() {
+    for (final limpiar in _limpiezas) {
+      limpiar();
+    }
+  }
 
   bool puedeVer(String modulo, String nombre, {String privilegio = 'Ver'}) {
     return _usuario?.puedeVer(modulo, nombre, privilegio: privilegio) ?? false;
@@ -66,6 +79,7 @@ class AuthService extends ChangeNotifier {
     }
 
     final usuario = Usuario.fromJson(usuarioJson);
+    _ejecutarLimpiezas();
     _token = token;
     _usuario = usuario;
     _fromPanel = false;
@@ -186,6 +200,51 @@ class AuthService extends ChangeNotifier {
     );
   }
 
+  /// Crea una cuenta de Cliente con `POST /auth/register`, enviando solo los
+  /// seis campos que acepta el backend. La cuenta queda pendiente de
+  /// confirmar el correo: no inicia sesión ni guarda token.
+  Future<({String correo, bool correoEnviado})> registrar({
+    required String tipoDocumento,
+    required String numeroDocumento,
+    required String nombre,
+    required String correo,
+    required String telefono,
+    required String contrasena,
+  }) async {
+    final correoLimpio = correo.trim().toLowerCase();
+    final data = await ApiClient.instance.post(
+      '/auth/register',
+      auth: false,
+      body: {
+        'tipoDocumento': tipoDocumento,
+        'numeroDocumento': numeroDocumento.trim(),
+        'nombre': nombre.trim(),
+        'correo': correoLimpio,
+        'telefono': telefono.replaceAll(RegExp(r'\s+'), ''),
+        'contrasena': contrasena,
+      },
+    );
+    return (
+      correo: correoLimpio,
+      correoEnviado:
+          data is! Map<String, dynamic> || data['correoEnviado'] != false,
+    );
+  }
+
+  /// Pide otro correo de confirmación para una cuenta pendiente. No lleva
+  /// token; el backend responde igual exista o no la cuenta.
+  Future<String> reenviarVerificacion(String correo) async {
+    final data = await ApiClient.instance.post(
+      '/auth/verificacion/reenviar',
+      auth: false,
+      body: {'correo': correo.trim()},
+    );
+    return _mensajeDeRespuesta(
+      data,
+      'Si tu cuenta está pendiente, te enviamos un nuevo correo de confirmación.',
+    );
+  }
+
   Usuario _usuarioDeRespuesta(dynamic data) {
     dynamic json = data;
     if (data is Map<String, dynamic> &&
@@ -216,6 +275,7 @@ class AuthService extends ChangeNotifier {
     _token = null;
     _usuario = null;
     _fromPanel = false;
+    _ejecutarLimpiezas();
     try {
       await TokenStorage.instance.delete();
     } catch (_) {

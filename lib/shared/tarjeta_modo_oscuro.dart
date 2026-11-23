@@ -1,23 +1,32 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/paleta_app.dart';
+import '../theme/app_colors.dart';
+import '../theme/paleta_app.dart';
 
-/// Tarjeta "Modo oscuro" del perfil: toda la fila alterna el modo.
+/// Tarjeta "Modo oscuro" del perfil (personal y cliente): toda la fila
+/// alterna el modo.
 class TarjetaModoOscuro extends StatelessWidget {
   const TarjetaModoOscuro({
     super.key,
     required this.oscuro,
     required this.onChanged,
+    this.radio = 24,
+    this.bordeEnClaro = true,
   });
 
   final bool oscuro;
   final ValueChanged<bool> onChanged;
 
+  /// Radio de la tarjeta (el perfil del cliente usa el de sus tarjetas).
+  final double radio;
+
+  /// En oscuro siempre lleva borde fino; en claro, solo si se pide.
+  final bool bordeEnClaro;
+
   @override
   Widget build(BuildContext context) {
     final p = context.pal;
-    final radio = BorderRadius.circular(24);
+    final esquinas = BorderRadius.circular(radio);
     return Semantics(
       label: 'Cambiar modo oscuro',
       toggled: oscuro,
@@ -26,12 +35,14 @@ class TarjetaModoOscuro extends StatelessWidget {
       child: Material(
         color: p.tarjeta(Colors.white),
         shape: RoundedRectangleBorder(
-          borderRadius: radio,
-          side: BorderSide(color: p.borde(AppColors.profileCardBorder)),
+          borderRadius: esquinas,
+          side: bordeEnClaro || p.oscuro
+              ? BorderSide(color: p.borde(AppColors.profileCardBorder))
+              : BorderSide.none,
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: radio,
+          borderRadius: esquinas,
           onTap: () => onChanged(!oscuro),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),

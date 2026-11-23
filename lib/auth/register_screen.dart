@@ -2,7 +2,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../network/api_exception.dart';
+import '../shared/page_transitions.dart';
 import '../shared/validators.dart';
+import 'auth_service.dart';
+import 'aviso_auth.dart';
+import 'check_email_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -22,15 +27,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _documentoKey = GlobalKey<FormFieldState<String>>();
 
   String _tipoDocumento = 'CC';
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _enviando = false;
+
+  /// Error del backend ligado a un campo (correo o documento duplicado, dato
+  /// rechazado); se deja de mostrar en cuanto ese campo cambia.
+  ({String campo, String valor, String mensaje})? _errorBackend;
 
   final List<Map<String, String>> _tiposDocumento = [
     {'code': 'CC', 'label': 'Cédula de Ciudadanía'},
     {'code': 'CE', 'label': 'Cédula de Extranjería'},
-    {'code': 'PAS', 'label': 'Pasaporte'},
+    {'code': 'PP', 'label': 'Pasaporte'},
   ];
 
   @override
@@ -52,7 +63,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool get _isFormValid =>
       nameValidator(_nombreController.text) == null &&
-      documentValidator(_documentoController.text) == null &&
+      documentValidator(_documentoController.text, _tipoDocumento) == null &&
       emailValidator(_correoController.text) == null &&
       phoneValidator(_telefonoController.text) == null &&
       passwordValidator(_passwordController.text) == null &&
@@ -106,14 +117,86 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _onCrearCuenta() {
-    if (!_formKey.currentState!.validate()) {
-      return;
+  TextEditingController? _controladorDe(String campo) => switch (campo) {
+    'documento' => _documentoController,
+    'nombre' => _nombreController,
+    'correo' => _correoController,
+    'telefono' => _telefonoController,
+    'contrasena' => _passwordController,
+    _ => null,
+  };
+
+  /// Campo al que se refiere un mensaje 400 o 409 del backend.
+  static String? _campoDelError(String mensaje) {
+    final texto = mensaje.toLowerCase();
+    if (texto.contains('correo')) return 'correo';
+    if (texto.contains('número de documento') ||
+        texto.contains('documento ya')) {
+      return 'documento';
     }
-    // TODO: conectar con el backend real.
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Creando cuenta...')));
+    if (texto.contains('nombre')) return 'nombre';
+    if (texto.contains('teléfono')) return 'telefono';
+    if (texto.contains('contraseña')) return 'contrasena';
+    return null;
+  }
+
+  String? _errorDe(String campo) {
+    final error = _errorBackend;
+    if (error == null || error.campo != campo) return null;
+    return _controladorDe(campo)?.text == error.valor ? error.mensaje : null;
+  }
+
+  static const String _sinConexion =
+      'No se pudo crear la cuenta. Revisa tu conexión e inténtalo de nuevo.';
+
+  Future<void> _onCrearCuenta() async {
+    if (_enviando || !_formKey.currentState!.validate()) return;
+    setState(() {
+      _enviando = true;
+      _errorBackend = null;
+    });
+    try {
+      final cuenta = await AuthService.instance.registrar(
+        tipoDocumento: _tipoDocumento,
+        numeroDocumento: _documentoController.text,
+        nombre: _nombreController.text,
+        correo: _correoController.text,
+        telefono: _telefonoController.text,
+        contrasena: _passwordController.text,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        heroFadeRoute(
+          CheckEmailScreen(
+            correo: cuenta.correo,
+            correoEnviado: cuenta.correoEnviado,
+          ),
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      // Sin código HTTP: no hubo respuesta (sin red o tiempo agotado).
+      if (error.statusCode == null) {
+        mostrarAvisoAuth(context, _sinConexion);
+        return;
+      }
+      final campo = error.statusCode == 400 || error.statusCode == 409
+          ? _campoDelError(error.message)
+          : null;
+      final controlador = campo == null ? null : _controladorDe(campo);
+      if (campo != null && controlador != null) {
+        _errorBackend = (
+          campo: campo,
+          valor: controlador.text,
+          mensaje: error.message,
+        );
+      }
+      mostrarAvisoAuth(context, error.message);
+    } catch (_) {
+      if (mounted) mostrarAvisoAuth(context, _sinConexion);
+    } finally {
+      if (mounted) setState(() => _enviando = false);
+    }
   }
 
   @override
@@ -286,11 +369,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                     )
                                     .toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    setState(() => _tipoDocumento = value);
-                                  }
-                                },
+                                onChanged: _enviando
+                                    ? null
+                                    : (value) {
+                                        if (value == null) return;
+                                        setState(() => _tipoDocumento = value);
+                                        // Los límites cambian con el tipo.
+                                        if (_documentoController
+                                            .text
+                                            .isNotEmpty) {
+                                          _documentoKey.currentState
+                                              ?.validate();
+                                        }
+                                      },
                               ),
                             ],
                           ),
@@ -303,7 +394,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             children: [
                               _fieldLabel('Número de documento'),
                               TextFormField(
+                                key: _documentoKey,
                                 controller: _documentoController,
+                                enabled: !_enviando,
+                                forceErrorText: _errorDe('documento'),
                                 keyboardType: TextInputType.number,
                                 style: GoogleFonts.poppins(
                                   color: Colors.black87,
@@ -314,12 +408,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   label: 'Número de documento',
                                   icon: Icons.badge_outlined,
                                 ),
-                                validator: (value) {
-                                  return documentValidator(value);
-                                },
+                                validator: (value) =>
+                                    documentValidator(value, _tipoDocumento),
                                 inputFormatters: [
                                   FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(15),
+                                  LengthLimitingTextInputFormatter(
+                                    limitesDocumento[_tipoDocumento]!.$2,
+                                  ),
                                 ],
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
@@ -334,6 +429,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _fieldLabel('Nombre completo'),
                     TextFormField(
                       controller: _nombreController,
+                      enabled: !_enviando,
+                      forceErrorText: _errorDe('nombre'),
                       inputFormatters: [NameInputFormatter()],
                       style: GoogleFonts.poppins(
                         color: Colors.black87,
@@ -352,6 +449,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _fieldLabel('Correo electrónico'),
                     TextFormField(
                       controller: _correoController,
+                      enabled: !_enviando,
+                      forceErrorText: _errorDe('correo'),
                       keyboardType: TextInputType.emailAddress,
                       inputFormatters: [EmailInputFormatter()],
                       style: GoogleFonts.poppins(
@@ -371,10 +470,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _fieldLabel('Teléfono'),
                     TextFormField(
                       controller: _telefonoController,
+                      enabled: !_enviando,
+                      forceErrorText: _errorDe('telefono'),
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(10),
+                        LengthLimitingTextInputFormatter(15),
                       ],
                       style: GoogleFonts.poppins(
                         color: Colors.black87,
@@ -393,6 +494,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _fieldLabel('Contraseña'),
                     TextFormField(
                       controller: _passwordController,
+                      enabled: !_enviando,
+                      forceErrorText: _errorDe('contrasena'),
                       obscureText: _obscurePassword,
                       style: GoogleFonts.poppins(
                         color: Colors.black87,
@@ -404,6 +507,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: 'Mínimo 8 caracteres',
                             icon: Icons.lock_outline,
                           ).copyWith(
+                            helperText:
+                                'Entre 8 y 72 caracteres, con mayúscula, '
+                                'minúscula y número, sin espacios.',
+                            helperMaxLines: 2,
+                            helperStyle: GoogleFonts.poppins(
+                              color: Colors.black45,
+                              fontSize: 12,
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
@@ -426,6 +537,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _fieldLabel('Confirmar contraseña'),
                     TextFormField(
                       controller: _confirmPasswordController,
+                      enabled: !_enviando,
                       obscureText: _obscureConfirmPassword,
                       style: GoogleFonts.poppins(
                         color: Colors.black87,
@@ -464,22 +576,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 26),
 
               ElevatedButton(
-                onPressed: _isFormValid ? _onCrearCuenta : null,
+                onPressed: _isFormValid && !_enviando ? _onCrearCuenta : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: splashRojo,
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: _enviando
+                      ? splashRojo.withValues(alpha: 0.6)
+                      : null,
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: Text(
-                  'Crear cuenta',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                  ),
-                ),
+                child: _enviando
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.4,
+                        ),
+                      )
+                    : Text(
+                        'Crear cuenta',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                        ),
+                      ),
               ),
               const SizedBox(height: 22),
 

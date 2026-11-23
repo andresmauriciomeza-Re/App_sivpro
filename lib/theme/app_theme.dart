@@ -126,9 +126,6 @@ abstract final class AppTheme {
       bodyColor: PaletaApp.textoOscuro,
       displayColor: PaletaApp.textoOscuro,
     );
-    const bordeCampo = UnderlineInputBorder(
-      borderSide: BorderSide(color: PaletaApp.bordeOscuro),
-    );
     return base.copyWith(
       textTheme: textTheme,
       extensions: const [PaletaApp.modoOscuro],
@@ -164,8 +161,6 @@ abstract final class AppTheme {
         counterStyle: textTheme.bodySmall?.copyWith(
           color: PaletaApp.atenuadoOscuro,
         ),
-        enabledBorder: bordeCampo,
-        border: bordeCampo,
       ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: PaletaApp.rojoOscuro,

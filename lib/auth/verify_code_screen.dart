@@ -1,4 +1,6 @@
 // verify_code_screen.dart
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,8 +30,29 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   bool _verificando = false;
   bool _reenviando = false;
 
+  /// Segundos para poder pedir otro código (el backend exige 30 s entre
+  /// solicitudes); empieza al entrar porque el código se acaba de pedir.
+  int _restantes = 0;
+  Timer? _cuenta;
+
+  @override
+  void initState() {
+    super.initState();
+    _iniciarEspera();
+  }
+
+  void _iniciarEspera() {
+    _cuenta?.cancel();
+    _restantes = 30;
+    _cuenta = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_restantes <= 1) timer.cancel();
+      setState(() => _restantes--);
+    });
+  }
+
   @override
   void dispose() {
+    _cuenta?.cancel();
     for (final c in _controllers) {
       c.dispose();
     }
@@ -40,11 +63,26 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   }
 
   void _onDigitChanged(int index, String value) {
+    if (value.length > 1) {
+      _repartirDigitos(index, value);
+      return;
+    }
     if (value.isNotEmpty && index < 5) {
       _focusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
+  }
+
+  /// Código pegado (o un dígito escrito sobre otro): uno por casilla.
+  void _repartirDigitos(int desde, String digitos) {
+    var i = desde;
+    for (final digito in digitos.split('')) {
+      if (i > 5) break;
+      _controllers[i].text = digito;
+      i++;
+    }
+    _focusNodes[i > 5 ? 5 : i].requestFocus();
   }
 
   void _showMessage(String message) {
@@ -81,15 +119,19 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   }
 
   Future<void> _onReenviar() async {
-    if (_reenviando) return;
+    if (_reenviando || _restantes > 0) return;
     setState(() => _reenviando = true);
     try {
       final mensaje = await AuthService.instance.solicitarCodigoRecuperacion(
         widget.email,
       );
-      if (mounted) _showMessage(mensaje);
+      if (!mounted) return;
+      _showMessage(mensaje);
+      _iniciarEspera();
     } on ApiException catch (error) {
-      if (mounted) _showMessage(error.message);
+      if (!mounted) return;
+      _showMessage(error.message);
+      if (error.statusCode == 429) _iniciarEspera();
     } catch (_) {
       if (mounted) _showMessage('No se pudo completar la operación.');
     } finally {
@@ -195,7 +237,6 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                   focusNode: _focusNodes[i],
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
-                                  maxLength: 1,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
                                   ],
@@ -265,7 +306,9 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                           ),
                           const SizedBox(height: 16),
                           TextButton(
-                            onPressed: _reenviando ? null : _onReenviar,
+                            onPressed: _reenviando || _restantes > 0
+                                ? null
+                                : _onReenviar,
                             child: _reenviando
                                 ? const SizedBox(
                                     width: 18,
@@ -275,7 +318,9 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                     ),
                                   )
                                 : Text(
-                                    'Reenviar código',
+                                    _restantes > 0
+                                        ? 'Reenviar código en $_restantes s'
+                                        : 'Reenviar código',
                                     style: GoogleFonts.poppins(
                                       color: Colors.black54,
                                       fontSize: 14,

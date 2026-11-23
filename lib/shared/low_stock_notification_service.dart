@@ -103,6 +103,38 @@ class LowStockNotificationService with WidgetsBindingObserver {
     }
   }
 
+  /// Para los avisos de pedidos del cliente (mismo plugin): inicializa y
+  /// pide el permiso (Android 13+ / iOS) una sola vez por ejecución.
+  Future<bool> permitirAvisos() async {
+    if (!_plataformaSoportada) return false;
+    await _asegurarPermiso();
+    return _permitido;
+  }
+
+  /// Muestra el aviso de un cambio de estado de un pedido del cliente.
+  Future<void> mostrarAvisoPedido(int id, String titulo, String cuerpo) async {
+    if (!_plataformaSoportada || !_pluginListo) return;
+    const detalles = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'pedidos_cliente',
+        'Mis pedidos',
+        channelDescription: 'Avisos cuando cambia el estado de tus pedidos',
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+    try {
+      await _plugin.show(id, titulo, cuerpo, detalles);
+    } catch (_) {
+      // Una notificación fallida no debe afectar a la app.
+    }
+  }
+
   /// Inicializa el plugin y pide el permiso una sola vez por ejecución.
   Future<void> _asegurarPermiso() async {
     try {
