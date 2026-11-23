@@ -93,8 +93,9 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
       });
     } else {
       filtered.sort(
-        (a, b) =>
-            normalizeForSearch(a.nombre).compareTo(normalizeForSearch(b.nombre)),
+        (a, b) => normalizeForSearch(
+          a.nombre,
+        ).compareTo(normalizeForSearch(b.nombre)),
       );
     }
     return filtered;
@@ -104,7 +105,7 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
   Widget build(BuildContext context) {
     final filtered = _filteredClients();
     return Scaffold(
-      backgroundColor: page,
+      backgroundColor: context.pal.fondo(page),
       bottomNavigationBar: _clientsBottomNavigation(context),
       body: SafeArea(
         bottom: false,
@@ -120,13 +121,19 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
                   children: [
                     Text(
                       'Clientes',
-                      style: GoogleFonts.montserrat(color: ink, fontSize: 30),
+                      style: GoogleFonts.montserrat(
+                        color: context.pal.texto(ink),
+                        fontSize: 30,
+                      ),
                     ),
                     Text(
                       'Usuarios registrados con tipo cliente en La Sirena',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(color: muted, fontSize: 14),
+                      style: GoogleFonts.poppins(
+                        color: context.pal.secundario(muted),
+                        fontSize: 14,
+                      ),
                     ),
                     const SizedBox(height: 18),
                     Row(
@@ -144,7 +151,6 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
                             icon: Icons.how_to_reg_outlined,
                             value: '${_clients.where((c) => c.activo).length}',
                             label: 'Activos',
-                            active: true,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -160,7 +166,8 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
                     const SizedBox(height: 18),
                     AppSearchField(
                       controller: _searchController,
-                      hint: 'Buscar por nombre, documento, correo o teléfono...',
+                      hint:
+                          'Buscar por nombre, documento, correo o teléfono...',
                       onChanged: (_) => setState(() {}),
                       showClearButton: true,
                     ),
@@ -217,7 +224,7 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
                         Text(
                           'LISTADO DE CLIENTES',
                           style: GoogleFonts.poppins(
-                            color: muted,
+                            color: context.pal.secundario(muted),
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -226,7 +233,7 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
                           Text(
                             '${filtered.length} DE ${_clients.length}',
                             style: GoogleFonts.poppins(
-                              color: muted,
+                              color: context.pal.secundario(muted),
                               fontSize: 14,
                             ),
                           ),
@@ -262,12 +269,16 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(color: muted),
+                style: GoogleFonts.poppins(
+                  color: context.pal.secundario(muted),
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: _load,
-                style: FilledButton.styleFrom(backgroundColor: red),
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.pal.rojoBoton(red),
+                ),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Reintentar'),
               ),
@@ -283,7 +294,10 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
           child: Center(
             child: Text(
               'No se encontraron clientes',
-              style: GoogleFonts.poppins(color: muted, fontSize: 14),
+              style: GoogleFonts.poppins(
+                color: context.pal.secundario(muted),
+                fontSize: 14,
+              ),
             ),
           ),
         ),
@@ -306,29 +320,41 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
     return Container(
       height: 74,
       padding: const EdgeInsets.symmetric(horizontal: 28),
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        border: Border(bottom: BorderSide(color: AppColors.headerDivider)),
+      decoration: BoxDecoration(
+        color: context.pal.tarjeta(AppColors.page),
+        border: Border(
+          bottom: BorderSide(color: context.pal.borde(AppColors.headerDivider)),
+        ),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: Colors.black, size: 27),
+            icon: Icon(
+              Icons.arrow_back,
+              color: context.pal.texto(Colors.black),
+              size: 27,
+            ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 28),
           Text(
             'La Sirena Pizza',
-            style: GoogleFonts.montserrat(color: Colors.black, fontSize: 24),
+            style: GoogleFonts.montserrat(
+              color: context.pal.texto(Colors.black),
+              fontSize: 24,
+            ),
           ),
           const Spacer(),
           Container(
             width: 44,
             height: 44,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: context.pal.rojoBoton(red),
+              shape: BoxShape.circle,
+            ),
             child: Text(
               currentUserInitials(),
               style: GoogleFonts.poppins(
@@ -347,62 +373,18 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
 Color _clientColor(Cliente client) =>
     AppColors.avatarPalette[client.id % AppColors.avatarPalette.length];
 
-Widget _clientsBottomNavigation(BuildContext context) {
-  const items = [
-    (Icons.home_outlined, 'Inicio'),
-    (Icons.shopping_cart_outlined, 'Compras'),
-    (Icons.factory_outlined, 'Producción'),
-    (Icons.receipt_long_outlined, 'Ventas'),
-    (Icons.person_outline, 'Mi Perfil'),
-  ];
-  return Container(
-    padding: const EdgeInsets.only(top: 8, bottom: 8),
-    decoration: const BoxDecoration(
-      color: PurchasesScreen.page,
-      border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        for (var i = 0; i < items.length; i++)
-          GestureDetector(
-            onTap: () => navigateToBottomModule(context, i),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AdminBottomNavIcon(
-                  icon: items[i].$1,
-                  size: 25,
-                  color: i == 3 ? PurchasesScreen.red : PurchasesScreen.muted,
-                  showPendingBadge: i == adminSalesNavIndex,
-                ),
-                Text(
-                  items[i].$2,
-                  style: GoogleFonts.poppins(
-                    color: i == 3 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    fontSize: 10,
-                    fontWeight: i == 3 ? FontWeight.w700 : FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    ),
-  );
-}
+Widget _clientsBottomNavigation(BuildContext context) =>
+    const ModuleBottomNav(selected: 3);
 
 class _StatCard extends StatelessWidget {
   const _StatCard({
     required this.icon,
     required this.value,
     required this.label,
-    this.active = false,
   });
   final IconData icon;
   final String value;
   final String label;
-  final bool active;
 
   @override
   Widget build(BuildContext context) {
@@ -410,11 +392,9 @@ class _StatCard extends StatelessWidget {
       height: 128,
       padding: const EdgeInsets.fromLTRB(12, 12, 8, 10),
       decoration: BoxDecoration(
-        color: active ? AppColors.statGreenBg : Colors.white,
+        color: context.pal.tarjeta(Colors.white),
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: active ? AppColors.statGreenBorder : AppColors.statCardBorder,
-        ),
+        border: Border.all(color: context.pal.borde(AppColors.statCardBorder)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,13 +403,13 @@ class _StatCard extends StatelessWidget {
             width: 40,
             height: 40,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.iconCircleBg,
+            decoration: BoxDecoration(
+              color: context.pal.campo(AppColors.iconCircleBg),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: _ClientManagementScreenState.red,
+              color: context.pal.rojo(_ClientManagementScreenState.red),
               size: 21,
             ),
           ),
@@ -439,9 +419,7 @@ class _StatCard extends StatelessWidget {
             child: Text(
               value,
               style: GoogleFonts.poppins(
-                color: active
-                    ? AppColors.statGreenNumber
-                    : _ClientManagementScreenState.ink,
+                color: context.pal.texto(_ClientManagementScreenState.ink),
                 fontSize: 28,
                 fontWeight: FontWeight.w500,
               ),
@@ -452,9 +430,7 @@ class _StatCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.poppins(
-              color: active
-                  ? AppColors.statGreenLabel
-                  : _ClientManagementScreenState.muted,
+              color: context.pal.secundario(_ClientManagementScreenState.muted),
               fontSize: 12,
             ),
           ),
@@ -474,9 +450,9 @@ class _FilterButton extends StatelessWidget {
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.pal.tarjeta(Colors.white),
         borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: const Color(0xFFE3DEDC)),
+        border: Border.all(color: context.pal.borde(Color(0xFFE3DEDC))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -487,15 +463,15 @@ class _FilterButton extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.poppins(
-                color: _ClientManagementScreenState.ink,
+                color: context.pal.texto(_ClientManagementScreenState.ink),
                 fontSize: 12,
               ),
             ),
           ),
           const SizedBox(width: 4),
-          const Icon(
+          Icon(
             Icons.keyboard_arrow_down,
-            color: _ClientManagementScreenState.muted,
+            color: context.pal.secundario(_ClientManagementScreenState.muted),
             size: 20,
           ),
         ],
@@ -518,12 +494,12 @@ class _ClientCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.fromLTRB(17, 18, 17, 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.pal.tarjeta(Colors.white),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE6E1DF)),
-          boxShadow: const [
+          border: Border.all(color: context.pal.borde(Color(0xFFE6E1DF))),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x08000000),
+              color: context.pal.sombra(Color(0x08000000)),
               blurRadius: 6,
               offset: Offset(0, 2),
             ),
@@ -555,7 +531,9 @@ class _ClientCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
-                          color: _ClientManagementScreenState.ink,
+                          color: context.pal.texto(
+                            _ClientManagementScreenState.ink,
+                          ),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -563,7 +541,9 @@ class _ClientCard extends StatelessWidget {
                       Text(
                         client.documento.isEmpty ? '—' : client.documento,
                         style: GoogleFonts.poppins(
-                          color: _ClientManagementScreenState.muted,
+                          color: context.pal.secundario(
+                            _ClientManagementScreenState.muted,
+                          ),
                           fontSize: 13,
                         ),
                       ),
@@ -573,7 +553,9 @@ class _ClientCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            color: _ClientManagementScreenState.muted,
+                            color: context.pal.secundario(
+                              _ClientManagementScreenState.muted,
+                            ),
                             fontSize: 13,
                           ),
                         ),
@@ -581,7 +563,9 @@ class _ClientCard extends StatelessWidget {
                         Text(
                           client.telefono!,
                           style: GoogleFonts.poppins(
-                            color: _ClientManagementScreenState.muted,
+                            color: context.pal.secundario(
+                              _ClientManagementScreenState.muted,
+                            ),
                             fontSize: 13,
                           ),
                         ),
@@ -598,22 +582,24 @@ class _ClientCard extends StatelessWidget {
                 Text(
                   'Pedidos: ',
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFF91A3C0),
+                    color: context.pal.atenuado(Color(0xFF91A3C0)),
                     fontSize: 14,
                   ),
                 ),
                 Text(
                   '${client.pedidos}',
                   style: GoogleFonts.poppins(
-                    color: _ClientManagementScreenState.ink,
+                    color: context.pal.texto(_ClientManagementScreenState.ink),
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
-                const Icon(
+                Icon(
                   Icons.visibility_outlined,
-                  color: _ClientManagementScreenState.muted,
+                  color: context.pal.secundario(
+                    _ClientManagementScreenState.muted,
+                  ),
                   size: 21,
                 ),
               ],
@@ -635,15 +621,17 @@ class _ClientStatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
       decoration: BoxDecoration(
-        color: active ? const Color(0xFFD2F8E5) : const Color(0xFFF0F3F7),
+        color: active
+            ? context.pal.exitoFondo(Color(0xFFD2F8E5))
+            : context.pal.campo(Color(0xFFF0F3F7)),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
         active ? 'Activo' : 'Inactivo',
         style: GoogleFonts.poppins(
           color: active
-              ? const Color(0xFF086E4C)
-              : _ClientManagementScreenState.muted,
+              ? context.pal.exitoTexto(Color(0xFF086E4C))
+              : context.pal.secundario(_ClientManagementScreenState.muted),
           fontSize: 12,
         ),
       ),
@@ -660,8 +648,9 @@ class _ClientDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             AppHeader(
@@ -677,16 +666,18 @@ class _ClientDetailScreen extends StatelessWidget {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 22,
+                        horizontal: 16,
+                        vertical: 14,
                       ),
                       decoration: BoxDecoration(
-                        color: PurchasesScreen.page,
+                        color: context.pal.tarjeta(PurchasesScreen.page),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE1D8D6)),
-                        boxShadow: const [
+                        border: Border.all(
+                          color: context.pal.borde(Color(0xFFE1D8D6)),
+                        ),
+                        boxShadow: [
                           BoxShadow(
-                            color: Color(0x0A000000),
+                            color: context.pal.sombra(Color(0x0A000000)),
                             blurRadius: 3,
                             offset: Offset(0, 1),
                           ),
@@ -698,85 +689,104 @@ class _ClientDetailScreen extends StatelessWidget {
                             children: [
                               Text(
                                 'Detalle',
-                                style: GoogleFonts.montserrat(
-                                  color: PurchasesScreen.ink,
-                                  fontSize: 32,
+                                style: GoogleFonts.poppins(
+                                  color: context.pal.texto(PurchasesScreen.ink),
+                                  fontSize: 23,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              const Text(
+                              const SizedBox(width: 10),
+                              Text(
                                 '—',
-                                style: TextStyle(
-                                  color: PurchasesScreen.muted,
-                                  fontSize: 22,
+                                style: GoogleFonts.poppins(
+                                  color: context.pal.secundario(
+                                    PurchasesScreen.muted,
+                                  ),
+                                  fontSize: 18,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Text(
-                                client.codigo,
-                                style: GoogleFonts.poppins(
-                                  color: PurchasesScreen.muted,
-                                  fontSize: 16,
+                              const SizedBox(width: 10),
+                              Flexible(
+                                child: Text(
+                                  client.codigo,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    color: context.pal.secundario(
+                                      PurchasesScreen.muted,
+                                    ),
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
                           CircleAvatar(
-                            radius: 59,
+                            radius: 34,
                             backgroundColor: _clientColor(client),
                             child: Text(
                               getInitials(client.nombre),
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
-                                fontSize: 42,
+                                fontSize: 25,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 8),
                           Text(
                             client.nombre,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
-                              color: PurchasesScreen.ink,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
+                              color: context.pal.texto(PurchasesScreen.ink),
+                              fontSize: 17.5,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: PurchasesScreen.page,
+                        color: context.pal.tarjeta(PurchasesScreen.page),
                         borderRadius: BorderRadius.circular(17),
                       ),
                       child: Column(
                         children: [
                           _detailClientRow(
+                            context,
                             'Tipo de documento',
                             client.tipoDocumento ?? '—',
                           ),
                           _detailClientRow(
+                            context,
                             'Número de documento',
                             client.numeroDocumento ?? '—',
                           ),
-                          _detailClientRow('Correo', client.correo ?? '—'),
-                          _detailClientRow('Teléfono', client.telefono ?? '—'),
                           _detailClientRow(
+                            context,
+                            'Correo',
+                            client.correo ?? '—',
+                          ),
+                          _detailClientRow(
+                            context,
+                            'Teléfono',
+                            client.telefono ?? '—',
+                          ),
+                          _detailClientRow(
+                            context,
                             'Pedidos totales',
                             '${client.pedidos}',
                             valueStyle: GoogleFonts.poppins(
-                              color: PurchasesScreen.ink,
+                              color: context.pal.texto(PurchasesScreen.ink),
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           _detailClientRow(
+                            context,
                             'Estado',
                             client.activo ? 'Activo' : 'Inactivo',
                             valueWidget: _ClientStatusBadge(
@@ -798,6 +808,7 @@ class _ClientDetailScreen extends StatelessWidget {
   }
 
   Widget _detailClientRow(
+    BuildContext context,
     String label,
     String value, {
     TextStyle? valueStyle,
@@ -805,8 +816,10 @@ class _ClientDetailScreen extends StatelessWidget {
   }) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE0D9D7))),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: context.pal.borde(Color(0xFFE0D9D7))),
+        ),
       ),
       child: Row(
         children: [
@@ -814,9 +827,9 @@ class _ClientDetailScreen extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: GoogleFonts.dmSerifDisplay(
-                color: PurchasesScreen.muted,
-                fontSize: 18,
+              style: GoogleFonts.poppins(
+                color: context.pal.secundario(PurchasesScreen.muted),
+                fontSize: 15,
               ),
             ),
           ),
@@ -836,9 +849,9 @@ class _ClientDetailScreen extends StatelessWidget {
                       softWrap: false,
                       style:
                           valueStyle ??
-                          GoogleFonts.dmSerifDisplay(
-                            color: PurchasesScreen.ink,
-                            fontSize: 16,
+                          GoogleFonts.poppins(
+                            color: context.pal.texto(PurchasesScreen.ink),
+                            fontSize: 15,
                           ),
                     ),
                   ),

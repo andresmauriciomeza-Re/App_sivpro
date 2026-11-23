@@ -44,16 +44,10 @@ class AuthService extends ChangeNotifier {
   /// La tienda fue abierta desde el panel del empleado (sin cerrar sesión).
   bool get fromPanel => _fromPanel;
 
-  void startStoreSession() => _fromPanel = true;
-
   void endStoreSession() => _fromPanel = false;
 
   bool puedeVer(String modulo, String nombre, {String privilegio = 'Ver'}) {
     return _usuario?.puedeVer(modulo, nombre, privilegio: privilegio) ?? false;
-  }
-
-  bool puedeVerModulo(String modulo, {String privilegio = 'Ver'}) {
-    return _usuario?.puedeVerModulo(modulo, privilegio: privilegio) ?? false;
   }
 
   Future<Usuario> login(String correo, String contrasena) async {

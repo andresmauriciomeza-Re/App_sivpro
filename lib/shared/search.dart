@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
+import '../theme/paleta_app.dart';
 
 const Map<String, String> _diacritics = {
   'á': 'a',
@@ -120,23 +121,37 @@ class _AppSearchFieldState extends State<AppSearchField> {
     return TextField(
       controller: widget.controller,
       onChanged: widget.onChanged,
-      style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
+      style: GoogleFonts.poppins(
+        color: context.pal.texto(AppColors.ink),
+        fontSize: 15,
+      ),
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.search, color: AppColors.ink, size: 28),
+        prefixIcon: Icon(
+          Icons.search,
+          color: context.pal.texto(AppColors.ink),
+          size: 28,
+        ),
         suffixIcon: showClear && _hasText
             ? IconButton(
                 onPressed: _clear,
-                icon: const Icon(Icons.close, color: AppColors.muted, size: 20),
+                icon: Icon(
+                  Icons.close,
+                  color: context.pal.secundario(AppColors.muted),
+                  size: 20,
+                ),
                 tooltip: 'Limpiar búsqueda',
               )
             : null,
         hintText: widget.hint,
-        hintStyle: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
+        hintStyle: GoogleFonts.poppins(
+          color: context.pal.texto(AppColors.ink),
+          fontSize: 15,
+        ),
         filled: true,
-        fillColor: AppColors.searchFieldFill,
+        fillColor: context.pal.campo(AppColors.searchFieldFill),
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        enabledBorder: _border(AppColors.cardBorder),
-        focusedBorder: _border(AppColors.red),
+        enabledBorder: _border(context.pal.borde(AppColors.cardBorder)),
+        focusedBorder: _border(context.pal.rojo(AppColors.red)),
       ),
     );
   }

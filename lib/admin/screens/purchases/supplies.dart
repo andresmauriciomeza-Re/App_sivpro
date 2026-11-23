@@ -80,7 +80,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -96,7 +96,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                     Text(
                       'Insumos',
                       style: GoogleFonts.montserrat(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
                       ),
@@ -108,7 +108,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                           child: _summaryChip(
                             '${_supplies.length}',
                             'Total insumos',
-                            const Color(0xFFE8C7C4),
+                            context.pal.borde(Color(0xFFE8C7C4)),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -116,7 +116,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                           child: _summaryChip(
                             '$lowCount',
                             'Bajo mínimo',
-                            const Color(0xFFF5D9A5),
+                            context.pal.avisoFondo(Color(0xFFF5D9A5)),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -124,7 +124,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                           child: _summaryChip(
                             '$emptyCount',
                             'Agotados',
-                            const Color(0xFFF4C8CF),
+                            context.pal.errorFondo(Color(0xFFF4C8CF)),
                           ),
                         ),
                       ],
@@ -167,13 +167,15 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+                style: GoogleFonts.poppins(
+                  color: context.pal.secundario(PurchasesScreen.muted),
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: _load,
                 style: FilledButton.styleFrom(
-                  backgroundColor: PurchasesScreen.red,
+                  backgroundColor: context.pal.rojoBoton(PurchasesScreen.red),
                 ),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Reintentar'),
@@ -191,7 +193,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
             child: Text(
               'No se encontraron insumos',
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: 14,
               ),
             ),
@@ -261,16 +263,22 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? PurchasesScreen.red : PurchasesScreen.page,
+          color: selected
+              ? context.pal.rojoBoton(PurchasesScreen.red)
+              : context.pal.tarjeta(PurchasesScreen.page),
           border: Border.all(
-            color: selected ? PurchasesScreen.red : AppColors.cardBorder,
+            color: selected
+                ? context.pal.rojo(PurchasesScreen.red)
+                : context.pal.borde(AppColors.cardBorder),
           ),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: GoogleFonts.poppins(
-            color: selected ? Colors.white : PurchasesScreen.ink,
+            color: selected
+                ? Colors.white
+                : context.pal.texto(PurchasesScreen.ink),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -294,10 +302,10 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: isWarning
-            ? const Color(0xFFFFF3DF)
+            ? context.pal.avisoFondo(Color(0xFFFFF3DF))
             : isEmpty
-            ? const Color(0xFFFFE8EB)
-            : PurchasesScreen.page,
+            ? context.pal.errorFondo(Color(0xFFFFE8EB))
+            : context.pal.tarjeta(PurchasesScreen.page),
         border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(24),
       ),
@@ -305,10 +313,10 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
         text: TextSpan(
           style: GoogleFonts.poppins(
             color: isWarning
-                ? const Color(0xFFB65D0A)
+                ? context.pal.avisoTexto(Color(0xFFB65D0A))
                 : isEmpty
-                ? PurchasesScreen.red
-                : PurchasesScreen.ink,
+                ? context.pal.rojo(PurchasesScreen.red)
+                : context.pal.texto(PurchasesScreen.ink),
             fontSize: 12,
           ),
           children: [
@@ -333,12 +341,12 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.pal.tarjeta(Colors.white),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE1D8D6)),
-          boxShadow: const [
+          border: Border.all(color: context.pal.borde(Color(0xFFE1D8D6))),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0D000000),
+              color: context.pal.sombra(Color(0x0D000000)),
               blurRadius: 2,
               offset: Offset(0, 1),
             ),
@@ -352,7 +360,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                 Text(
                   supply.codigo,
                   style: GoogleFonts.poppins(
-                    color: PurchasesScreen.muted,
+                    color: context.pal.secundario(PurchasesScreen.muted),
                     fontSize: 12,
                   ),
                 ),
@@ -363,7 +371,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
-                      color: PurchasesScreen.muted,
+                      color: context.pal.secundario(PurchasesScreen.muted),
                       fontSize: 12,
                     ),
                   ),
@@ -375,7 +383,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
             Text(
               supply.nombre,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.ink,
+                color: context.pal.texto(PurchasesScreen.ink),
                 fontSize: 19,
                 fontWeight: FontWeight.w700,
               ),
@@ -384,7 +392,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
               '${supply.tipo} • Unidad: ${supply.unidadMedida}'
               '${supply.estado ? '' : ' • Inactivo'}',
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: 12,
               ),
             ),
@@ -394,7 +402,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
             Text.rich(
               TextSpan(
                 style: GoogleFonts.poppins(
-                  color: PurchasesScreen.muted,
+                  color: context.pal.secundario(PurchasesScreen.muted),
                   fontSize: 12,
                 ),
                 children: [
@@ -404,7 +412,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                         '${_formatAmount(supply.stockActual)} '
                         '${supply.unidadMedida}',
                     style: TextStyle(
-                      color: level.color,
+                      color: level.colorEn(context.pal),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -436,6 +444,20 @@ enum _SupplyLevel {
   final Color color;
   final Color background;
 
+  /// Color del nivel según el tema (en claro, [color] tal cual).
+  Color colorEn(PaletaApp p) => switch (this) {
+    ok => p.exitoTexto(color),
+    over => p.avisoTexto(color),
+    low || empty => p.rojo(color),
+  };
+
+  /// Fondo del nivel según el tema (en claro, [background] tal cual).
+  Color fondoEn(PaletaApp p) => switch (this) {
+    ok => p.exitoFondo(background),
+    over => p.avisoFondo(background),
+    low || empty => p.errorFondo(background),
+  };
+
   static _SupplyLevel of(Insumo supply) {
     if (supply.agotado) return _SupplyLevel.empty;
     if (supply.bajoMinimo) return _SupplyLevel.low;
@@ -454,13 +476,13 @@ class _SupplyLevelBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: level.background,
+        color: level.fondoEn(context.pal),
         borderRadius: BorderRadius.circular(13),
       ),
       child: Text(
         level.label,
         style: GoogleFonts.poppins(
-          color: level.color,
+          color: level.colorEn(context.pal),
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
@@ -481,9 +503,11 @@ class _StockBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final maximo = supply.stockMaximo > 0
         ? supply.stockMaximo
-        : [supply.stockActual, supply.stockMinimo, 1.0].reduce(
-            (a, b) => a > b ? a : b,
-          );
+        : [
+            supply.stockActual,
+            supply.stockMinimo,
+            1.0,
+          ].reduce((a, b) => a > b ? a : b);
     final fill = (supply.stockActual / maximo).clamp(0.0, 1.0);
     final minMark = (supply.stockMinimo / maximo).clamp(0.0, 1.0);
     return LayoutBuilder(
@@ -497,7 +521,7 @@ class _StockBar extends StatelessWidget {
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFE9E8),
+                  color: context.pal.campo(Color(0xFFEFE9E8)),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -505,7 +529,7 @@ class _StockBar extends StatelessWidget {
                 width: width * fill,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: level.color,
+                  color: level.colorEn(context.pal),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -514,7 +538,7 @@ class _StockBar extends StatelessWidget {
                 child: Container(
                   width: 2,
                   height: 12,
-                  color: PurchasesScreen.ink,
+                  color: context.pal.texto(PurchasesScreen.ink),
                 ),
               ),
             ],
@@ -525,48 +549,8 @@ class _StockBar extends StatelessWidget {
   }
 }
 
-Widget _suppliesBottomNavigation(BuildContext context) {
-  const items = [
-    (Icons.home_outlined, 'Inicio'),
-    (Icons.shopping_cart_outlined, 'Compras'),
-    (Icons.factory_outlined, 'Producción'),
-    (Icons.receipt_long_outlined, 'Ventas'),
-    (Icons.person_outline, 'Mi Perfil'),
-  ];
-  return Container(
-    padding: const EdgeInsets.only(top: 8, bottom: 8),
-    decoration: const BoxDecoration(
-      color: PurchasesScreen.page,
-      border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        for (var i = 0; i < items.length; i++)
-          GestureDetector(
-            onTap: () => navigateToBottomModule(context, i),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AdminBottomNavIcon(
-                  icon: items[i].$1,
-                  color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
-                  showPendingBadge: i == adminSalesNavIndex,
-                ),
-                Text(
-                  items[i].$2,
-                  style: GoogleFonts.poppins(
-                    color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    ),
-  );
-}
+Widget _suppliesBottomNavigation(BuildContext context) =>
+    const ModuleBottomNav(selected: 1);
 
 String _formatAmount(double amount) {
   if (amount == amount.roundToDouble()) {
@@ -626,7 +610,7 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
     final level = _SupplyLevel.of(s);
     final unidad = s.unidadMedida;
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -640,12 +624,14 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 22, 24, 16),
                   decoration: BoxDecoration(
-                    color: PurchasesScreen.page,
+                    color: context.pal.tarjeta(PurchasesScreen.page),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE1D8D6)),
-                    boxShadow: const [
+                    border: Border.all(
+                      color: context.pal.borde(Color(0xFFE1D8D6)),
+                    ),
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x0A000000),
+                        color: context.pal.sombra(Color(0x0A000000)),
                         blurRadius: 3,
                         offset: Offset(0, 1),
                       ),
@@ -659,7 +645,7 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
                           Text(
                             'Detalle',
                             style: GoogleFonts.montserrat(
-                              color: PurchasesScreen.ink,
+                              color: context.pal.texto(PurchasesScreen.ink),
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
                             ),
@@ -669,7 +655,9 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
                             child: Text(
                               s.codigo,
                               style: GoogleFonts.poppins(
-                                color: PurchasesScreen.muted,
+                                color: context.pal.secundario(
+                                  PurchasesScreen.muted,
+                                ),
                                 fontSize: 16,
                               ),
                             ),
@@ -685,7 +673,7 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
                               child: Text(
                                 _error!,
                                 style: GoogleFonts.poppins(
-                                  color: PurchasesScreen.red,
+                                  color: context.pal.rojo(PurchasesScreen.red),
                                   fontSize: 13,
                                 ),
                               ),
@@ -704,7 +692,10 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
                       _supplyDetailRow('Nombre', s.nombre),
                       _supplyDetailRow('Categoría', s.categoriaNombre ?? '—'),
                       _supplyDetailRow('Tipo', s.tipo),
-                      _supplyDetailRow('Estado', s.estado ? 'Activo' : 'Inactivo'),
+                      _supplyDetailRow(
+                        'Estado',
+                        s.estado ? 'Activo' : 'Inactivo',
+                      ),
                       _supplyDetailRow('Unidad de medida', unidad),
                       if (s.pesoMedida != null)
                         _supplyDetailRow(
@@ -764,7 +755,7 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
       Text(
         'FICHA VIGENTE',
         style: GoogleFonts.poppins(
-          color: PurchasesScreen.muted,
+          color: context.pal.secundario(PurchasesScreen.muted),
           fontSize: 12,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.8,
@@ -785,7 +776,7 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
                 child: Text(
                   '${i + 1}. ${_fichaItem(value[i])}',
                   style: GoogleFonts.poppins(
-                    color: PurchasesScreen.ink,
+                    color: context.pal.texto(PurchasesScreen.ink),
                     fontSize: 14,
                   ),
                 ),
@@ -831,8 +822,10 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
   Widget _supplyDetailRow(String label, String value, {bool mono = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE8E0DE))),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: context.pal.borde(Color(0xFFE8E0DE))),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -841,7 +834,7 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
             child: Text(
               label,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: 17,
               ),
             ),
@@ -853,12 +846,12 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
               textAlign: TextAlign.right,
               style: mono
                   ? GoogleFonts.poppins(
-                      color: PurchasesScreen.ink,
+                      color: context.pal.texto(PurchasesScreen.ink),
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     )
                   : GoogleFonts.poppins(
-                      color: PurchasesScreen.ink,
+                      color: context.pal.texto(PurchasesScreen.ink),
                       fontSize: 17,
                     ),
             ),

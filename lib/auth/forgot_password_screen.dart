@@ -51,6 +51,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ).push(heroFadeRoute(VerifyCodeScreen(email: correo)));
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }

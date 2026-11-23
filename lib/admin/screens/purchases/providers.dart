@@ -73,49 +73,45 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
             _buildHeader(context),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Proveedores',
-                          style: GoogleFonts.montserrat(
-                            color: PurchasesScreen.ink,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _loading
-                              ? 'Cargando proveedores...'
-                              : '${_providers.length} proveedores registrados',
-                          style: GoogleFonts.poppins(
-                            color: PurchasesScreen.muted,
-                            fontSize: 17,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        AppSearchField(
-                          hint: 'Buscar por ID, nombre o email...',
-                          onChanged: (value) => setState(() => _query = value),
-                        ),
-                      ],
+              child: RefreshIndicator(
+                onRefresh: () => _load(silent: true),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                  children: [
+                    Text(
+                      'Proveedores',
+                      style: GoogleFonts.montserrat(
+                        color: context.pal.texto(PurchasesScreen.ink),
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  Expanded(child: _buildBody(filtered)),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      _loading
+                          ? 'Cargando proveedores...'
+                          : '${_providers.length} proveedores registrados',
+                      style: GoogleFonts.poppins(
+                        color: context.pal.secundario(PurchasesScreen.muted),
+                        fontSize: 17,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    AppSearchField(
+                      hint: 'Buscar por ID, nombre o email...',
+                      onChanged: (value) => setState(() => _query = value),
+                    ),
+                    ..._buildContent(filtered),
+                  ],
+                ),
               ),
             ),
             _buildBottomNavigation(context),
@@ -125,27 +121,33 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     );
   }
 
-  Widget _buildBody(List<Proveedor> filtered) {
+  List<Widget> _buildContent(List<Proveedor> filtered) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 40),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ];
     }
     if (_error != null) {
-      return Center(
-        child: Padding(
+      return [
+        Padding(
           padding: const EdgeInsets.all(28),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+                style: GoogleFonts.poppins(
+                  color: context.pal.secundario(PurchasesScreen.muted),
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: _load,
                 style: FilledButton.styleFrom(
-                  backgroundColor: PurchasesScreen.red,
+                  backgroundColor: context.pal.rojoBoton(PurchasesScreen.red),
                 ),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Reintentar'),
@@ -153,33 +155,30 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
             ],
           ),
         ),
-      );
+      ];
     }
-    return RefreshIndicator(
-      onRefresh: () => _load(silent: true),
-      child: filtered.isEmpty
-          ? ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(28),
-                  child: Center(
-                    child: Text(
-                      'No se encontraron proveedores.',
-                      style: GoogleFonts.poppins(color: PurchasesScreen.muted),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
-              itemCount: filtered.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 18),
-              itemBuilder: (context, index) => _providerCard(filtered[index]),
+    if (filtered.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.all(28),
+          child: Center(
+            child: Text(
+              'No se encontraron proveedores.',
+              style: GoogleFonts.poppins(
+                color: context.pal.secundario(PurchasesScreen.muted),
+              ),
             ),
-    );
+          ),
+        ),
+      ];
+    }
+    return [
+      const SizedBox(height: 28),
+      for (var i = 0; i < filtered.length; i++) ...[
+        if (i > 0) const SizedBox(height: 18),
+        _providerCard(filtered[i]),
+      ],
+    ];
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -194,8 +193,8 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(15, 16, 14, 13),
       decoration: BoxDecoration(
-        color: PurchasesScreen.page,
-        border: Border.all(color: AppColors.cardBorder),
+        color: context.pal.tarjeta(PurchasesScreen.page),
+        border: Border.all(color: context.pal.borde(AppColors.cardBorder)),
         borderRadius: BorderRadius.circular(11),
       ),
       child: Column(
@@ -225,7 +224,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
@@ -234,7 +233,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
                     Text(
                       provider.codigo,
                       style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
+                        color: context.pal.secundario(PurchasesScreen.muted),
                         fontSize: 13,
                       ),
                     ),
@@ -271,9 +270,12 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
               ),
             ],
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 14, bottom: 11),
-            child: Divider(height: 1, color: AppColors.cardDivider),
+            child: Divider(
+              height: 1,
+              color: context.pal.borde(AppColors.cardDivider),
+            ),
           ),
           Row(
             children: [
@@ -306,8 +308,8 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
       decoration: BoxDecoration(
         color: provider.estado
-            ? AppColors.statusGreenBg
-            : AppColors.statusRedBg,
+            ? context.pal.exitoFondo(AppColors.statusGreenBg)
+            : context.pal.errorFondo(AppColors.statusRedBg),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -325,8 +327,8 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
             provider.estado ? 'Activo' : 'Inactivo',
             style: GoogleFonts.poppins(
               color: provider.estado
-                  ? AppColors.statusGreenFg
-                  : AppColors.statusRedFg,
+                  ? context.pal.exitoTexto(AppColors.statusGreenFg)
+                  : context.pal.errorTexto(AppColors.statusRedFg),
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -350,7 +352,11 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
       child: IconButton(
         padding: EdgeInsets.zero,
         onPressed: onPressed,
-        icon: Icon(icon, size: 25, color: AppColors.cardIcon),
+        icon: Icon(
+          icon,
+          size: 25,
+          color: context.pal.secundario(AppColors.cardIcon),
+        ),
       ),
     );
   }
@@ -431,7 +437,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
         Text(
           label,
           style: GoogleFonts.poppins(
-            color: PurchasesScreen.muted,
+            color: context.pal.secundario(PurchasesScreen.muted),
             fontSize: 12,
           ),
         ),
@@ -440,56 +446,17 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
           value.isEmpty ? '—' : value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.poppins(color: PurchasesScreen.ink, fontSize: 16),
+          style: GoogleFonts.poppins(
+            color: context.pal.texto(PurchasesScreen.ink),
+            fontSize: 16,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 1 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 1
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildBottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 1);
 }
 
 class _ProviderSheetFrame extends StatelessWidget {
@@ -504,7 +471,7 @@ class _ProviderSheetFrame extends StatelessWidget {
         maxHeight: MediaQuery.sizeOf(context).height * .92,
       ),
       child: Material(
-        color: Colors.white,
+        color: context.pal.superficie(Colors.white),
         clipBehavior: Clip.antiAlias,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
         child: Column(
@@ -515,7 +482,7 @@ class _ProviderSheetFrame extends StatelessWidget {
               width: 42,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFD2CCCA),
+                color: context.pal.borde(Color(0xFFD2CCCA)),
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -583,8 +550,8 @@ class _ProviderDetailScreenState extends State<_ProviderDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(context),
-            const Divider(
-              color: AppColors.headerDivider,
+            Divider(
+              color: context.pal.borde(AppColors.headerDivider),
               height: 1,
               thickness: 1,
             ),
@@ -602,7 +569,9 @@ class _ProviderDetailScreenState extends State<_ProviderDetailScreen> {
                             child: Text(
                               _error!,
                               style: GoogleFonts.poppins(
-                                color: AppColors.statusRedFg,
+                                color: context.pal.errorTexto(
+                                  AppColors.statusRedFg,
+                                ),
                                 fontSize: 13,
                               ),
                             ),
@@ -742,8 +711,8 @@ class _ProviderDetailScreenState extends State<_ProviderDetailScreen> {
                 ),
               ),
             ),
-            const Divider(
-              color: AppColors.headerDivider,
+            Divider(
+              color: context.pal.borde(AppColors.headerDivider),
               height: 1,
               thickness: 1,
             ),
@@ -765,7 +734,7 @@ class _ProviderDetailScreenState extends State<_ProviderDetailScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
-                color: AppColors.ink,
+                color: context.pal.texto(AppColors.ink),
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
@@ -773,7 +742,10 @@ class _ProviderDetailScreenState extends State<_ProviderDetailScreen> {
           ),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close, color: AppColors.muted),
+            icon: Icon(
+              Icons.close,
+              color: context.pal.secundario(AppColors.muted),
+            ),
           ),
         ],
       ),
@@ -789,8 +761,8 @@ class _ProviderDetailScreenState extends State<_ProviderDetailScreen> {
         child: ElevatedButton(
           onPressed: () => Navigator.of(context).pop(),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.buttonFill,
-            foregroundColor: AppColors.ink,
+            backgroundColor: context.pal.campo(AppColors.buttonFill),
+            foregroundColor: context.pal.texto(AppColors.ink),
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
@@ -1055,8 +1027,8 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(context),
-            const Divider(
-              color: AppColors.headerDivider,
+            Divider(
+              color: context.pal.borde(AppColors.headerDivider),
               height: 1,
               thickness: 1,
             ),
@@ -1097,7 +1069,9 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                         Text(
                           _error!,
                           style: GoogleFonts.poppins(
-                            color: AppColors.statusRedFg,
+                            color: context.pal.errorTexto(
+                              AppColors.statusRedFg,
+                            ),
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1108,8 +1082,8 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
                 ),
               ),
             ),
-            const Divider(
-              color: AppColors.headerDivider,
+            Divider(
+              color: context.pal.borde(AppColors.headerDivider),
               height: 1,
               thickness: 1,
             ),
@@ -1131,7 +1105,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.montserrat(
-                color: AppColors.ink,
+                color: context.pal.texto(AppColors.ink),
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
@@ -1139,7 +1113,10 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
           ),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close, color: AppColors.muted),
+            icon: Icon(
+              Icons.close,
+              color: context.pal.secundario(AppColors.muted),
+            ),
           ),
         ],
       ),
@@ -1157,9 +1134,11 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
               child: OutlinedButton(
                 onPressed: _saving ? null : () => Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.ink,
-                  side: const BorderSide(color: AppColors.fieldBorder),
+                  backgroundColor: context.pal.tarjeta(Colors.white),
+                  foregroundColor: context.pal.texto(AppColors.ink),
+                  side: BorderSide(
+                    color: context.pal.borde(AppColors.fieldBorder),
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -1181,7 +1160,7 @@ class _ProviderEditScreenState extends State<_ProviderEditScreen> {
               child: ElevatedButton(
                 onPressed: _saving ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.red,
+                  backgroundColor: context.pal.rojoBoton(AppColors.red),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -1253,14 +1232,18 @@ class _SectionTitle extends StatelessWidget {
         Text(
           text.toUpperCase(),
           style: GoogleFonts.poppins(
-            color: AppColors.muted,
+            color: context.pal.secundario(AppColors.muted),
             fontSize: 12,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.8,
           ),
         ),
         const SizedBox(height: 6),
-        const Divider(color: AppColors.fieldBorder, height: 1, thickness: 1),
+        Divider(
+          color: context.pal.borde(AppColors.fieldBorder),
+          height: 1,
+          thickness: 1,
+        ),
       ],
     );
   }
@@ -1309,7 +1292,7 @@ class _ReadOnlyField extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.poppins(
-            color: AppColors.muted,
+            color: context.pal.secundario(AppColors.muted),
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -1321,15 +1304,18 @@ class _ReadOnlyField extends StatelessWidget {
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.fieldFill,
+            color: context.pal.campo(AppColors.fieldFill),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.fieldBorder),
+            border: Border.all(color: context.pal.borde(AppColors.fieldBorder)),
           ),
           child: Text(
             value.isEmpty ? '—' : value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 15),
+            style: GoogleFonts.poppins(
+              color: context.pal.secundario(AppColors.muted),
+              fontSize: 15,
+            ),
           ),
         ),
       ],
@@ -1351,7 +1337,7 @@ class _LockedField extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.poppins(
-            color: AppColors.muted,
+            color: context.pal.secundario(AppColors.muted),
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -1363,21 +1349,27 @@ class _LockedField extends StatelessWidget {
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.fieldFill,
+            color: context.pal.campo(AppColors.fieldFill),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.fieldBorder),
+            border: Border.all(color: context.pal.borde(AppColors.fieldBorder)),
           ),
           child: Text(
             value.isEmpty ? '—' : value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 15),
+            style: GoogleFonts.poppins(
+              color: context.pal.secundario(AppColors.muted),
+              fontSize: 15,
+            ),
           ),
         ),
         const SizedBox(height: 4),
         Text(
           'No se puede modificar',
-          style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 11),
+          style: GoogleFonts.poppins(
+            color: context.pal.secundario(AppColors.muted),
+            fontSize: 11,
+          ),
         ),
       ],
     );
@@ -1409,7 +1401,7 @@ class _EditableField extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.poppins(
-            color: AppColors.muted,
+            color: context.pal.secundario(AppColors.muted),
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -1422,22 +1414,27 @@ class _EditableField extends StatelessWidget {
           inputFormatters: inputFormatters,
           validator: validator,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 15),
+          style: GoogleFonts.poppins(
+            color: context.pal.texto(AppColors.ink),
+            fontSize: 15,
+          ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.fieldFill,
+            fillColor: context.pal.campo(AppColors.fieldFill),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 13,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: AppColors.fieldBorder),
+              borderSide: BorderSide(
+                color: context.pal.borde(AppColors.fieldBorder),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(
-                color: AppColors.fieldBorder,
+              borderSide: BorderSide(
+                color: context.pal.borde(AppColors.fieldBorder),
                 width: 1.5,
               ),
             ),

@@ -23,6 +23,7 @@ dependencies:
   http: ^1.2.0
   flutter_secure_storage: ^9.2.4
   flutter_local_notifications: ^18.0.1
+  shared_preferences: ^2.3.2
 
   material_ui: any
 dev_dependencies:
@@ -37,8 +38,6 @@ flutter:
 
   assets:
     - assets/img/
-    - assets/images/
-    - assets/images/products/
 
 flutter_native_splash:
   color: "#FFFFFF"

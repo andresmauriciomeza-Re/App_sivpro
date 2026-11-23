@@ -1,5 +1,6 @@
 import '../../network/api_client.dart';
 import '../../network/api_exception.dart';
+import '../../shared/numeros.dart';
 
 /// Registro de producto no conforme (`GET /productos-no-conformes`).
 class ProductoNoConforme {
@@ -56,14 +57,8 @@ class NoConformesRepository {
   }
 }
 
-double? _numero(dynamic valor) {
-  if (valor is num) return valor.isFinite ? valor.toDouble() : null;
-  if (valor is String) {
-    final parsed = double.tryParse(valor.trim().replaceAll(',', '.'));
-    if (parsed != null && parsed.isFinite) return parsed;
-  }
-  return null;
-}
+/// Lectura tolerante (número o texto con punto/coma; ver numeros.dart).
+double? _numero(dynamic valor) => numeroTolerante(valor);
 
 String? _texto(dynamic valor) {
   if (valor == null) return null;

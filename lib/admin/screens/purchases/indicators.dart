@@ -40,7 +40,18 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
 
   Future<void> _loadAll() => Future.wait([_loadVentas(), _loadNoConformes()]);
 
+  static const String _sinPermiso =
+      'No tienes permiso para ver esta información.';
+
+  /// Solo con Ventas › Ventas › Ver; sin él no se llama al backend.
   Future<void> _loadVentas() async {
+    if (!Permisos.ventas) {
+      setState(() {
+        _ventasLoading = false;
+        _ventasError = _sinPermiso;
+      });
+      return;
+    }
     setState(() {
       _ventasLoading = true;
       _ventasError = null;
@@ -64,7 +75,16 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
     }
   }
 
+  /// Solo con Producción › Producto No Conforme › Ver; sin él no se llama
+  /// al backend.
   Future<void> _loadNoConformes() async {
+    if (!Permisos.produccionNoConformes) {
+      setState(() {
+        _noConformesLoading = false;
+        _noConformesError = _sinPermiso;
+      });
+      return;
+    }
     setState(() {
       _noConformesLoading = true;
       _noConformesError = null;
@@ -95,7 +115,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
     final delMes = ventasDelMes(completadas, _year, _month);
 
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -115,7 +135,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
                     Text(
                       'Indicadores',
                       style: GoogleFonts.montserrat(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
                       ),
@@ -123,7 +143,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
                     Text(
                       'Medición y desempeño de la gestión administrativa',
                       style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
+                        color: context.pal.secundario(PurchasesScreen.muted),
                         fontSize: _fs,
                       ),
                     ),
@@ -163,69 +183,27 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
       children: [
         Expanded(
           flex: 3,
-          child: PopupMenuButton<int>(
-            initialValue: _month,
+          child: SelectorPeriodo<int>(
+            valor: _month,
+            opciones: [for (var m = 1; m <= 12; m++) m],
+            etiqueta: (m) =>
+                nombresMes[m - 1][0].toUpperCase() +
+                nombresMes[m - 1].substring(1),
+            alturaMaxima: 320,
             onSelected: (value) => setState(() => _month = value),
-            itemBuilder: (context) => [
-              for (var m = 1; m <= 12; m++)
-                PopupMenuItem(
-                  value: m,
-                  child: Text(
-                    nombresMes[m - 1][0].toUpperCase() +
-                        nombresMes[m - 1].substring(1),
-                    style: const TextStyle(fontSize: _fs),
-                  ),
-                ),
-            ],
-            child: _pickerBox(
-              nombresMes[_month - 1][0].toUpperCase() +
-                  nombresMes[_month - 1].substring(1),
-            ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           flex: 2,
-          child: PopupMenuButton<int>(
-            initialValue: _year,
+          child: SelectorPeriodo<int>(
+            valor: _year,
+            opciones: _years,
+            etiqueta: (y) => '$y',
             onSelected: (value) => setState(() => _year = value),
-            itemBuilder: (context) => [
-              for (final y in _years)
-                PopupMenuItem(
-                  value: y,
-                  child: Text('$y', style: const TextStyle(fontSize: _fs)),
-                ),
-            ],
-            child: _pickerBox('$_year'),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _pickerBox(String label) {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5BDB9)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: PurchasesScreen.ink,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Icon(Icons.keyboard_arrow_down, color: PurchasesScreen.muted),
-        ],
-      ),
     );
   }
 
@@ -256,7 +234,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
             Text(
               error,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.red,
+                color: context.pal.rojo(PurchasesScreen.red),
                 fontSize: _fs,
               ),
             ),
@@ -264,7 +242,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
             FilledButton.icon(
               onPressed: onRetry,
               style: FilledButton.styleFrom(
-                backgroundColor: PurchasesScreen.red,
+                backgroundColor: context.pal.rojoBoton(PurchasesScreen.red),
                 minimumSize: const Size(0, 48),
               ),
               icon: const Icon(Icons.refresh),
@@ -279,7 +257,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
         child: Text(
           'Sin datos en este periodo',
           style: GoogleFonts.poppins(
-            color: PurchasesScreen.muted,
+            color: context.pal.secundario(PurchasesScreen.muted),
             fontSize: _fs,
           ),
         ),
@@ -296,9 +274,9 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
       decoration: BoxDecoration(
-        color: PurchasesScreen.page,
+        color: context.pal.tarjeta(PurchasesScreen.page),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5BDB9)),
+        border: Border.all(color: context.pal.borde(Color(0xFFE5BDB9))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,7 +284,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
           Text(
             title,
             style: GoogleFonts.montserrat(
-              color: PurchasesScreen.ink,
+              color: context.pal.texto(PurchasesScreen.ink),
               fontSize: 21,
               fontWeight: FontWeight.w700,
             ),
@@ -316,7 +294,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
             Text(
               subtitle,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontSize: _fs,
               ),
             ),
@@ -354,7 +332,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
           Text(
             cliente.nombre,
             style: GoogleFonts.poppins(
-              color: PurchasesScreen.ink,
+              color: context.pal.texto(PurchasesScreen.ink),
               fontSize: 17,
               fontWeight: FontWeight.w700,
             ),
@@ -364,14 +342,14 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
             label: 'Pedidos',
             value: '${cliente.pedidos}',
             fraction: maxPedidos == 0 ? 0 : cliente.pedidos / maxPedidos,
-            color: PurchasesScreen.red,
+            color: context.pal.graficoRojo(PurchasesScreen.red),
           ),
           const SizedBox(height: 6),
           _bar(
             label: 'Consumo',
             value: formatCop(cliente.valor.round()),
             fraction: maxValor == 0 ? 0 : cliente.valor / maxValor,
-            color: _green,
+            color: context.pal.graficoVerde(_green),
           ),
           const SizedBox(height: 18),
         ],
@@ -396,7 +374,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
             label: '${i + 1}. ${productos[i].nombre}',
             value: _purchaseQuantity(productos[i].total),
             fraction: maxTotal == 0 ? 0 : productos[i].total / maxTotal,
-            color: _blue,
+            color: context.pal.infoTexto(_blue),
             detail: _productDetail(productos[i]),
           ),
           const SizedBox(height: 14),
@@ -431,7 +409,10 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
         puntos = ventasPorAnio(completadas);
         subtitle = 'Total por año';
     }
-    final maxMonto = puntos.fold<double>(0, (m, p) => p.monto > m ? p.monto : m);
+    final maxMonto = puntos.fold<double>(
+      0,
+      (m, p) => p.monto > m ? p.monto : m,
+    );
     final totalMonto = puntos.fold<double>(0, (s, p) => s + p.monto);
     final totalVentas = puntos.fold<int>(0, (s, p) => s + p.cantidad);
 
@@ -456,7 +437,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
           'Total: ${formatCop(totalMonto.round())} · $totalVentas '
           'venta${totalVentas == 1 ? '' : 's'}',
           style: GoogleFonts.poppins(
-            color: PurchasesScreen.ink,
+            color: context.pal.texto(PurchasesScreen.ink),
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -467,9 +448,8 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
             label: punto.etiqueta,
             value: formatCop(punto.monto.round()),
             fraction: maxMonto == 0 ? 0 : punto.monto / maxMonto,
-            color: PurchasesScreen.red,
-            detail:
-                '${punto.cantidad} venta${punto.cantidad == 1 ? '' : 's'}',
+            color: context.pal.graficoRojo(PurchasesScreen.red),
+            detail: '${punto.cantidad} venta${punto.cantidad == 1 ? '' : 's'}',
           ),
           const SizedBox(height: 12),
         ],
@@ -485,16 +465,22 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? PurchasesScreen.red : PurchasesScreen.page,
+          color: selected
+              ? context.pal.rojoBoton(PurchasesScreen.red)
+              : context.pal.tarjeta(PurchasesScreen.page),
           border: Border.all(
-            color: selected ? PurchasesScreen.red : AppColors.cardBorder,
+            color: selected
+                ? context.pal.rojo(PurchasesScreen.red)
+                : context.pal.borde(AppColors.cardBorder),
           ),
           borderRadius: BorderRadius.circular(22),
         ),
         child: Text(
           label,
           style: GoogleFonts.poppins(
-            color: selected ? Colors.white : PurchasesScreen.ink,
+            color: selected
+                ? Colors.white
+                : context.pal.texto(PurchasesScreen.ink),
             fontSize: _fs,
             fontWeight: FontWeight.w600,
           ),
@@ -528,7 +514,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
             value:
                 '${semana.registros} registro${semana.registros == 1 ? '' : 's'}',
             fraction: maxRegistros == 0 ? 0 : semana.registros / maxRegistros,
-            color: const Color(0xFFB65D0A),
+            color: context.pal.avisoTexto(Color(0xFFB65D0A)),
             detail: semana.porTipo.isEmpty
                 ? null
                 : semana.porTipo.entries
@@ -541,7 +527,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
           'Semana 1: días 1 al 7 · 2: 8 al 14 · 3: 15 al 21 · 4: 22 al 28 · '
           '5: del 29 en adelante',
           style: GoogleFonts.poppins(
-            color: PurchasesScreen.muted,
+            color: context.pal.secundario(PurchasesScreen.muted),
             fontSize: _fs,
           ),
         ),
@@ -570,7 +556,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
               child: Text(
                 label,
                 style: GoogleFonts.poppins(
-                  color: PurchasesScreen.ink,
+                  color: context.pal.texto(PurchasesScreen.ink),
                   fontSize: _fs,
                 ),
               ),
@@ -579,7 +565,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
             Text(
               value,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.ink,
+                color: context.pal.texto(PurchasesScreen.ink),
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
               ),
@@ -594,7 +580,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
                 Container(
                   height: 14,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFE9E8),
+                    color: context.pal.pistaGrafico(Color(0xFFEFE9E8)),
                     borderRadius: BorderRadius.circular(7),
                   ),
                 ),
@@ -615,7 +601,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
           Text(
             detail,
             style: GoogleFonts.poppins(
-              color: PurchasesScreen.muted,
+              color: context.pal.secundario(PurchasesScreen.muted),
               fontSize: _fs,
             ),
           ),
@@ -624,54 +610,6 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
     );
   }
 
-  Widget _buildBottomNavigation(BuildContext context) {
-    final items = <(IconData, String, int)>[
-      if (Permisos.dashboard) (Icons.home_outlined, 'Inicio', 0),
-      if (Permisos.compras) (Icons.shopping_cart_outlined, 'Compras', 1),
-      if (Permisos.produccion) (Icons.factory_outlined, 'Producción', 2),
-      if (Permisos.ventasAdministracion)
-        (Icons.receipt_long_outlined, 'Ventas', 3),
-      (Icons.person_outline, 'Mi Perfil', 4),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (final item in items)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, item.$3),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: item.$1,
-                    color: item.$3 == 0
-                        ? PurchasesScreen.red
-                        : PurchasesScreen.muted,
-                    showPendingBadge: item.$3 == adminSalesNavIndex,
-                  ),
-                  Text(
-                    item.$2,
-                    style: GoogleFonts.poppins(
-                      color: item.$3 == 0
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                      fontWeight: item.$3 == 0
-                          ? FontWeight.w700
-                          : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildBottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 0);
 }

@@ -37,6 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _phoneController = TextEditingController(text: usuario?.telefono ?? '');
     _savedEmail = _emailController.text;
     _savedPhone = _phoneController.text;
+    ModoOscuroController.instance.cargar();
     _refrescarPerfil();
   }
 
@@ -47,6 +48,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _actualizarCampos(usuario));
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     }
   }
 
@@ -116,6 +119,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
+    } catch (_) {
+      if (mounted) _showMessage('No se pudo completar la operación.');
     } finally {
       if (mounted) setState(() => _guardando = false);
     }
@@ -124,7 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.page,
+      backgroundColor: context.pal.fondo(AppColors.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -139,7 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text(
                       'Mi Perfil',
                       style: GoogleFonts.montserrat(
-                        color: AppColors.ink,
+                        color: context.pal.texto(AppColors.ink),
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
                       ),
@@ -147,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text(
                       'Tu información de contacto',
                       style: GoogleFonts.poppins(
-                        color: AppColors.muted,
+                        color: context.pal.secundario(AppColors.muted),
                         fontSize: 13,
                       ),
                     ),
@@ -155,6 +160,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _headerCard(),
                     const SizedBox(height: 12),
                     _fieldsCard(),
+                    const SizedBox(height: 12),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: ModoOscuroController.instance.oscuro,
+                      builder: (context, oscuro, _) => TarjetaModoOscuro(
+                        oscuro: oscuro,
+                        onChanged: ModoOscuroController.instance.cambiar,
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     _actions(),
                   ],
@@ -178,16 +191,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.pal.tarjeta(Colors.white),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.profileCardBorder),
+        border: Border.all(
+          color: context.pal.borde(AppColors.profileCardBorder),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: AppColors.red,
+            backgroundColor: context.pal.rojoBoton(AppColors.red),
             child: Text(
               getInitials(_usuario?.nombre ?? ''),
               style: GoogleFonts.poppins(
@@ -207,7 +222,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
-                    color: AppColors.ink,
+                    color: context.pal.texto(AppColors.ink),
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -216,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(
                   _usuario?.rol ?? '',
                   style: GoogleFonts.poppins(
-                    color: AppColors.muted,
+                    color: context.pal.secundario(AppColors.muted),
                     fontSize: 13,
                   ),
                 ),
@@ -242,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _guardando ? 'Guardando' : (_editing ? 'Guardar' : 'Editar'),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.red,
+              backgroundColor: context.pal.rojoBoton(AppColors.red),
               foregroundColor: Colors.white,
               shape: const StadiumBorder(),
               minimumSize: const Size(0, 36),
@@ -265,9 +280,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.pal.tarjeta(Colors.white),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.profileCardBorder),
+        border: Border.all(
+          color: context.pal.borde(AppColors.profileCardBorder),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,12 +347,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Row(
           children: [
-            Icon(icon, color: AppColors.profileLabelIcon, size: 16),
+            Icon(
+              icon,
+              color: context.pal.secundario(AppColors.profileLabelIcon),
+              size: 16,
+            ),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.poppins(
-                color: AppColors.profileLabel,
+                color: context.pal.secundario(AppColors.profileLabel),
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -348,12 +369,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           enabled: _editing && editable,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
-          style: GoogleFonts.poppins(color: AppColors.ink, fontSize: 14.5),
+          style: GoogleFonts.poppins(
+            color: context.pal.texto(AppColors.ink),
+            fontSize: 14.5,
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: _editing && editable
-                ? AppColors.profileFieldFillActive
-                : AppColors.profileFieldFill,
+                ? context.pal.borde(AppColors.profileFieldFillActive)
+                : context.pal.campo(AppColors.profileFieldFill),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
@@ -386,8 +410,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: const Icon(Icons.close, size: 16),
           label: const Text('Cancelar'),
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.ink,
-            side: const BorderSide(color: AppColors.cardBorder),
+            foregroundColor: context.pal.texto(AppColors.ink),
+            side: BorderSide(color: context.pal.borde(AppColors.cardBorder)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
@@ -410,8 +434,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: const Icon(Icons.arrow_back, size: 16),
             label: const Text('Volver al inicio'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.profileLabel,
-              backgroundColor: AppColors.buttonSoftBg,
+              foregroundColor: context.pal.texto(AppColors.profileLabel),
+              backgroundColor: context.pal.campo(AppColors.buttonSoftBg),
               side: BorderSide.none,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -432,8 +456,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: const Icon(Icons.logout, size: 16),
             label: const Text('Cerrar sesión'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.red,
-              side: const BorderSide(color: AppColors.logOutBorder),
+              foregroundColor: context.pal.rojo(AppColors.red),
+              side: BorderSide(color: context.pal.rojo(AppColors.logOutBorder)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -449,62 +473,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Center(
           child: Text(
             'La Sirena Pizza – S.I.V.PRO',
-            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 12),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Center(
-          child: Text(
-            'Versión 2.1.4',
-            style: GoogleFonts.poppins(color: AppColors.muted, fontSize: 11),
+            style: GoogleFonts.poppins(
+              color: context.pal.secundario(AppColors.muted),
+              fontSize: 12,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _bottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 9, bottom: 8),
-      decoration: const BoxDecoration(
-        color: AppColors.page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: i == 4 ? null : () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    size: 25,
-                    color: i == 4 ? AppColors.red : AppColors.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 4 ? AppColors.red : AppColors.muted,
-                      fontSize: 10,
-                      fontWeight: i == 4 ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _bottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 4);
 }

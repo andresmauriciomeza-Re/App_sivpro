@@ -11,11 +11,6 @@ const List<String> ALLOWED_EMAIL_DOMAINS = <String>[
 const String allowedEmailMessage =
     'Solo se permiten correos @gmail.com, @outlook.com, @hotmail.com o @lasirena.com';
 
-String? requiredValidator(String? value) {
-  if (value == null || value.isEmpty) return 'Este campo es obligatorio';
-  return null;
-}
-
 /// Login: el backend solo exige correo no vacío (sin restricción de dominio).
 String? loginEmailValidator(String? value) {
   if (value == null || value.trim().isEmpty) return 'Ingresa tu correo';

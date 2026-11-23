@@ -1,5 +1,6 @@
 import '../../network/api_client.dart';
 import '../../network/api_exception.dart';
+import '../../shared/numeros.dart';
 
 /// Estados reales de una venta en el backend.
 ///
@@ -354,7 +355,7 @@ class VentasRepository {
         .toList(growable: false);
   }
 
-  /// `GET /ventas/:id/pagos` (requiere Ventas > Ventas > Editar).
+  /// `GET /ventas/:id/pagos` (Ventas > Ventas > Ver en el backend).
   Future<ResumenPagos> resumenPagos(int id) async {
     final data = await ApiClient.instance.get('/ventas/$id/pagos');
     if (data is! Map<String, dynamic>) {
@@ -482,15 +483,8 @@ int? _entero(dynamic valor) {
   return null;
 }
 
-/// Acepta número o texto ("12.5", "12,5").
-double? _numero(dynamic valor) {
-  if (valor is num) return valor.isFinite ? valor.toDouble() : null;
-  if (valor is String) {
-    final parsed = double.tryParse(valor.trim().replaceAll(',', '.'));
-    if (parsed != null && parsed.isFinite) return parsed;
-  }
-  return null;
-}
+/// Lectura tolerante (número o texto con punto/coma; ver numeros.dart).
+double? _numero(dynamic valor) => numeroTolerante(valor);
 
 String? _texto(dynamic valor) {
   if (valor == null) return null;

@@ -6,7 +6,7 @@ class ProductionModulesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -23,7 +23,7 @@ class ProductionModulesScreen extends StatelessWidget {
                   Text(
                     'Gestión de Producción',
                     style: GoogleFonts.montserrat(
-                      color: PurchasesScreen.ink,
+                      color: context.pal.texto(PurchasesScreen.ink),
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
                     ),
@@ -32,24 +32,30 @@ class ProductionModulesScreen extends StatelessWidget {
                   Text(
                     'Seleccione el módulo que desea gestionar.',
                     style: GoogleFonts.poppins(
-                      color: PurchasesScreen.muted,
+                      color: context.pal.secundario(PurchasesScreen.muted),
                       fontSize: 15,
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _moduleCard(
-                    context,
-                    Icons.assignment_outlined,
-                    'Órdenes de producción',
-                    const _ProductionOrdersScreen(),
-                  ),
-                  const SizedBox(height: 16),
-                  _moduleCard(
-                    context,
-                    Icons.inventory_2_outlined,
-                    'Productos',
-                    const _ProductManagementScreen(),
-                  ),
+                  // Cada tarjeta exige su propio permiso de lectura.
+                  ...[
+                    if (Permisos.produccionOrdenes)
+                      _moduleCard(
+                        context,
+                        Icons.assignment_outlined,
+                        'Órdenes de producción',
+                        'Consultar, actualizar y cambiar estado de órdenes.',
+                        const _ProductionOrdersScreen(),
+                      ),
+                    if (Permisos.produccionProductos)
+                      _moduleCard(
+                        context,
+                        Icons.inventory_2_outlined,
+                        'Productos',
+                        'Consultar y actualizar productos.',
+                        const _ProductManagementScreen(),
+                      ),
+                  ].expand((tarjeta) => [tarjeta, const SizedBox(height: 24)]),
                 ],
               ),
             ),
@@ -60,83 +66,45 @@ class ProductionModulesScreen extends StatelessWidget {
     );
   }
 
+  /// Misma tarjeta grande que el hub de Compras ([ModuleCard]).
   Widget _moduleCard(
     BuildContext context,
     IconData icon,
     String title,
+    String description,
     Widget destination,
   ) {
-    return Card(
-      color: PurchasesScreen.page,
-      child: ListTile(
-        leading: Icon(icon, color: PurchasesScreen.red),
-        title: Text(title),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => destination)),
-      ),
+    return ModuleCard(
+      icon: icon,
+      title: title,
+      description: description,
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => destination)),
     );
   }
 
-  Widget _bottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 2
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _bottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 2);
 }
 
 class _ProductionStatusStyle {
   const _ProductionStatusStyle._();
 
-  static Color color(String status) => switch (status) {
-    'Completada' => const Color(0xFF1E7B34),
-    'En proceso' => const Color(0xFF1E40AF),
-    'Pendiente' => const Color(0xFF8A6D00),
-    _ => const Color(0xFFD32F2F),
+  static Color color(BuildContext context, String status) => switch (status) {
+    'Completada' => context.pal.exitoTexto(Color(0xFF1E7B34)),
+    'En proceso' => context.pal.infoTexto(Color(0xFF1E40AF)),
+    'Pendiente' => context.pal.avisoTexto(Color(0xFF8A6D00)),
+    _ => context.pal.errorTexto(Color(0xFFD32F2F)),
   };
 
-  static Color background(String status) => switch (status) {
-    'Completada' => const Color(0xFFD4F7E9),
-    'En proceso' => const Color(0xFFDCE8FF),
-    'Pendiente' => const Color(0xFFFFF4C7),
-    _ => const Color(0xFFFFE0E3),
-  };
+  static Color background(BuildContext context, String status) =>
+      switch (status) {
+        'Completada' => context.pal.exitoFondo(Color(0xFFD4F7E9)),
+        'En proceso' => context.pal.infoFondo(Color(0xFFDCE8FF)),
+        'Pendiente' => context.pal.avisoFondo(Color(0xFFFFF4C7)),
+        _ => context.pal.errorFondo(Color(0xFFFFE0E3)),
+      };
 }
 
 class _ProductionOrdersScreen extends StatefulWidget {
@@ -207,7 +175,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
         .toList(growable: false);
 
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -223,7 +191,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                     Text(
                       'Órdenes de producción',
                       style: GoogleFonts.montserrat(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
                       ),
@@ -231,7 +199,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                     Text(
                       '${_orders.length} órdenes',
                       style: GoogleFonts.poppins(
-                        color: PurchasesScreen.muted,
+                        color: context.pal.secundario(PurchasesScreen.muted),
                         fontSize: 17,
                       ),
                     ),
@@ -252,7 +220,9 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                           child: Text(
                             'No hay órdenes para mostrar.',
                             style: GoogleFonts.poppins(
-                              color: PurchasesScreen.muted,
+                              color: context.pal.secundario(
+                                PurchasesScreen.muted,
+                              ),
                             ),
                           ),
                         ),
@@ -282,7 +252,9 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(color: PurchasesScreen.red),
+              style: GoogleFonts.poppins(
+                color: context.pal.rojo(PurchasesScreen.red),
+              ),
             ),
             TextButton(onPressed: retry, child: const Text('Reintentar')),
           ],
@@ -310,9 +282,9 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       decoration: BoxDecoration(
-        color: PurchasesScreen.page,
+        color: context.pal.tarjeta(PurchasesScreen.page),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE1D8D6)),
+        border: Border.all(color: context.pal.borde(Color(0xFFE1D8D6))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,7 +296,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                 child: Text(
                   'Orden ${order.id}',
                   style: GoogleFonts.poppins(
-                    color: PurchasesScreen.ink,
+                    color: context.pal.texto(PurchasesScreen.ink),
                     fontSize: 19,
                     fontWeight: FontWeight.w700,
                   ),
@@ -337,7 +309,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
           Text(
             'Tipo: ${order.tipoLabel}',
             style: GoogleFonts.poppins(
-              color: PurchasesScreen.ink,
+              color: context.pal.texto(PurchasesScreen.ink),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -346,29 +318,37 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
           Text(
             'Solicitada: ${_formatDate(order.fechaSolicitada)}'
             '${order.horaSolicitada == null ? '' : ' · ${order.horaSolicitada}'}',
-            style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+            style: GoogleFonts.poppins(
+              color: context.pal.secundario(PurchasesScreen.muted),
+            ),
           ),
           if (order.fechaEntregaEstimada != null)
             Text(
               'Entrega estimada: ${_formatDateTime(order.fechaEntregaEstimada!)}',
-              style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+              style: GoogleFonts.poppins(
+                color: context.pal.secundario(PurchasesScreen.muted),
+              ),
             ),
           if (order.ventaNumero != null)
             Text(
               'Pedido: ${order.ventaNumero}',
-              style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+              style: GoogleFonts.poppins(
+                color: context.pal.secundario(PurchasesScreen.muted),
+              ),
             ),
           if (order.cliente != null)
             Text(
               'Cliente: ${order.cliente}',
-              style: GoogleFonts.poppins(color: PurchasesScreen.muted),
+              style: GoogleFonts.poppins(
+                color: context.pal.secundario(PurchasesScreen.muted),
+              ),
             ),
           if (linesSummary.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
               linesSummary,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.ink,
+                color: context.pal.texto(PurchasesScreen.ink),
                 fontSize: 14,
               ),
             ),
@@ -392,14 +372,16 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: _ProductionStatusStyle.background(status),
+        color: _ProductionStatusStyle.background(context, status),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _ProductionStatusStyle.color(status)),
+        border: Border.all(
+          color: _ProductionStatusStyle.color(context, status),
+        ),
       ),
       child: Text(
         status,
         style: GoogleFonts.poppins(
-          color: _ProductionStatusStyle.color(status),
+          color: _ProductionStatusStyle.color(context, status),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -419,7 +401,11 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     }
   }
 
-  Future<bool> _confirm(String title, String message, String confirmLabel) async {
+  Future<bool> _confirm(
+    String title,
+    String message,
+    String confirmLabel,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -627,7 +613,9 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
                       const SizedBox(height: 12),
                       Text(
                         validationMessage!,
-                        style: const TextStyle(color: PurchasesScreen.red),
+                        style: TextStyle(
+                          color: context.pal.rojo(PurchasesScreen.red),
+                        ),
                       ),
                     ],
                   ],
@@ -798,51 +786,8 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     return date.length > 16 ? date.substring(0, 16) : date;
   }
 
-  Widget _buildBottomNavigation(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, 'Inicio'),
-      (Icons.shopping_cart_outlined, 'Compras'),
-      (Icons.factory_outlined, 'Producción'),
-      (Icons.receipt_long_outlined, 'Ventas'),
-      (Icons.person_outline, 'Mi Perfil'),
-    ];
-    return Container(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      decoration: const BoxDecoration(
-        color: PurchasesScreen.page,
-        border: Border(top: BorderSide(color: Color(0xFFEBCBC8))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => navigateToBottomModule(context, i),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AdminBottomNavIcon(
-                    icon: items[i].$1,
-                    color: i == 2 ? PurchasesScreen.red : PurchasesScreen.muted,
-                    showPendingBadge: i == adminSalesNavIndex,
-                  ),
-                  Text(
-                    items[i].$2,
-                    style: GoogleFonts.poppins(
-                      color: i == 2
-                          ? PurchasesScreen.red
-                          : PurchasesScreen.muted,
-                      fontSize: 12,
-                      fontWeight: i == 2 ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildBottomNavigation(BuildContext context) =>
+      const ModuleBottomNav(selected: 2);
 }
 
 class _ProductionOrderDetailScreen extends StatefulWidget {
@@ -923,7 +868,7 @@ class _ProductionOrderDetailScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PurchasesScreen.page,
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
       body: SafeArea(
         child: Column(
           children: [
@@ -942,7 +887,7 @@ class _ProductionOrderDetailScreenState
                     Text(
                       'Orden ${_order.id}',
                       style: GoogleFonts.montserrat(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
                       ),
@@ -951,7 +896,7 @@ class _ProductionOrderDetailScreenState
                     Text(
                       'Tipo: ${_order.tipoLabel}',
                       style: GoogleFonts.poppins(
-                        color: PurchasesScreen.ink,
+                        color: context.pal.texto(PurchasesScreen.ink),
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1005,7 +950,7 @@ class _ProductionOrderDetailScreenState
                       Text(
                         'Líneas',
                         style: GoogleFonts.montserrat(
-                          color: PurchasesScreen.ink,
+                          color: context.pal.texto(PurchasesScreen.ink),
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                         ),
@@ -1030,7 +975,9 @@ class _ProductionOrderDetailScreenState
           Text(
             message,
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(color: PurchasesScreen.red),
+            style: GoogleFonts.poppins(
+              color: context.pal.rojo(PurchasesScreen.red),
+            ),
           ),
           TextButton(onPressed: retry, child: const Text('Reintentar')),
         ],
@@ -1041,8 +988,10 @@ class _ProductionOrderDetailScreenState
   Widget _detailRow(String label, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE1D8D6))),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: context.pal.borde(Color(0xFFE1D8D6))),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1052,7 +1001,7 @@ class _ProductionOrderDetailScreenState
             child: Text(
               label,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.muted,
+                color: context.pal.secundario(PurchasesScreen.muted),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1060,7 +1009,9 @@ class _ProductionOrderDetailScreenState
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.poppins(color: PurchasesScreen.ink),
+              style: GoogleFonts.poppins(
+                color: context.pal.texto(PurchasesScreen.ink),
+              ),
             ),
           ),
         ],
@@ -1070,7 +1021,7 @@ class _ProductionOrderDetailScreenState
 
   Widget _lineCard(OrdenProduccionLinea line) {
     return Card(
-      color: PurchasesScreen.page,
+      color: context.pal.tarjeta(PurchasesScreen.page),
       margin: const EdgeInsets.only(top: 10),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -1080,7 +1031,7 @@ class _ProductionOrderDetailScreenState
             Text(
               line.nombre,
               style: GoogleFonts.poppins(
-                color: PurchasesScreen.ink,
+                color: context.pal.texto(PurchasesScreen.ink),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1320,12 +1271,14 @@ class _OrderEditDialogState extends State<_OrderEditDialog> {
 
     if (_editFechaHora) {
       final fecha = _fecha;
-      if (fecha != null && _fechaTexto(fecha) != _order.fechaSolicitada.substring(
-            0,
-            _order.fechaSolicitada.length < 10
-                ? _order.fechaSolicitada.length
-                : 10,
-          )) {
+      if (fecha != null &&
+          _fechaTexto(fecha) !=
+              _order.fechaSolicitada.substring(
+                0,
+                _order.fechaSolicitada.length < 10
+                    ? _order.fechaSolicitada.length
+                    : 10,
+              )) {
         if (_fechaTexto(fecha).compareTo(diaBogotaTexto()) < 0) {
           setState(() => _error = 'La fecha solicitada no puede ser pasada.');
           return;
@@ -1336,8 +1289,7 @@ class _OrderEditDialogState extends State<_OrderEditDialog> {
       final original = _order.horaSolicitada;
       if (hora != null &&
           (original == null ||
-              _horaVisible(hora) !=
-                  original.split(':').take(2).join(':'))) {
+              _horaVisible(hora) != original.split(':').take(2).join(':'))) {
         cambios['hora_solicitada'] = _horaTexto(hora);
       }
     }
@@ -1347,7 +1299,9 @@ class _OrderEditDialogState extends State<_OrderEditDialog> {
       if (texto.isNotEmpty) {
         final minutos = int.tryParse(texto);
         if (minutos == null || minutos < 5 || minutos > 180) {
-          setState(() => _error = 'El tiempo debe ser un entero de 5 a 180 minutos.');
+          setState(
+            () => _error = 'El tiempo debe ser un entero de 5 a 180 minutos.',
+          );
           return;
         }
         if (minutos != _order.tiempoPreparacionMin) {
@@ -1435,8 +1389,8 @@ class _OrderEditDialogState extends State<_OrderEditDialog> {
               const SizedBox(height: 12),
               Text(
                 _error!,
-                style: const TextStyle(
-                  color: AppColors.statusRedFg,
+                style: TextStyle(
+                  color: context.pal.errorTexto(AppColors.statusRedFg),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1451,7 +1405,9 @@ class _OrderEditDialogState extends State<_OrderEditDialog> {
         ),
         FilledButton(
           onPressed: _saving ? null : _submit,
-          style: FilledButton.styleFrom(backgroundColor: PurchasesScreen.red),
+          style: FilledButton.styleFrom(
+            backgroundColor: context.pal.rojoBoton(PurchasesScreen.red),
+          ),
           child: _saving
               ? const SizedBox(
                   width: 18,
@@ -1531,11 +1487,14 @@ class _DarBajaDialogState extends State<_DarBajaDialog> {
               decoration: const InputDecoration(labelText: 'Descripción'),
             ),
             if (!_valido)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Text(
                   'El motivo y la descripción son obligatorios.',
-                  style: TextStyle(color: AppColors.statusRedFg, fontSize: 13),
+                  style: TextStyle(
+                    color: context.pal.errorTexto(AppColors.statusRedFg),
+                    fontSize: 13,
+                  ),
                 ),
               ),
           ],

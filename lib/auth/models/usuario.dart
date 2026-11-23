@@ -14,8 +14,8 @@ class Permiso {
   factory Permiso.fromJson(Map<String, dynamic> json) {
     final crudos = json['privilegios'];
     return Permiso(
-      modulo: json['modulo'] as String? ?? '',
-      nombre: json['nombre'] as String? ?? '',
+      modulo: _texto(json['modulo']),
+      nombre: _texto(json['nombre']),
       privilegios: crudos is List
           ? crudos.map((p) => p.toString()).toList(growable: false)
           : const [],
@@ -43,7 +43,7 @@ class RolAsignado {
     final permisos = json['permisos'];
     return RolAsignado(
       id: _entero(json['id']),
-      nombre: json['nombre'] as String? ?? '',
+      nombre: _texto(json['nombre']),
       permisos: permisos is List
           ? permisos
               .whereType<Map<String, dynamic>>()
@@ -84,12 +84,12 @@ class Usuario {
     final roles = json['roles'];
     return Usuario(
       id: _entero(json['id']),
-      nombre: json['nombre'] as String? ?? '',
-      correo: json['correo'] as String? ?? '',
+      nombre: _texto(json['nombre']),
+      correo: _texto(json['correo']),
       numeroDocumento: json['numeroDocumento']?.toString() ?? '',
       tipoDocumento: json['tipoDocumento']?.toString() ?? '',
       telefono: json['telefono']?.toString() ?? '',
-      rol: json['rol'] as String? ?? '',
+      rol: _texto(json['rol']),
       esSuperAdmin: json['esSuperAdmin'] == true,
       permisos: permisos is List
           ? permisos
@@ -128,12 +128,10 @@ class Usuario {
           p.tiene(privilegio),
     );
   }
-
-  bool puedeVerModulo(String modulo, {String privilegio = 'Ver'}) {
-    if (esSuperAdmin) return true;
-    return permisos.any((p) => p.modulo == modulo && p.tiene(privilegio));
-  }
 }
+
+/// Texto tolerante: cualquier tipo se convierte con toString; null -> ''.
+String _texto(dynamic valor) => valor?.toString() ?? '';
 
 int _entero(dynamic valor) {
   if (valor is int) return valor;

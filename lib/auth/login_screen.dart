@@ -9,8 +9,7 @@ import '../shared/validators.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 import '../client/screens/home_screen.dart';
-import '../admin/screens/admin_home.dart';
-import '../employee/screens/employee_dashboard_screen.dart';
+import '../admin/screens/purchases_screen.dart' show adminHomeScreen;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -96,14 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       switch (usuario.userRole) {
         case UserRole.admin:
+        case UserRole.empleado:
+          // Administrador y Empleado comparten el menú por permisos.
           Navigator.of(
             context,
           ).pushReplacement(heroFadeRoute(adminHomeScreen()));
-          break;
-        case UserRole.empleado:
-          Navigator.of(
-            context,
-          ).pushReplacement(heroFadeRoute(const EmployeeDashboardScreen()));
           break;
         case UserRole.cliente:
           Navigator.of(context).pushReplacement(
@@ -202,11 +198,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Image.asset(
                               'assets/img/logo_blanc7.png',
                               fit: BoxFit.contain,
+                              // Sin fallback: assets/img/Logo.png no existe.
                               errorBuilder: (context, error, stackTrace) =>
-                                  Image.asset(
-                                    'assets/img/Logo.png',
-                                    fit: BoxFit.contain,
-                                  ),
+                                  const SizedBox.shrink(),
                             ),
                           ),
                         ),
