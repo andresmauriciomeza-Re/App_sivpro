@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'auth/auth_service.dart';
 import 'auth/session_manager.dart';
+import 'admin/notificaciones/notificaciones_repository.dart';
 import 'auth/splash_screen.dart';
 import 'client/services/limpieza_sesion_cliente.dart';
 import 'shared/client_notification_service.dart';
@@ -20,6 +21,7 @@ Future<void> main() async {
   LowStockNotificationService.instance.start();
   PendingSalesService.instance.start();
   ClientNotificationService.instance.start();
+  NotificacionesLocal.instance.start();
   ModoOscuroController.instance.cargar();
   registrarLimpiezaCliente();
   runApp(const SivproApp());

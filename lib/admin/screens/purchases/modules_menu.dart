@@ -17,6 +17,9 @@ class ModulesMenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final modulos = Permisos.modulos;
+    // Empleado: sin las tarjetas Ventas (ya está en la barra) e Indicadores
+    // (su contenido se muestra en este mismo Inicio).
+    final esEmpleado = AuthService.instance.rol == UserRole.empleado;
     final tarjetas = <Widget>[
       if (modulos.contains(ModuloMovil.compras))
         ModuleCard(
@@ -32,14 +35,14 @@ class ModulesMenuScreen extends StatelessWidget {
           description: 'Órdenes de producción y productos.',
           onTap: () => navigateToBottomModule(context, 2),
         ),
-      if (modulos.contains(ModuloMovil.ventas))
+      if (!esEmpleado && modulos.contains(ModuloMovil.ventas))
         ModuleCard(
           icon: Icons.receipt_long_outlined,
           title: 'Ventas',
           description: 'Clientes y gestión de ventas.',
           onTap: () => navigateToBottomModule(context, 3),
         ),
-      if (modulos.contains(ModuloMovil.indicadores))
+      if (!esEmpleado && modulos.contains(ModuloMovil.indicadores))
         ModuleCard(
           icon: Icons.insights_outlined,
           title: 'Indicadores',
@@ -60,63 +63,76 @@ class ModulesMenuScreen extends StatelessWidget {
               title: 'La Sirena Pizza',
               initials: currentUserInitials(),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Inicio',
-                      style: GoogleFonts.montserrat(
-                        color: context.pal.texto(PurchasesScreen.ink),
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      tarjetas.isEmpty
-                          ? 'Tu rol no tiene módulos disponibles en la app móvil.'
-                          : 'Seleccione un módulo',
-                      style: GoogleFonts.poppins(
-                        color: context.pal.secundario(PurchasesScreen.muted),
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+            if (esEmpleado && modulos.contains(ModuloMovil.indicadores))
+              Expanded(
+                child: _IndicadoresContenido(
+                  titulo: 'Inicio',
+                  pie: [
                     for (final tarjeta in tarjetas) ...[
-                      tarjeta,
                       const SizedBox(height: 24),
-                    ],
-                    if (tarjetas.isEmpty) ...[
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () => navigateToBottomModule(context, 4),
-                          icon: const Icon(Icons.person_outline),
-                          label: const Text('Mi Perfil'),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: () => _confirmSignOut(context),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: context.pal.rojoBoton(
-                              PurchasesScreen.red,
-                            ),
-                          ),
-                          icon: const Icon(Icons.logout),
-                          label: const Text('Cerrar sesión'),
-                        ),
-                      ),
+                      tarjeta,
                     ],
                   ],
                 ),
+              )
+            else
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Inicio',
+                        style: GoogleFonts.montserrat(
+                          color: context.pal.texto(PurchasesScreen.ink),
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        tarjetas.isEmpty
+                            ? 'Tu rol no tiene módulos disponibles en la app móvil.'
+                            : 'Seleccione un módulo',
+                        style: GoogleFonts.poppins(
+                          color: context.pal.secundario(PurchasesScreen.muted),
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      for (final tarjeta in tarjetas) ...[
+                        tarjeta,
+                        const SizedBox(height: 24),
+                      ],
+                      if (tarjetas.isEmpty) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => navigateToBottomModule(context, 4),
+                            icon: const Icon(Icons.person_outline),
+                            label: const Text('Mi Perfil'),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: () => _confirmSignOut(context),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: context.pal.rojoBoton(
+                                PurchasesScreen.red,
+                              ),
+                            ),
+                            icon: const Icon(Icons.logout),
+                            label: const Text('Cerrar sesión'),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
             const ModuleBottomNav(selected: 0),
           ],
         ),

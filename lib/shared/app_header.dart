@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../admin/widgets/campana_notificaciones.dart';
 import '../theme/app_colors.dart';
 import '../theme/paleta_app.dart';
 
@@ -11,6 +12,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     this.initials,
     this.showAvatar = true,
     this.trailing,
+    this.mostrarCampana = true,
   });
 
   final String title;
@@ -18,6 +20,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? initials;
   final bool showAvatar;
   final Widget? trailing;
+
+  /// Campana de notificaciones junto al círculo de iniciales (se oculta en
+  /// la propia pantalla de Notificaciones).
+  final bool mostrarCampana;
 
   @override
   Size get preferredSize => const Size.fromHeight(74);
@@ -61,7 +67,11 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           ),
           if (trailing != null)
             trailing!
-          else if (showAvatar && initials != null)
+          else if (showAvatar && initials != null) ...[
+            if (mostrarCampana) ...[
+              const CampanaNotificaciones(),
+              const SizedBox(width: 8),
+            ],
             Container(
               width: 44,
               height: 44,
@@ -79,6 +89,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
             ),
+          ],
         ],
       ),
     );

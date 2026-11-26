@@ -11,6 +11,7 @@ import '../services/insumos_repository.dart';
 import '../../shared/formato.dart';
 import '../services/ventas_repository.dart';
 import '../widgets/production_summary_card.dart';
+import '../widgets/campana_notificaciones.dart';
 import '../widgets/summary_cards_grid.dart';
 import 'purchases_screen.dart';
 import '../../theme/paleta_app.dart';
@@ -232,15 +233,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Row(
         children: [
           const SizedBox(width: 18),
-          Text(
-            'La Sirena Pizza',
-            style: GoogleFonts.montserrat(
-              color: context.pal.texto(ink),
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
+          Expanded(
+            child: Text(
+              'La Sirena Pizza',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(
+                color: context.pal.texto(ink),
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
+          const CampanaNotificaciones(diametro: 36),
+          const SizedBox(width: 8),
           Container(
             width: 36,
             height: 36,

@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../admin/screens/purchases_screen.dart' show insumosScreen;
+import '../admin/notificaciones/notificaciones_repository.dart';
 import '../admin/services/insumos_repository.dart';
 import '../auth/auth_service.dart';
 import '../auth/permisos.dart';
@@ -210,6 +211,7 @@ class LowStockNotificationService with WidgetsBindingObserver {
     try {
       final insumos = await InsumosRepository.instance.listar(estado: true);
       if (generacion != _generacion || !_activo) return;
+      unawaited(NotificacionesLocal.instance.desdeInsumos(insumos));
       await _procesar(insumos);
     } catch (_) {
       // Sin red, 401 o 403: no se avisa ni se muestra nada. El 401 de sesión

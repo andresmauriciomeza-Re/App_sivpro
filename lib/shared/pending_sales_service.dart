@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
+import '../admin/notificaciones/notificaciones_repository.dart';
 import '../admin/services/ventas_repository.dart';
 import '../auth/auth_service.dart';
 import '../auth/permisos.dart';
@@ -97,7 +98,9 @@ class PendingSalesService with WidgetsBindingObserver {
   }
 
   /// Reutiliza una lista ya cargada por una pantalla para no repetir la llamada.
+  /// También alimenta las notificaciones del panel.
   void actualizarDesde(List<Venta> ventas) {
+    unawaited(NotificacionesLocal.instance.desdeVentas(ventas));
     final pendientes = ventas
         .where((venta) => venta.estado == EstadoVenta.porVerificar)
         .length;

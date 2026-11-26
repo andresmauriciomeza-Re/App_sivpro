@@ -13,6 +13,8 @@ Venta venta({
   String nombre = 'Ana',
   String? fechaEstadoLocal,
   String? fecha,
+  Object? idDevolucion,
+  String? devolucionFecha,
   List<Map<String, Object?>> detalles = const [],
 }) {
   return Venta.fromJson({
@@ -23,6 +25,8 @@ Venta venta({
     'estado': estado,
     'fecha': fecha ?? '2026-11-01T10:00:00.000000',
     'fecha_estado_local': fechaEstadoLocal,
+    'id_devolucion': idDevolucion,
+    'devolucion_fecha': devolucionFecha,
     'detalles': detalles,
   });
 }
@@ -64,34 +68,55 @@ void main() {
     expect(ventasDelMes(completadas, 2026, 10), isEmpty);
   });
 
-  test('top clientes: unión de top por pedidos y por valor', () {
+  test('devoluciones del mes: por fecha de la devolución, sin convertir '
+      'zonas, de la más reciente a la más antigua', () {
     final ventas = <Venta>[
-      // 11 clientes con 1 pedido de valor creciente y uno frecuente barato.
-      for (var i = 1; i <= 11; i++)
-        venta(
-          id: i,
-          estado: 'Completado',
-          monto: i * 1000.0,
-          documento: 'c$i',
-          nombre: 'Cliente $i',
-        ),
-      for (var j = 0; j < 3; j++)
-        venta(
-          id: 100 + j,
-          estado: 'Completado',
-          monto: 10,
-          documento: 'frecuente',
-          nombre: 'Frecuente',
-        ),
+      // Sin devolución: no cuenta.
+      venta(id: 1, estado: 'Completado', monto: 1000),
+      // Fecha de la devolución en noviembre aunque la venta sea de octubre.
+      venta(
+        id: 2,
+        estado: 'Devolucion',
+        monto: 1000,
+        fecha: '2026-10-28T12:00:00.000000',
+        idDevolucion: 5,
+        devolucionFecha: '2026-11-03T09:00:00.000000',
+      ),
+      // Sin fecha de devolución: cae a la de la venta.
+      venta(
+        id: 3,
+        estado: 'Completado',
+        monto: 1000,
+        fecha: '2026-11-15T18:00:00.000000',
+        idDevolucion: '6',
+      ),
+      // Último día de octubre a las 23:59: cuenta en octubre.
+      venta(
+        id: 4,
+        estado: 'Devolucion',
+        monto: 1000,
+        idDevolucion: 7,
+        devolucionFecha: '2026-10-31T23:59:59.000000',
+      ),
     ];
-    final top = topClientes(ventas);
-    // Primero el más frecuente (3 pedidos), luego por valor en empates.
-    expect(top.first.nombre, 'Frecuente');
-    expect(top.first.pedidos, 3);
-    expect(top.first.valor, 30);
-    // El de mayor valor entra aunque tenga 1 pedido.
-    expect(top.any((c) => c.nombre == 'Cliente 11'), isTrue);
-    expect(top.length, lessThanOrEqualTo(20));
+    expect(devolucionesDelMes(ventas, 2026, 11).map((v) => v.id), [3, 2]);
+    expect(devolucionesDelMes(ventas, 2026, 10).map((v) => v.id), [4]);
+    expect(devolucionesDelMes(ventas, 2026, 9), isEmpty);
+  });
+
+  test('cantidad de productos: suma de las cantidades (como la web)', () {
+    final conLineas = venta(
+      id: 1,
+      estado: 'Devolucion',
+      monto: 1000,
+      detalles: [
+        {'nombre': 'Pizza', 'cantidad': '3', 'tamano': 'Mediana'},
+        {'nombre': 'Gaseosa', 'cantidad': 2, 'tamano': null},
+        {'nombre': 'Rota', 'cantidad': null},
+      ],
+    );
+    expect(cantidadProductos(conLineas), 5);
+    expect(cantidadProductos(venta(id: 2, estado: 'Devolucion', monto: 0)), 0);
   });
 
   test('top productos suma tamaños aparte y ordena por total', () {

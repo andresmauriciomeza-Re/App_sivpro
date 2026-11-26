@@ -133,6 +133,8 @@ class Venta {
     this.anuladoPor,
     this.montoReembolso,
     this.devolucionEstado,
+    this.idDevolucion,
+    this.devolucionFecha,
   });
 
   final int id;
@@ -164,6 +166,13 @@ class Venta {
   final String? anuladoPor;
   final double? montoReembolso;
   final String? devolucionEstado;
+
+  /// Fila de `tb_devolucion` de la venta (null si no tiene devolución).
+  final int? idDevolucion;
+
+  /// 'AAAA-MM-DDTHH:MM:SS...' en hora de Colombia (sin zona): fecha de la
+  /// devolución.
+  final String? devolucionFecha;
 
   /// Segundos que quedan para anular (0 si ya no se puede). El backend
   /// valida siempre.
@@ -206,6 +215,8 @@ class Venta {
       anuladoPor: _texto(json['anulado_por']),
       montoReembolso: _numero(json['monto_reembolso']),
       devolucionEstado: _texto(json['devolucion_estado']),
+      idDevolucion: _entero(json['id_devolucion']),
+      devolucionFecha: _texto(json['devolucion_fecha']),
       segundosRestantesAnulacion:
           _entero(json['segundos_restantes_anulacion']) ?? 0,
       detalles: detalles is List
