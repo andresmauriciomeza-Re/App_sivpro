@@ -15,6 +15,7 @@ import '../widgets/estado_pedido.dart';
 import '../widgets/imagen_producto.dart';
 import 'menu_screen.dart';
 import 'order_detail_screen.dart';
+import '../../shared/mensaje_app.dart';
 
 class MyOrdersScreen extends StatelessWidget {
   const MyOrdersScreen({super.key});
@@ -81,9 +82,11 @@ class _MisPedidosState extends State<_MisPedidos> {
       if (_repositorio.pedidos == null) {
         setState(() => _error = error.message);
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.message)));
+        ScaffoldMessenger.of(context).mostrarMensaje(
+          error.message,
+          tipo: TipoMensaje.error,
+          sobreBarraPanel: false,
+        );
       }
     } finally {
       if (mounted) setState(() => _cargando = false);

@@ -11,6 +11,7 @@ import '../../config/api_config.dart';
 import '../../network/api_exception.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
+import '../../shared/mensaje_app.dart';
 import '../../shared/modo_oscuro_controller.dart';
 import '../../shared/modulos_moviles.dart';
 import '../../shared/pending_sales_service.dart';
@@ -93,10 +94,12 @@ void navigateToBottomModule(BuildContext context, int index) {
     _ => true,
   };
   if (!permitido) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('No tienes permiso para acceder a este módulo.'),
-      ),
+    ScaffoldMessenger.of(context).mostrarMensaje(
+      'No tienes permiso para acceder a este módulo.',
+      tipo: TipoMensaje.error,
+      // Inicio y Clientes ya ponen la barra fuera del cuerpo.
+      sobreBarraPanel:
+          Scaffold.maybeOf(context)?.widget.bottomNavigationBar == null,
     );
     return;
   }

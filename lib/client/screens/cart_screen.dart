@@ -474,34 +474,40 @@ class _CartItemCard extends StatelessWidget {
                     ),
                   ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    _stepButton(
-                      context,
-                      icon: Icons.remove,
-                      etiqueta: 'Quitar uno de ${item.nombre}',
-                      onTap: () => CartService.instance.updateQuantity(
-                        item.id,
-                        item.cantidad - 1,
+                // El control completo se reduce un poco si no cabe.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _stepButton(
+                        context,
+                        icon: Icons.remove,
+                        etiqueta: 'Quitar uno de ${item.nombre}',
+                        onTap: () => CartService.instance.updateQuantity(
+                          item.id,
+                          item.cantidad - 1,
+                        ),
                       ),
-                    ),
-                    _CartQuantityStepper(
-                      itemId: item.id,
-                      cantidad: item.cantidad,
-                      maximo: estado.noDisponible ? item.cantidad : maximo,
-                    ),
-                    _stepButton(
-                      context,
-                      icon: Icons.add,
-                      etiqueta: 'Agregar uno de ${item.nombre}',
-                      onTap: puedeSumar
-                          ? () => CartService.instance.updateQuantity(
-                              item.id,
-                              item.cantidad + 1,
-                            )
-                          : null,
-                    ),
-                  ],
+                      _CartQuantityStepper(
+                        itemId: item.id,
+                        cantidad: item.cantidad,
+                        maximo: estado.noDisponible ? item.cantidad : maximo,
+                      ),
+                      _stepButton(
+                        context,
+                        icon: Icons.add,
+                        etiqueta: 'Agregar uno de ${item.nombre}',
+                        onTap: puedeSumar
+                            ? () => CartService.instance.updateQuantity(
+                                item.id,
+                                item.cantidad + 1,
+                              )
+                            : null,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

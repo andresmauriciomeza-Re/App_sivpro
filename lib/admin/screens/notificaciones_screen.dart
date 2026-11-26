@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/permisos.dart';
 import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
+import '../../shared/mensaje_app.dart';
 import '../../theme/paleta_app.dart';
 import '../notificaciones/notificacion.dart';
 import '../notificaciones/notificaciones_repository.dart';
@@ -67,11 +68,10 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
       DestinoNotificacion.insumos => Permisos.comprasInsumos,
     };
     if (!permitido) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('No tienes acceso a ese módulo.')),
-        );
+      ScaffoldMessenger.of(context).mostrarMensaje(
+        'No tienes acceso a ese módulo.',
+        tipo: TipoMensaje.error,
+      );
       return;
     }
     switch (notificacion.destino) {
@@ -87,9 +87,16 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
   Future<void> _eliminar(Notificacion notificacion) async {
     final mensajes = ScaffoldMessenger.of(context);
     await _repositorio.eliminar(notificacion.id);
-    mensajes
-      ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Notificación eliminada')));
+    mensajes.mostrarMensaje('Notificación eliminada', tipo: TipoMensaje.exito);
+  }
+
+  Future<void> _marcarTodas() async {
+    final mensajes = ScaffoldMessenger.of(context);
+    await _repositorio.marcarTodasLeidas();
+    mensajes.mostrarMensaje(
+      'Todas las notificaciones se marcaron como leídas',
+      tipo: TipoMensaje.exito,
+    );
   }
 
   Future<void> _eliminarTodas() async {
@@ -115,7 +122,13 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
         ],
       ),
     );
-    if (confirmado == true) await _repositorio.eliminarTodas();
+    if (confirmado != true || !mounted) return;
+    final mensajes = ScaffoldMessenger.of(context);
+    await _repositorio.eliminarTodas();
+    mensajes.mostrarMensaje(
+      'Se eliminaron todas las notificaciones',
+      tipo: TipoMensaje.exito,
+    );
   }
 
   @override
@@ -167,9 +180,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                           constraints: _zonaTactil,
                           color: pal.rojo(PurchasesScreen.red),
                           icon: const Icon(Icons.done_all, size: 28),
-                          onPressed: sinLeer
-                              ? _repositorio.marcarTodasLeidas
-                              : null,
+                          onPressed: sinLeer ? _marcarTodas : null,
                         ),
                         IconButton(
                           tooltip: 'Eliminar todas las notificaciones',

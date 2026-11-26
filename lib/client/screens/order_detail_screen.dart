@@ -22,6 +22,7 @@ import '../widgets/estado_pedido.dart';
 import '../widgets/imagen_producto.dart';
 import '../widgets/pago_transferencia.dart';
 import 'my_orders_screen.dart';
+import '../../shared/mensaje_app.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   const OrderDetailScreen({super.key, required this.pedido});
@@ -171,11 +172,11 @@ class _DetalleState extends State<_Detalle> {
 
   String get _direccion => _pedido.direccionRecogida ?? direccionLocal;
 
-  void _avisar(String mensaje) {
+  void _avisar(String mensaje, [TipoMensaje tipo = TipoMensaje.error]) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(
+      context,
+    ).mostrarMensaje(mensaje, tipo: tipo, sobreBarraPanel: false);
   }
 
   void _refrescarLista() {
@@ -201,6 +202,7 @@ class _DetalleState extends State<_Detalle> {
       await _repositorio.cancelar(_pedido.id);
       _avisar(
         'Pedido #${_pedido.id} cancelado. Te devolvemos el 80 % del valor.',
+        TipoMensaje.exito,
       );
       _iniciarCuenta(0);
       _refrescarLista();
@@ -226,7 +228,10 @@ class _DetalleState extends State<_Detalle> {
       ),
     );
     if (enviado != true || !mounted) return;
-    _avisar('Recibimos tu comprobante, lo estamos verificando');
+    _avisar(
+      'Recibimos tu comprobante, lo estamos verificando',
+      TipoMensaje.exito,
+    );
     _refrescarLista();
     await _recargar();
   }

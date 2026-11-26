@@ -6,6 +6,7 @@ import '../shared/page_transitions.dart';
 import '../shared/validators.dart';
 import 'auth_service.dart';
 import 'verify_code_screen.dart';
+import '../shared/mensaje_app.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -26,10 +27,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, [TipoMensaje tipo = TipoMensaje.error]) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ).mostrarMensaje(message, tipo: tipo, sobreBarraPanel: false);
   }
 
   Future<void> _onEnviarCodigo() async {
@@ -50,7 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         correo,
       );
       if (!mounted) return;
-      _showMessage(mensaje);
+      _showMessage(mensaje, TipoMensaje.informacion);
       Navigator.of(
         context,
       ).push(heroFadeRoute(VerifyCodeScreen(email: correo)));

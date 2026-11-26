@@ -14,6 +14,7 @@ import '../services/pedidos_repository.dart';
 import '../services/validacion_carrito.dart';
 import '../widgets/pago_transferencia.dart';
 import 'receipt_sent_screen.dart';
+import '../../shared/mensaje_app.dart';
 
 class PaymentMethodScreen extends StatelessWidget {
   const PaymentMethodScreen({super.key});
@@ -52,13 +53,11 @@ class _PagoState extends State<_Pago> {
     if (_comprobante != null && _metodoComprobante != metodo) {
       _comprobante = null;
       _metodoComprobante = null;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Cambiaste el método de pago. Quitamos el comprobante anterior. '
-            'Sube el del nuevo método.',
-          ),
-        ),
+      ScaffoldMessenger.of(context).mostrarMensaje(
+        'Cambiaste el método de pago. Quitamos el comprobante anterior. '
+        'Sube el del nuevo método.',
+        tipo: TipoMensaje.informacion,
+        sobreBarraPanel: false,
       );
     }
     setState(() => _metodoSeleccionado = metodo);

@@ -53,7 +53,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
       if (silent && _supplies.isNotEmpty) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        ).mostrarMensaje(message, tipo: TipoMensaje.error);
       } else {
         setState(() {
           _loading = false;
@@ -701,30 +701,45 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Detalle',
-                            style: GoogleFonts.montserrat(
-                              color: context.pal.texto(PurchasesScreen.ink),
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              s.codigo,
-                              style: GoogleFonts.poppins(
-                                color: context.pal.secundario(
-                                  PurchasesScreen.muted,
+                      // La etiqueta de nivel baja a otra línea si no cabe.
+                      SizedBox(
+                        width: double.infinity,
+                        child: Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 12,
+                          runSpacing: 4,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Detalle',
+                                  style: GoogleFonts.montserrat(
+                                    color: context.pal.texto(
+                                      PurchasesScreen.ink,
+                                    ),
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                                fontSize: 16,
-                              ),
+                                const SizedBox(width: 12),
+                                Flexible(
+                                  child: Text(
+                                    s.codigo,
+                                    style: GoogleFonts.poppins(
+                                      color: context.pal.secundario(
+                                        PurchasesScreen.muted,
+                                      ),
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          _SupplyLevelBadge(level: level),
-                        ],
+                            _SupplyLevelBadge(level: level),
+                          ],
+                        ),
                       ),
                       if (_error != null) ...[
                         const SizedBox(height: 8),

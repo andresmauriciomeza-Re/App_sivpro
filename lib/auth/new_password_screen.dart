@@ -6,6 +6,7 @@ import '../shared/page_transitions.dart';
 import '../shared/validators.dart';
 import 'auth_service.dart';
 import 'password_updated_screen.dart';
+import '../shared/mensaje_app.dart';
 
 class NewPasswordScreen extends StatefulWidget {
   const NewPasswordScreen({
@@ -44,10 +45,10 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     super.dispose();
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, [TipoMensaje tipo = TipoMensaje.error]) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ).mostrarMensaje(message, tipo: tipo, sobreBarraPanel: false);
   }
 
   Future<void> _onCambiar() async {

@@ -52,7 +52,7 @@ class _PurchaseManagementScreenState extends State<PurchaseManagementScreen> {
       if (silent && _purchases.isNotEmpty) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        ).mostrarMensaje(message, tipo: TipoMensaje.error);
       } else {
         setState(() {
           _loading = false;
@@ -452,10 +452,10 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
     if (updated == null || !mounted) return;
     setState(() => _purchase = updated);
     widget.onUpdated(updated);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Compra anulada. Las existencias fueron devueltas.'),
-      ),
+    ScaffoldMessenger.of(context).mostrarMensaje(
+      'Compra anulada. Las existencias fueron devueltas.',
+      tipo: TipoMensaje.exito,
+      sobreBarraPanel: false,
     );
   }
 
@@ -748,24 +748,29 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
             ],
           ),
           const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${_purchaseQuantity(item.cantidad)} ${item.medida}',
-                style: GoogleFonts.poppins(
-                  color: context.pal.secundario(AppColors.muted),
-                  fontSize: 13,
+          // Si no caben juntos, el precio unitario baja a otra línea.
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              spacing: 8,
+              children: [
+                Text(
+                  '${_purchaseQuantity(item.cantidad)} ${item.medida}',
+                  style: GoogleFonts.poppins(
+                    color: context.pal.secundario(AppColors.muted),
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-              Text(
-                '${_cop(item.precioUnitario)} c/u',
-                style: GoogleFonts.poppins(
-                  color: context.pal.secundario(AppColors.muted),
-                  fontSize: 13,
+                Text(
+                  '${_cop(item.precioUnitario)} c/u',
+                  style: GoogleFonts.poppins(
+                    color: context.pal.secundario(AppColors.muted),
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 2),
           Text(
@@ -787,14 +792,18 @@ class _PurchaseDetailScreenState extends State<_PurchaseDetailScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: context.pal.texto(AppColors.ink),
-              fontSize: 15,
-              fontWeight: strong ? FontWeight.w700 : FontWeight.w400,
+          // El monto se ve completo; la etiqueta parte en líneas si hace falta.
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: context.pal.texto(AppColors.ink),
+                fontSize: 15,
+                fontWeight: strong ? FontWeight.w700 : FontWeight.w400,
+              ),
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             _cop(value),
             style: GoogleFonts.poppins(
