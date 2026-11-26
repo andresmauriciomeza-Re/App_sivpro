@@ -8,6 +8,7 @@ import '../network/api_exception.dart';
 import '../shared/page_transitions.dart';
 import 'auth_service.dart';
 import 'new_password_screen.dart';
+import '../shared/mensaje_app.dart';
 
 class VerifyCodeScreen extends StatefulWidget {
   const VerifyCodeScreen({super.key, required this.email});
@@ -85,10 +86,10 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     _focusNodes[i > 5 ? 5 : i].requestFocus();
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, [TipoMensaje tipo = TipoMensaje.error]) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ).mostrarMensaje(message, tipo: tipo, sobreBarraPanel: false);
   }
 
   Future<void> _onVerificar() async {
@@ -126,7 +127,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
         widget.email,
       );
       if (!mounted) return;
-      _showMessage(mensaje);
+      _showMessage(mensaje, TipoMensaje.informacion);
       _iniciarEspera();
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -230,42 +231,52 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: List.generate(6, (i) {
-                              return SizedBox(
-                                width: 48,
-                                child: TextField(
-                                  controller: _controllers[i],
-                                  focusNode: _focusNodes[i],
-                                  textAlign: TextAlign.center,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                              // 48 de ancho; en pantallas angostas las seis
+                              // casillas se reparten el espacio.
+                              return Flexible(
+                                child: Container(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 48,
                                   ),
-                                  decoration: InputDecoration(
-                                    counterText: '',
-                                    filled: true,
-                                    fillColor: campoGris,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 16,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 1.5,
+                                  ),
+                                  child: TextField(
+                                    controller: _controllers[i],
+                                    focusNode: _focusNodes[i],
+                                    textAlign: TextAlign.center,
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
                                     ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                      borderSide: const BorderSide(
-                                        color: splashRojo,
-                                        width: 1.4,
+                                    decoration: InputDecoration(
+                                      counterText: '',
+                                      filled: true,
+                                      fillColor: campoGris,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            vertical: 16,
+                                          ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: const BorderSide(
+                                          color: splashRojo,
+                                          width: 1.4,
+                                        ),
                                       ),
                                     ),
+                                    onChanged: (value) =>
+                                        _onDigitChanged(i, value),
                                   ),
-                                  onChanged: (value) =>
-                                      _onDigitChanged(i, value),
                                 ),
                               );
                             }),

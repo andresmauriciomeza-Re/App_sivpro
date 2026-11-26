@@ -333,6 +333,9 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
       MaterialPageRoute(builder: (_) => _ProductEditScreen(product: product)),
     );
     if (actualizado == null || !mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).mostrarMensaje('Producto actualizado', tipo: TipoMensaje.exito);
 
     await _loadProducts();
   }
@@ -368,21 +371,26 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
   }
 
   Future<void> _changeState(_Product product, String estado) async {
+    final mensajes = ScaffoldMessenger.of(context);
     try {
       await ProductsRepository.instance.cambiarEstado(
         int.parse(product.id),
         estado,
       );
+      if (!mounted) return;
+      mensajes.mostrarMensaje(
+        'Producto marcado como $estado',
+        tipo: TipoMensaje.exito,
+      );
       await _loadProducts();
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      mensajes.mostrarMensaje(error.message, tipo: TipoMensaje.error);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo completar la operación.')),
+      mensajes.mostrarMensaje(
+        'No se pudo completar la operación.',
+        tipo: TipoMensaje.error,
       );
     }
   }
@@ -461,27 +469,40 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
           ),
           Row(
             children: [
-              Text(
-                product.price > 0 ? _formatPrice(product.price) : 'Sin precio',
-                style: GoogleFonts.poppins(
-                  color: context.pal.texto(Colors.black),
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
+              // Los precios ocupan lo que dejan los íconos: si no caben, el
+              // de Grande baja a otra línea.
+              Expanded(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 2,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        product.price > 0
+                            ? _formatPrice(product.price)
+                            : 'Sin precio',
+                        style: GoogleFonts.poppins(
+                          color: context.pal.texto(Colors.black),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    if (product.largePrice != null)
+                      Text(
+                        product.largePrice! > 0
+                            ? 'Grande ${_formatPrice(product.largePrice!)}'
+                            : 'Grande sin precio',
+                        style: GoogleFonts.poppins(
+                          color: context.pal.secundario(PurchasesScreen.muted),
+                          fontSize: 13,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              if (product.largePrice != null) ...[
-                const SizedBox(width: 8),
-                Text(
-                  product.largePrice! > 0
-                      ? 'Grande ${_formatPrice(product.largePrice!)}'
-                      : 'Grande sin precio',
-                  style: GoogleFonts.poppins(
-                    color: context.pal.secundario(PurchasesScreen.muted),
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-              const Spacer(),
               IconButton(
                 onPressed: () => _openDetailProduct(product),
                 icon: Icon(
@@ -512,13 +533,15 @@ class _ProductManagementScreenState extends State<_ProductManagementScreen> {
                   size: 21,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  product.isPizza
-                      ? 'Stock: ${product.stockParts ?? '—'} partes'
-                      : 'Stock: ${product.stock ?? '—'} ${product.unit}',
-                  style: GoogleFonts.poppins(
-                    color: context.pal.texto(PurchasesScreen.ink),
-                    fontSize: 17,
+                Flexible(
+                  child: Text(
+                    product.isPizza
+                        ? 'Stock: ${product.stockParts ?? '—'} partes'
+                        : 'Stock: ${product.stock ?? '—'} ${product.unit}',
+                    style: GoogleFonts.poppins(
+                      color: context.pal.texto(PurchasesScreen.ink),
+                      fontSize: 17,
+                    ),
                   ),
                 ),
               ],
@@ -669,6 +692,12 @@ class _ProductDetailScreenState extends State<_ProductDetailScreen> {
     );
     if (actualizado == null || !mounted) return;
     setState(() => _product = actualizado);
+    // El detalle no tiene barra inferior.
+    ScaffoldMessenger.of(context).mostrarMensaje(
+      'Producto actualizado',
+      tipo: TipoMensaje.exito,
+      sobreBarraPanel: false,
+    );
     await _loadDetail(showLoading: false);
   }
 
@@ -1651,10 +1680,8 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     );
   }
 
-  void _avisar(String mensaje) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(mensaje)));
+  void _avisar(String mensaje, [TipoMensaje tipo = TipoMensaje.error]) {
+    ScaffoldMessenger.of(context).mostrarMensaje(mensaje, tipo: tipo);
   }
 
   Future<void> _saveProduct() async {
@@ -1690,7 +1717,13 @@ class _ProductEditScreenState extends State<_ProductEditScreen> {
     );
     setState(() => _errores = edicion.errores);
     if (!edicion.valido) {
-      _avisar(edicion.errores['_general'] ?? 'Revisa los campos marcados.');
+      _avisar(
+        edicion.errores['_general'] ?? 'Revisa los campos marcados.',
+        // "No hay cambios que guardar" es solo un aviso.
+        edicion.errores.containsKey('_general')
+            ? TipoMensaje.informacion
+            : TipoMensaje.error,
+      );
       return;
     }
 

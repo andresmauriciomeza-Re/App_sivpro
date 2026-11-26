@@ -97,6 +97,12 @@ class BarraNavegacionAdmin extends StatefulWidget {
 
   static const Duration duracion = Duration(milliseconds: 260);
 
+  /// Alto que ocupa (píldora de 64 más 8 arriba y abajo), sin contar la
+  /// [separacionMinima] con el borde inferior.
+  static const double alto = 80;
+
+  static const double separacionMinima = 12;
+
   /// Último ítem mostrado como activo, compartido por todas las barras.
   static int? _ultimo;
 
@@ -175,7 +181,9 @@ class _BarraNavegacionAdminState extends State<BarraNavegacionAdmin>
       maxScaleFactor: 1.15,
       child: SafeArea(
         top: false,
-        minimum: const EdgeInsets.only(bottom: 12),
+        minimum: const EdgeInsets.only(
+          bottom: BarraNavegacionAdmin.separacionMinima,
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Container(

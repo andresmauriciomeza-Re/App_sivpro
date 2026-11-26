@@ -55,9 +55,11 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
           ? error.message
           : 'No se pudieron cargar los clientes.';
       if (silent && _clients.isNotEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(context).mostrarMensaje(
+          message,
+          tipo: TipoMensaje.error,
+          sobreBarraPanel: false,
+        );
       } else {
         setState(() {
           _loading = false;
@@ -369,15 +371,18 @@ class _StatCard extends StatelessWidget {
               size: 21,
             ),
           ),
-          const Spacer(),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: GoogleFonts.poppins(
-                color: context.pal.texto(_ClientManagementScreenState.ink),
-                fontSize: 28,
-                fontWeight: FontWeight.w500,
+          // El número usa el espacio que quede y se reduce si no alcanza.
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.bottomLeft,
+              child: Text(
+                value,
+                style: GoogleFonts.poppins(
+                  color: context.pal.texto(_ClientManagementScreenState.ink),
+                  fontSize: 28,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),

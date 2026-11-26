@@ -93,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showMessage(String message) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ).mostrarMensaje(message, tipo: TipoMensaje.error);
   }
 
   Future<void> _saveProfile() async {

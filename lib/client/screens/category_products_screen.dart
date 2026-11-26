@@ -10,6 +10,7 @@ import '../widgets/etiqueta_estado.dart';
 import '../widgets/imagen_producto.dart';
 import 'product_detail_screen.dart';
 import '../widgets/bottom_nav.dart';
+import '../../shared/mensaje_app.dart';
 
 class CategoryProductsScreen extends StatelessWidget {
   /// Una sección del catálogo real (Pizzas, Lasañas o Favoritas).
@@ -63,9 +64,11 @@ class _CategoriaState extends State<_Categoria> {
     } on ApiException catch (error) {
       if (!mounted) return;
       if (_productos != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.message)));
+        ScaffoldMessenger.of(context).mostrarMensaje(
+          error.message,
+          tipo: TipoMensaje.error,
+          sobreBarraPanel: false,
+        );
       }
       setState(() => _error = error.message);
     }
@@ -282,28 +285,31 @@ class _ProductGridCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                // Solo se marca lo que no se puede pedir; la foto se atenúa
-                // si está "No disponible".
-                child: switch (item.estado) {
-                  EstadoMenu.disponible => imagen,
-                  final estado => Stack(
-                    children: [
-                      estado == EstadoMenu.noDisponible
-                          ? Opacity(opacity: 0.5, child: imagen)
-                          : imagen,
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: EtiquetaEstado(estado: estado),
-                      ),
-                    ],
+              // La foto cede unos píxeles si el texto no cabe en la tarjeta.
+              Flexible(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
                   ),
-                },
+                  // Solo se marca lo que no se puede pedir; la foto se atenúa
+                  // si está "No disponible".
+                  child: switch (item.estado) {
+                    EstadoMenu.disponible => imagen,
+                    final estado => Stack(
+                      children: [
+                        estado == EstadoMenu.noDisponible
+                            ? Opacity(opacity: 0.5, child: imagen)
+                            : imagen,
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: EtiquetaEstado(estado: estado),
+                        ),
+                      ],
+                    ),
+                  },
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),

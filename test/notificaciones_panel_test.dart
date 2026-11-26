@@ -456,6 +456,10 @@ void main() {
 
       await tester.tap(marcar);
       await tester.pumpAndSettle();
+      expect(
+        find.text('Todas las notificaciones se marcaron como leídas'),
+        findsOneWidget,
+      );
       expect(_local.conteoNoLeidas.value, 0);
       expect(_sinLeer, findsNothing);
       expect(tester.widget<IconButton>(marcar).onPressed, isNull);
@@ -511,6 +515,7 @@ void main() {
       );
       await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
+      expect(find.byType(SnackBar), findsNothing);
       expect(await _lista(), hasLength(2));
       expect(_local.conteoNoLeidas.value, 2);
 
@@ -518,6 +523,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Eliminar'));
       await tester.pumpAndSettle();
+      expect(
+        find.text('Se eliminaron todas las notificaciones'),
+        findsOneWidget,
+      );
       expect(await _lista(), isEmpty);
       expect(_local.conteoNoLeidas.value, 0);
       expect(find.text('No tienes notificaciones.'), findsOneWidget);

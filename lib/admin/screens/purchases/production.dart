@@ -437,7 +437,9 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     // Se vuelve a consultar la lista (y el detalle, si está abierto) para
     // mostrar lo que quedó guardado.
     await _loadOrders(showLoading: false);
-    if (mounted && _errorMessage == null) _showMessage('Orden actualizada.');
+    if (mounted && _errorMessage == null) {
+      _showMessage('Orden actualizada.', TipoMensaje.exito);
+    }
   }
 
   Future<void> _startOrder(OrdenProduccion order) async {
@@ -488,7 +490,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
       if (!mounted) return;
       await _loadOrders(showLoading: false);
       if (mounted && _errorMessage == null) {
-        _showMessage('Orden completada.');
+        _showMessage('Orden completada.', TipoMensaje.exito);
       }
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
@@ -735,7 +737,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
       if (!mounted) return;
       await _loadOrders(showLoading: false);
       if (mounted && _errorMessage == null) {
-        _showMessage(successMessage);
+        _showMessage(successMessage, TipoMensaje.exito);
       }
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
@@ -769,10 +771,13 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
     }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  void _showMessage(String message, [TipoMensaje tipo = TipoMensaje.error]) {
+    ScaffoldMessenger.of(context).mostrarMensaje(
+      message,
+      tipo: tipo,
+      // Con el detalle de la orden encima no hay barra inferior.
+      sobreBarraPanel: ModalRoute.of(context)?.isCurrent ?? true,
+    );
   }
 
   String _formatDate(String value) {

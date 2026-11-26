@@ -55,10 +55,8 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
     }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  void _showMessage(String message, [TipoMensaje tipo = TipoMensaje.error]) {
+    ScaffoldMessenger.of(context).mostrarMensaje(message, tipo: tipo);
   }
 
   @override
@@ -381,7 +379,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
         for (final item in _providers) item.id == updated.id ? updated : item,
       ];
     });
-    _showMessage('Proveedor actualizado correctamente.');
+    _showMessage('Proveedor actualizado correctamente.', TipoMensaje.exito);
   }
 
   Future<void> _showChangeStatusDialog(Proveedor provider) async {
@@ -420,7 +418,7 @@ class _ProviderManagementScreenState extends State<ProviderManagementScreen> {
             item.id == provider.id ? item.conEstado(target) : item,
         ];
       });
-      _showMessage('Estado cambiado a "$targetLabel".');
+      _showMessage('Estado cambiado a "$targetLabel".', TipoMensaje.exito);
     } on ApiException catch (error) {
       if (mounted) _showMessage(error.message);
     } catch (_) {

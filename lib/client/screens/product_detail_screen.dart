@@ -8,6 +8,7 @@ import '../models/producto_catalogo.dart';
 import '../services/cart_service.dart';
 import '../services/catalogo_repository.dart';
 import '../widgets/imagen_producto.dart';
+import '../../shared/mensaje_app.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   const ProductDetailScreen({super.key, required this.producto});
@@ -126,9 +127,9 @@ class _DetalleState extends State<_Detalle> {
   }
 
   void _avisar(String mensaje) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(
+      context,
+    ).mostrarMensaje(mensaje, tipo: TipoMensaje.error, sobreBarraPanel: false);
   }
 
   void _elegirTamano(int i) {

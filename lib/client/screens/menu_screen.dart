@@ -10,6 +10,7 @@ import '../widgets/etiqueta_estado.dart';
 import '../widgets/imagen_producto.dart';
 import 'category_products_screen.dart';
 import '../widgets/bottom_nav.dart';
+import '../../shared/mensaje_app.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -68,9 +69,11 @@ class _MenuState extends State<_Menu> {
     } on ApiException catch (error) {
       if (!mounted) return;
       if (_secciones != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.message)));
+        ScaffoldMessenger.of(context).mostrarMensaje(
+          error.message,
+          tipo: TipoMensaje.error,
+          sobreBarraPanel: false,
+        );
       }
       setState(() {
         _error = error.message;

@@ -12,6 +12,7 @@ import '../../theme/tema_panel.dart';
 import 'menu_screen.dart';
 import '../../auth/login_screen.dart';
 import '../widgets/bottom_nav.dart';
+import '../../shared/mensaje_app.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -77,7 +78,7 @@ class _PerfilState extends State<_Perfil> {
   void _showMessage(String message) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ).mostrarMensaje(message, tipo: TipoMensaje.error, sobreBarraPanel: false);
   }
 
   void _iniciarEdicion() {

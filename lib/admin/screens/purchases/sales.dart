@@ -244,7 +244,7 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
       if (silent && _sales.isNotEmpty) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        ).mostrarMensaje(message, tipo: TipoMensaje.error);
       } else {
         setState(() {
           _loading = false;
@@ -751,7 +751,9 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
       ),
     );
     if (ok != true || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exito)));
+    ScaffoldMessenger.of(
+      context,
+    ).mostrarMensaje(exito, tipo: TipoMensaje.exito);
   }
 
   Future<void> _aceptar() => _ejecutar(

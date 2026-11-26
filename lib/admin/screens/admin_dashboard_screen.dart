@@ -329,29 +329,36 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
     return [
       const SizedBox(height: 34),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Actividad reciente',
-            style: GoogleFonts.poppins(
-              color: context.pal.texto(ink),
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          GestureDetector(
-            onTap: () => openSalesManagement(context),
-            child: Text(
-              'Ver todos  →',
+      // "Ver todos" baja a otra línea si no cabe junto al título.
+      SizedBox(
+        width: double.infinity,
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            Text(
+              'Actividad reciente',
               style: GoogleFonts.poppins(
                 color: context.pal.texto(ink),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
               ),
             ),
-          ),
-        ],
+            GestureDetector(
+              onTap: () => openSalesManagement(context),
+              child: Text(
+                'Ver todos  →',
+                style: GoogleFonts.poppins(
+                  color: context.pal.texto(ink),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       const SizedBox(height: 16),
       if (_ventasLoading && _ventas.isEmpty)
