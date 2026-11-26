@@ -9,6 +9,7 @@ import '../../auth/permisos.dart';
 import '../services/indicators_service.dart';
 import '../services/insumos_repository.dart';
 import '../services/ventas_repository.dart';
+import 'barra_telefono.dart';
 import 'notificacion.dart';
 
 /// Fuente de las notificaciones del panel. Las pantallas solo usan esta
@@ -40,12 +41,22 @@ abstract class NotificacionesRepository extends ChangeNotifier {
 /// (`desdeVentas`) y [LowStockNotificationService] (`desdeInsumos`): no hace
 /// peticiones propias. La primera vez de cada usuario solo crea resúmenes y
 /// guarda la línea base; después avisa de lo nuevo.
+///
+/// La barra del teléfono ([barra]) sale de aquí: solo se muestra algo cuando
+/// nace una notificación, así que reabrir la app sin cambios no avisa nada.
 class NotificacionesLocal extends NotificacionesRepository {
   NotificacionesLocal._();
 
   static final NotificacionesLocal instance = NotificacionesLocal._();
 
   static const int maximo = 50;
+
+  /// null = sin barra del teléfono (pruebas que no la usan).
+  static BarraTelefono? barra;
+
+  /// Lo que hay puesto en la barra: id de Android → ids de la lista. Se guarda
+  /// para poder quitarlo aunque la app se haya cerrado entre tanto.
+  static const String _claveBarra = 'notificaciones_panel_barra';
 
   /// Ventas ya vistas que se recuerdan (las más recientes).
   static const int _maximoVentasVistas = 500;
@@ -64,6 +75,9 @@ class NotificacionesLocal extends NotificacionesRepository {
 
   /// Último estado de cada insumo activo; null = sin línea base.
   Map<int, String>? _estadosInsumos;
+
+  /// En la barra sale como máximo un resumen de primera vez por usuario.
+  bool _resumenEnBarra = false;
 
   bool _iniciado = false;
 
@@ -96,9 +110,11 @@ class NotificacionesLocal extends NotificacionesRepository {
     _cargando = _cargar(id);
   }
 
-  /// Al cerrar sesión (o iniciar otra): se vacía la memoria. Lo guardado de
-  /// cada usuario se queda en su clave.
+  /// Al cerrar sesión (o iniciar otra): se vacía la memoria y se quita de la
+  /// barra del teléfono. Lo guardado de cada usuario se queda en su clave.
   void limpiar() {
+    unawaited(_quitarDeBarra((_) => true));
+    _resumenEnBarra = false;
     _usuario = null;
     _cargando = null;
     _lista = const [];
@@ -122,6 +138,7 @@ class NotificacionesLocal extends NotificacionesRepository {
           for (final item in lista) ?Notificacion.fromJson(item),
       ]..sort((a, b) => b.fecha.compareTo(a.fecha));
       if (base is Map) {
+        _resumenEnBarra = base['resumenEnBarra'] == true;
         final ventas = base['ventas'];
         final insumos = base['insumos'];
         if (ventas is List) {
@@ -159,6 +176,7 @@ class NotificacionesLocal extends NotificacionesRepository {
         jsonEncode({
           'ventas': ?_ventasVistas?.toList(),
           'insumos': ?_estadosInsumos?.map((k, v) => MapEntry('$k', v)),
+          if (_resumenEnBarra) 'resumenEnBarra': true,
         }),
       );
     } catch (_) {
@@ -185,6 +203,65 @@ class NotificacionesLocal extends NotificacionesRepository {
     _lista = lista;
   }
 
+  // --- Barra del teléfono ---------------------------------------------------
+
+  static Map<String, List<String>> _leerBarra(SharedPreferences prefs) {
+    final datos = jsonDecode(prefs.getString(_claveBarra) ?? '{}');
+    return {
+      if (datos is Map)
+        for (final MapEntry(:key, :value) in datos.entries)
+          if (value is List) '$key': [for (final v in value) '$v'],
+    };
+  }
+
+  /// Anota qué avisos cubre el [id] y pide mostrarlo.
+  Future<void> _ponerEnBarra(
+    int id,
+    List<String> avisos,
+    Future<void> Function(BarraTelefono telefono) mostrar,
+  ) async {
+    final telefono = barra;
+    if (telefono == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final puestas = _leerBarra(prefs)..['$id'] = avisos;
+      await prefs.setString(_claveBarra, jsonEncode(puestas));
+      await mostrar(telefono);
+    } catch (_) {
+      // Un aviso del teléfono que falle no debe afectar a la lista.
+    }
+  }
+
+  /// Quita de la barra las entradas cuyos avisos cumplan [cuales]. Con
+  /// [ademas] se cancelan también ids sin anotar (de versiones anteriores).
+  Future<void> _quitarDeBarra(
+    bool Function(List<String> avisos) cuales, {
+    List<int> ademas = const [],
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final puestas = _leerBarra(prefs);
+      final fuera = [
+        for (final MapEntry(:key, :value) in puestas.entries)
+          if (cuales(value)) key,
+      ];
+      if (fuera.isNotEmpty) {
+        fuera.forEach(puestas.remove);
+        await prefs.setString(_claveBarra, jsonEncode(puestas));
+      }
+      for (final id in {...fuera.map(int.tryParse).nonNulls, ...ademas}) {
+        await barra?.cancelar(id);
+      }
+    } catch (_) {
+      // Sin almacenamiento o sin plugin: la lista sigue funcionando.
+    }
+  }
+
+  Future<void> _vaciarBarra() => _quitarDeBarra(
+    (_) => true,
+    ademas: const [IdsBarra.insumos, IdsBarra.resumenVentas],
+  );
+
   /// Ventas cargadas por [PendingSalesService] o por una pantalla de ventas.
   Future<void> desdeVentas(List<Venta> ventas) async {
     final cargando = _cargando;
@@ -200,21 +277,34 @@ class NotificacionesLocal extends NotificacionesRepository {
     if (vistas == null) {
       final n = porVerificar.length;
       if (n > 0) {
-        _agregar([
-          Notificacion(
-            id: 'resumen:ventas',
-            tipo: TipoNotificacion.resumenVentasPorVerificar,
-            titulo: n == 1
-                ? 'Tienes 1 venta por verificar'
-                : 'Tienes $n ventas por verificar',
-            mensaje: 'Revísalas en Ventas.',
-            fecha: ahora,
-            destino: DestinoNotificacion.ventas,
-          ),
-        ]);
+        final resumen = Notificacion(
+          id: 'resumen:ventas',
+          tipo: TipoNotificacion.resumenVentasPorVerificar,
+          titulo: n == 1
+              ? 'Tienes 1 venta por verificar'
+              : 'Tienes $n ventas por verificar',
+          mensaje: 'Revísalas en Ventas.',
+          fecha: ahora,
+          destino: DestinoNotificacion.ventas,
+        );
+        _agregar([resumen]);
+        if (!_resumenEnBarra) {
+          _resumenEnBarra = true;
+          unawaited(
+            _ponerEnBarra(
+              IdsBarra.resumenVentas,
+              [resumen.id],
+              (t) => t.avisarVenta(
+                IdsBarra.resumenVentas,
+                resumen.titulo,
+                resumen.mensaje,
+              ),
+            ),
+          );
+        }
       }
     } else {
-      _agregar([
+      final nuevas = [
         for (final v in porVerificar)
           if (!vistas.contains(v.id))
             Notificacion(
@@ -226,7 +316,16 @@ class NotificacionesLocal extends NotificacionesRepository {
               destino: DestinoNotificacion.ventas,
               referencia: '${v.id}',
             ),
-      ]);
+      ];
+      _agregar(nuevas);
+      for (final nueva in nuevas) {
+        final id = IdsBarra.ventas + int.parse(nueva.referencia!);
+        unawaited(
+          _ponerEnBarra(id, [
+            nueva.id,
+          ], (t) => t.avisarVenta(id, nueva.titulo, nueva.mensaje)),
+        );
+      }
     }
     final todas = [...?vistas, ...porVerificar.map((v) => v.id)];
     _ventasVistas = todas
@@ -261,8 +360,20 @@ class NotificacionesLocal extends NotificacionesRepository {
     final ahora = reloj();
     final actuales = {for (final i in activos) i.id: _estadoDe(i)};
     if (anteriores == null) {
-      final n = actuales.values.where((e) => e != 'ok').length;
+      final bajos = [
+        for (final i in activos)
+          if (actuales[i.id] != 'ok') i,
+      ];
+      final n = bajos.length;
       if (n > 0) {
+        if (!_resumenEnBarra) {
+          _resumenEnBarra = true;
+          unawaited(
+            _ponerEnBarra(IdsBarra.insumos, const [
+              'resumen:insumos',
+            ], (t) => t.avisarInsumos(IdsBarra.insumos, bajos)),
+          );
+        }
         _agregar([
           Notificacion(
             id: 'resumen:insumos',
@@ -277,12 +388,24 @@ class NotificacionesLocal extends NotificacionesRepository {
         ]);
       }
     } else {
-      _agregar([
+      final empeoraron = [
         for (final insumo in activos)
           if (_gravedad[actuales[insumo.id]]! >
               _gravedad[anteriores[insumo.id] ?? 'ok']!)
-            _deInsumo(insumo, actuales[insumo.id]!, ahora),
-      ]);
+            insumo,
+      ];
+      final nuevas = [
+        for (final insumo in empeoraron)
+          _deInsumo(insumo, actuales[insumo.id]!, ahora),
+      ];
+      _agregar(nuevas);
+      if (nuevas.isNotEmpty) {
+        unawaited(
+          _ponerEnBarra(IdsBarra.insumos, [
+            for (final nueva in nuevas) nueva.id,
+          ], (t) => t.avisarInsumos(IdsBarra.insumos, empeoraron)),
+        );
+      }
     }
     // Los inactivos conservan su último estado conocido.
     _estadosInsumos = {...?anteriores, ...actuales};
@@ -331,6 +454,7 @@ class NotificacionesLocal extends NotificacionesRepository {
   @override
   Future<void> marcarTodasLeidas() async {
     await _cargando;
+    await _vaciarBarra();
     if (_lista.every((n) => n.leida)) return;
     _lista = [for (final n in _lista) n.copyWith(leida: true)];
     _publicar();
@@ -343,6 +467,7 @@ class NotificacionesLocal extends NotificacionesRepository {
   Future<void> eliminar(String id) async {
     await _cargando;
     if (!_lista.any((n) => n.id == id)) return;
+    await _quitarDeBarra((avisos) => avisos.contains(id));
     _lista = [
       for (final n in _lista)
         if (n.id != id) n,
@@ -354,6 +479,7 @@ class NotificacionesLocal extends NotificacionesRepository {
   @override
   Future<void> eliminarTodas() async {
     await _cargando;
+    await _vaciarBarra();
     if (_lista.isEmpty) return;
     _lista = const [];
     _publicar();

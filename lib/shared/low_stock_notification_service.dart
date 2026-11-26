@@ -4,19 +4,23 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../admin/screens/purchases_screen.dart' show insumosScreen;
+import '../admin/notificaciones/barra_telefono.dart';
 import '../admin/notificaciones/notificaciones_repository.dart';
+import '../admin/screens/notificaciones_screen.dart';
 import '../admin/services/insumos_repository.dart';
 import '../auth/auth_service.dart';
 import '../auth/permisos.dart';
 import '../auth/session_manager.dart';
 
-/// Avisa con una notificación LOCAL cuando un insumo activo llega al nivel
-/// mínimo (`stock_actual <= stock_minimo`).
+/// Notificaciones LOCALES del teléfono (dueño del plugin).
 ///
-/// No usa push ni segundo plano: consulta `GET /insumos` al iniciar o restaurar
-/// la sesión y luego cada [intervalo] mientras la app está en primer plano.
-class LowStockNotificationService with WidgetsBindingObserver {
+/// Consulta `GET /insumos` al iniciar o restaurar la sesión y luego cada
+/// [intervalo] en primer plano (sin push ni segundo plano) y entrega la lista
+/// a [NotificacionesLocal]. Es esa lista, con su línea base guardada, la que
+/// decide qué es nuevo y pide mostrarlo en la barra ([BarraTelefono]).
+class LowStockNotificationService
+    with WidgetsBindingObserver
+    implements BarraTelefono {
   LowStockNotificationService._();
 
   static final LowStockNotificationService instance =
@@ -24,9 +28,12 @@ class LowStockNotificationService with WidgetsBindingObserver {
 
   static const Duration intervalo = Duration(minutes: 5);
 
-  static const int _idNotificacion = 7101;
   static const String _canalId = 'insumos_nivel_minimo';
-  static const String _payload = 'insumos_nivel_minimo';
+  static const String _canalVentasId = 'ventas_por_verificar';
+  static const String _payload = 'notificaciones_panel';
+
+  /// El de los avisos que dejó en la barra la versión anterior.
+  static const String _payloadAnterior = 'insumos_nivel_minimo';
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
@@ -42,8 +49,13 @@ class LowStockNotificationService with WidgetsBindingObserver {
   /// Cambia en cada inicio/parada para descartar consultas de una sesión vieja.
   int _generacion = 0;
 
-  /// Insumos que ya se avisaron y siguen bajo el mínimo (solo en memoria).
-  final Set<int> _avisados = <int>{};
+  /// Petición de permiso en curso: los avisos esperan a que termine.
+  Future<void>? _permiso;
+  Future<void> _permisoListo() => _permiso ??= _asegurarPermiso();
+
+  /// La app se abrió tocando un aviso del panel y falta llevar a la pantalla.
+  Future<void>? _lanzamiento;
+  bool _abrirAlEntrar = false;
 
   bool get _plataformaSoportada =>
       !kIsWeb &&
@@ -54,6 +66,8 @@ class LowStockNotificationService with WidgetsBindingObserver {
   void start() {
     if (_iniciado) return;
     _iniciado = true;
+    NotificacionesLocal.barra = this;
+    if (_plataformaSoportada) _lanzamiento = _revisarLanzamiento();
     AuthService.instance.addListener(_alCambiarSesion);
     WidgetsBinding.instance.addObserver(this);
     _alCambiarSesion();
@@ -73,7 +87,7 @@ class LowStockNotificationService with WidgetsBindingObserver {
   Future<void> _arrancar() async {
     if (!_plataformaSoportada) return;
     final generacion = ++_generacion;
-    await _asegurarPermiso();
+    await _permisoListo();
     if (generacion != _generacion || !_activo) return;
     _programarTemporizador();
     await _consultar();
@@ -83,7 +97,6 @@ class LowStockNotificationService with WidgetsBindingObserver {
     _generacion++;
     _timer?.cancel();
     _timer = null;
-    _avisados.clear();
   }
 
   void _programarTemporizador() {
@@ -183,16 +196,66 @@ class LowStockNotificationService with WidgetsBindingObserver {
     _pluginListo = true;
   }
 
-  /// Abre Insumos dentro del menú por permisos (sobre la pantalla de inicio,
-  /// con la misma barra inferior) si hay sesión de personal y permiso.
-  void _alTocarNotificacion(NotificationResponse respuesta) {
-    if (respuesta.payload != _payload) return;
-    if (!AuthService.instance.isAuthenticated || !_puedeLeerInsumos) return;
+  Future<void> _revisarLanzamiento() async {
+    try {
+      final datos = await _plugin.getNotificationAppLaunchDetails();
+      if (datos?.didNotificationLaunchApp ?? false) {
+        _abrirAlEntrar = _esDelPanel(datos!.notificationResponse?.payload);
+      }
+    } catch (_) {
+      // Sin plugin: la app abre normalmente.
+    }
+  }
+
+  bool _esDelPanel(String? payload) =>
+      payload == _payload || payload == _payloadAnterior;
+
+  void _alTocarNotificacion(NotificationResponse respuesta) =>
+      alTocar(respuesta.payload);
+
+  /// Aviso tocado con la app abierta.
+  @visibleForTesting
+  void alTocar(String? payload) {
+    if (_esDelPanel(payload)) _abrirNotificaciones();
+  }
+
+  /// Simula que la app se abrió tocando un aviso.
+  @visibleForTesting
+  set abiertaDesdeAviso(String? payload) =>
+      _abrirAlEntrar = _esDelPanel(payload);
+
+  /// Lo llama el splash cuando ya puso la pantalla de inicio de la sesión
+  /// restaurada: si se entró tocando un aviso, abre Notificaciones encima.
+  Future<void> abrirPendiente() async {
+    await _lanzamiento;
+    if (!_abrirAlEntrar) return;
+    _abrirAlEntrar = false;
+    _abrirNotificaciones();
+  }
+
+  /// Sin sesión al abrir: la app sigue su camino normal.
+  void descartarPendiente() {
+    _lanzamiento = null;
+    _abrirAlEntrar = false;
+  }
+
+  bool get _esPersonal {
+    final rol = AuthService.instance.rol;
+    return AuthService.instance.isAuthenticated &&
+        (rol == UserRole.admin || rol == UserRole.empleado);
+  }
+
+  /// Notificaciones del panel sobre la pantalla de inicio, solo con sesión de
+  /// Administrador o Empleado.
+  void _abrirNotificaciones() {
+    if (!_esPersonal) return;
     final navigator = SessionManager.instance.navigatorKey.currentState;
     if (navigator == null) return;
     navigator
       ..popUntil((route) => route.isFirst)
-      ..push(MaterialPageRoute<void>(builder: (_) => insumosScreen()));
+      ..push(
+        MaterialPageRoute<void>(builder: (_) => const NotificacionesScreen()),
+      );
   }
 
   /// Solo personal (Administrador o Empleado) con Compras › Insumos › Ver.
@@ -211,8 +274,7 @@ class LowStockNotificationService with WidgetsBindingObserver {
     try {
       final insumos = await InsumosRepository.instance.listar(estado: true);
       if (generacion != _generacion || !_activo) return;
-      unawaited(NotificacionesLocal.instance.desdeInsumos(insumos));
-      await _procesar(insumos);
+      await NotificacionesLocal.instance.desdeInsumos(insumos);
     } catch (_) {
       // Sin red, 401 o 403: no se avisa ni se muestra nada. El 401 de sesión
       // ya lo maneja el cliente HTTP.
@@ -221,18 +283,8 @@ class LowStockNotificationService with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _procesar(List<Insumo> insumos) async {
-    final bajos = insumos.where((i) => i.estado && i.bajoMinimo).toList();
-    final nuevos = bajos.where((i) => !_avisados.contains(i.id)).toList();
-    // Los recuperados salen del registro: si vuelven a bajar se avisa otra vez.
-    _avisados
-      ..clear()
-      ..addAll(bajos.map((i) => i.id));
-    if (nuevos.isEmpty) return;
-    await _mostrar(nuevos);
-  }
-
-  Future<void> _mostrar(List<Insumo> nuevos) async {
+  @override
+  Future<void> avisarInsumos(int id, List<Insumo> nuevos) async {
     final String titulo;
     final String cuerpo;
     if (nuevos.length == 1) {
@@ -248,8 +300,11 @@ class LowStockNotificationService with WidgetsBindingObserver {
       cuerpo = restantes > 0 ? '$nombres y $restantes más.' : '$nombres.';
     }
 
-    const detalles = NotificationDetails(
-      android: AndroidNotificationDetails(
+    await _mostrarDelPanel(
+      id,
+      titulo,
+      cuerpo,
+      const AndroidNotificationDetails(
         _canalId,
         'Insumos en nivel mínimo',
         channelDescription:
@@ -257,22 +312,62 @@ class LowStockNotificationService with WidgetsBindingObserver {
         importance: Importance.high,
         priority: Priority.high,
       ),
-      iOS: DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      ),
     );
-    try {
-      await _plugin.show(
-        _idNotificacion,
+  }
+
+  @override
+  Future<void> avisarVenta(int id, String titulo, String cuerpo) =>
+      _mostrarDelPanel(
+        id,
         titulo,
         cuerpo,
-        detalles,
+        const AndroidNotificationDetails(
+          _canalVentasId,
+          'Ventas por verificar',
+          channelDescription: 'Avisos de ventas nuevas por verificar',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      );
+
+  Future<void> _mostrarDelPanel(
+    int id,
+    String titulo,
+    String cuerpo,
+    AndroidNotificationDetails android,
+  ) async {
+    if (!_plataformaSoportada) return;
+    await _permisoListo();
+    // Si la sesión se cerró mientras tanto, no se muestra nada.
+    if (!_permitido || !_esPersonal) return;
+    try {
+      await _plugin.show(
+        id,
+        titulo,
+        cuerpo,
+        NotificationDetails(
+          android: android,
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
         payload: _payload,
       );
     } catch (_) {
       // Una notificación fallida no debe afectar a la app.
+    }
+  }
+
+  @override
+  Future<void> cancelar(int id) async {
+    if (!_plataformaSoportada) return;
+    try {
+      await _inicializarPlugin();
+      await _plugin.cancel(id);
+    } catch (_) {
+      // Si no se puede quitar, se queda en la barra.
     }
   }
 
