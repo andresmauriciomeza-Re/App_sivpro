@@ -129,8 +129,11 @@ class ApiClient {
   ) async {
     http.Response response;
     try {
-      final streamed = await _client.send(request).timeout(tiempo);
-      response = await http.Response.fromStream(streamed);
+      // Un solo límite para el envío y la lectura del cuerpo. Sin reintentos.
+      response = await _client
+          .send(request)
+          .then(http.Response.fromStream)
+          .timeout(tiempo);
     } on TimeoutException {
       throw const ApiException(
         'El servidor tardó demasiado en responder. Inténtalo de nuevo.',

@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/medidas_encabezado.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/paleta_app.dart';
 import '../notificaciones/notificaciones_repository.dart';
@@ -9,7 +10,7 @@ import 'sales_pending_badge.dart';
 /// Campana del encabezado del panel: abre Notificaciones y muestra cuántas
 /// hay sin leer (hasta "9+").
 class CampanaNotificaciones extends StatelessWidget {
-  const CampanaNotificaciones({super.key, this.diametro = 40});
+  const CampanaNotificaciones({super.key, this.diametro = MedidasEncabezado.campana});
 
   /// Diámetro del círculo (la zona táctil es de al menos 44 × 44).
   final double diametro;
