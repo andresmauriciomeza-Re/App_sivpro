@@ -5,16 +5,51 @@ enum _SalesPeriod { diario, mensual, anual }
 /// Indicadores de gestión del admin. Los datos se calculan en el móvil con
 /// `indicators_service.dart` a partir de GET /ventas y
 /// GET /productos-no-conformes; esta pantalla solo los dibuja.
-class IndicatorsScreen extends StatefulWidget {
+class IndicatorsScreen extends StatelessWidget {
   const IndicatorsScreen({super.key});
 
   @override
-  State<IndicatorsScreen> createState() => _IndicatorsScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.pal.fondo(PurchasesScreen.page),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            AppHeader(
+              title: 'La Sirena Pizza',
+              onBack: () => Navigator.of(context).pop(),
+              initials: currentUserInitials(),
+            ),
+            const Expanded(child: _IndicadoresContenido(titulo: 'Indicadores')),
+            const ModuleBottomNav(selected: 0),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _IndicatorsScreenState extends State<IndicatorsScreen> {
+/// Cuerpo de Indicadores (título, selectores de mes y año y tarjetas), con
+/// su carga, error con reintento y "jalar para refrescar". Lo usan la
+/// pantalla de Indicadores y el Inicio del Empleado.
+class _IndicadoresContenido extends StatefulWidget {
+  const _IndicadoresContenido({required this.titulo, this.pie = const []});
+
+  final String titulo;
+
+  /// Lo que sigue debajo de las tarjetas (otros módulos del Inicio).
+  final List<Widget> pie;
+
+  @override
+  State<_IndicadoresContenido> createState() => _IndicadoresContenidoState();
+}
+
+class _IndicadoresContenidoState extends State<_IndicadoresContenido> {
   static const double _fs = 16; // tamaño mínimo de texto
-  static const Color _green = Color(0xFF2E7D32);
+  // Naranja de advertencias del panel (el de "Sobre máximo" en Insumos).
+  static const Color _orange = Color(0xFFB65D0A);
+  static const Color _orangeFondo = Color(0xFFFFF3DF);
   static const Color _blue = Color(0xFF2A5FA8);
 
   late int _year;
@@ -114,53 +149,36 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
     final completadas = ventasCompletadas(_ventas ?? const []);
     final delMes = ventasDelMes(completadas, _year, _month);
 
-    return Scaffold(
-      backgroundColor: context.pal.fondo(PurchasesScreen.page),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            AppHeader(
-              title: 'La Sirena Pizza',
-              onBack: () => Navigator.of(context).pop(),
-              initials: currentUserInitials(),
+    return RefreshIndicator(
+      onRefresh: _loadAll,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 22, 16, 28),
+        children: [
+          Text(
+            widget.titulo,
+            style: GoogleFonts.montserrat(
+              color: context.pal.texto(PurchasesScreen.ink),
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
             ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _loadAll,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 22, 16, 28),
-                  children: [
-                    Text(
-                      'Indicadores',
-                      style: GoogleFonts.montserrat(
-                        color: context.pal.texto(PurchasesScreen.ink),
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Medición y desempeño de la gestión administrativa',
-                      style: GoogleFonts.poppins(
-                        color: context.pal.secundario(PurchasesScreen.muted),
-                        fontSize: _fs,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    _buildPeriodSelector(),
-                    const SizedBox(height: 18),
-                    _buildClientsSection(delMes),
-                    _buildProductsSection(delMes),
-                    _buildSalesSection(completadas),
-                    _buildNoConformesSection(),
-                  ],
-                ),
-              ),
+          ),
+          Text(
+            'Medición y desempeño de la gestión administrativa',
+            style: GoogleFonts.poppins(
+              color: context.pal.secundario(PurchasesScreen.muted),
+              fontSize: _fs,
             ),
-            _buildBottomNavigation(context),
-          ],
-        ),
+          ),
+          const SizedBox(height: 18),
+          _buildPeriodSelector(),
+          const SizedBox(height: 18),
+          if (_verDevoluciones) _buildDevolucionesSection(),
+          _buildProductsSection(delMes),
+          _buildSalesSection(completadas),
+          _buildNoConformesSection(),
+          ...widget.pie,
+        ],
       ),
     );
   }
@@ -309,53 +327,118 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
 
   String get _monthLabel => '${nombresMes[_month - 1]} de $_year';
 
-  /// 1. Clientes más frecuentes vs mayores consumidores.
-  Widget _buildClientsSection(List<Venta> delMes) {
-    final clientes = topClientes(delMes);
-    final maxPedidos = clientes.fold<int>(
-      0,
-      (m, c) => c.pedidos > m ? c.pedidos : m,
-    );
-    final maxValor = clientes.fold<double>(
-      0,
-      (m, c) => c.valor > m ? c.valor : m,
-    );
+  /// Devoluciones: solo con permiso de ver ventas (GET /ventas) y de ver
+  /// Ventas › Devoluciones (como la web).
+  bool get _verDevoluciones =>
+      Permisos.ventas && Permisos.puede('Ventas', 'Devoluciones', 'Ver');
+
+  /// 1. Devoluciones registradas en el mes (por la fecha de la devolución).
+  Widget _buildDevolucionesSection() {
+    final devoluciones = devolucionesDelMes(_ventas ?? const [], _year, _month);
+    final pal = context.pal;
+    final naranja = pal.avisoTexto(_orange);
+    final secundario = pal.secundario(PurchasesScreen.muted);
     return _section(
-      title: 'Clientes: frecuentes y mayores consumidores',
-      subtitle: 'Ventas completadas en $_monthLabel',
+      title: 'Devoluciones',
+      subtitle: 'Devoluciones registradas en $_monthLabel',
       loading: _ventasLoading,
       error: _ventasError,
       onRetry: _loadVentas,
-      empty: clientes.isEmpty,
+      empty: false,
       children: [
-        for (final cliente in clientes) ...[
-          Text(
-            cliente.nombre,
-            style: GoogleFonts.poppins(
-              color: context.pal.texto(PurchasesScreen.ink),
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
+        Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: pal.avisoFondo(_orangeFondo),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.replay, color: naranja, size: 24),
             ),
-          ),
-          const SizedBox(height: 6),
-          _bar(
-            label: 'Pedidos',
-            value: '${cliente.pedidos}',
-            fraction: maxPedidos == 0 ? 0 : cliente.pedidos / maxPedidos,
-            color: context.pal.graficoRojo(PurchasesScreen.red),
-          ),
-          const SizedBox(height: 6),
-          _bar(
-            label: 'Consumo',
-            value: formatCop(cliente.valor.round()),
-            fraction: maxValor == 0 ? 0 : cliente.valor / maxValor,
-            color: context.pal.graficoVerde(_green),
-          ),
-          const SizedBox(height: 18),
+            const SizedBox(width: 14),
+            Text(
+              '${devoluciones.length}',
+              style: GoogleFonts.montserrat(
+                color: pal.texto(PurchasesScreen.ink),
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (devoluciones.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              'No hay devoluciones registradas',
+              style: GoogleFonts.poppins(color: secundario, fontSize: _fs),
+            ),
+          )
+        else ...[
+          for (final (i, venta) in devoluciones.take(10).indexed) ...[
+            if (i > 0)
+              Divider(height: 1, color: pal.borde(const Color(0xFFE5BDB9))),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          venta.clienteNombre,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            color: pal.texto(PurchasesScreen.ink),
+                            fontSize: _fs,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          'Productos: '
+                          '${_cantidad(cantidadProductos(venta))}',
+                          style: GoogleFonts.poppins(
+                            color: secundario,
+                            fontSize: _fs,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    formatFechaHoraVenta(fechaDeDevolucion(venta)),
+                    style: GoogleFonts.poppins(
+                      color: secundario,
+                      fontSize: _fs,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (devoluciones.length > 10)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                'Y ${devoluciones.length - 10} más este mes',
+                style: GoogleFonts.poppins(color: secundario, fontSize: _fs),
+              ),
+            ),
         ],
       ],
     );
   }
+
+  static String _cantidad(double valor) => valor == valor.roundToDouble()
+      ? valor.toInt().toString()
+      : valor.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '');
 
   /// 2. Productos más vendidos.
   Widget _buildProductsSection(List<Venta> delMes) {
@@ -609,7 +692,4 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
       ],
     );
   }
-
-  Widget _buildBottomNavigation(BuildContext context) =>
-      const ModuleBottomNav(selected: 0);
 }

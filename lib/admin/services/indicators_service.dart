@@ -133,74 +133,31 @@ List<Venta> ventasDelMes(List<Venta> completadas, int anio, int mes) {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Clientes
+// 1. Devoluciones
 // ---------------------------------------------------------------------------
 
-class TopCliente {
-  const TopCliente({
-    required this.id,
-    required this.nombre,
-    required this.pedidos,
-    required this.valor,
-  });
+/// Fecha (AAAA-MM-DD) de una devolución: la de la devolución y, si no viene,
+/// la de la venta (como la web). Sin convertir zonas.
+String? fechaDeDevolucion(Venta venta) =>
+    diaDeTexto(venta.devolucionFecha) ?? diaDeTexto(venta.fecha);
 
-  final String id;
-  final String nombre;
-  final int pedidos;
-  final double valor;
+/// Ventas con devolución registrada en el mes, de la más reciente a la más
+/// antigua.
+List<Venta> devolucionesDelMes(List<Venta> ventas, int anio, int mes) {
+  final delMes = ventas.where((v) {
+    if (v.idDevolucion == null) return false;
+    final d = _parseDia(fechaDeDevolucion(v));
+    return d != null && d.anio == anio && d.mes == mes;
+  }).toList();
+  String clave(Venta v) => v.devolucionFecha ?? v.fecha ?? '';
+  delMes.sort((a, b) => clave(b).compareTo(clave(a)));
+  return delMes;
 }
 
-/// Unión del top 10 por pedidos y el top 10 por valor, ordenada por pedidos
-/// (y por valor en empates). [ventas] deben ser completadas del periodo.
-List<TopCliente> topClientes(List<Venta> ventas, {int limite = 10}) {
-  final acumulado = <String, _AcumCliente>{};
-  for (final venta in ventas) {
-    final clave = venta.documento ?? 'cliente-${venta.idCliente ?? venta.id}';
-    final item = acumulado.putIfAbsent(
-      clave,
-      () => _AcumCliente(clave, venta.clienteNombre),
-    );
-    item.pedidos += 1;
-    item.valor += venta.monto;
-  }
-  final todos = acumulado.values.toList();
-
-  int porPedidos(_AcumCliente a, _AcumCliente b) {
-    final c = b.pedidos.compareTo(a.pedidos);
-    return c != 0 ? c : b.valor.compareTo(a.valor);
-  }
-
-  int porValor(_AcumCliente a, _AcumCliente b) {
-    final c = b.valor.compareTo(a.valor);
-    return c != 0 ? c : b.pedidos.compareTo(a.pedidos);
-  }
-
-  final topPedidos = ([...todos]..sort(porPedidos)).take(limite);
-  final topValor = ([...todos]..sort(porValor)).take(limite);
-  final union = <String, _AcumCliente>{
-    for (final c in topPedidos) c.id: c,
-    for (final c in topValor) c.id: c,
-  }.values.toList()..sort(porPedidos);
-
-  return union
-      .map(
-        (c) => TopCliente(
-          id: c.id,
-          nombre: c.nombre,
-          pedidos: c.pedidos,
-          valor: c.valor,
-        ),
-      )
-      .toList(growable: false);
-}
-
-class _AcumCliente {
-  _AcumCliente(this.id, this.nombre);
-  final String id;
-  final String nombre;
-  int pedidos = 0;
-  double valor = 0;
-}
+/// Cantidad de productos de una venta: suma de `cantidad` de sus líneas
+/// (igual que `cantidad` en `ventasApi.ts` de la web).
+double cantidadProductos(Venta venta) =>
+    venta.detalles.fold(0, (suma, linea) => suma + linea.cantidad);
 
 // ---------------------------------------------------------------------------
 // 2. Productos

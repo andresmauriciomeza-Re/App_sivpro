@@ -38,6 +38,7 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
     }
     try {
       final supplies = await InsumosRepository.instance.listar();
+      unawaited(NotificacionesLocal.instance.desdeInsumos(supplies));
       if (!mounted) return;
       setState(() {
         _supplies = supplies;
@@ -136,7 +137,9 @@ class _SupplyManagementScreenState extends State<_SupplyManagementScreen> {
                     ),
                     const SizedBox(height: 14),
                     _buildFilters(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
+                    const _StockBarLegend(),
+                    const SizedBox(height: 16),
                     ..._buildContent(filteredSupplies),
                   ],
                 ),
@@ -510,41 +513,99 @@ class _StockBar extends StatelessWidget {
           ].reduce((a, b) => a > b ? a : b);
     final fill = (supply.stockActual / maximo).clamp(0.0, 1.0);
     final minMark = (supply.stockMinimo / maximo).clamp(0.0, 1.0);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        return SizedBox(
-          height: 12,
-          child: Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: context.pal.campo(Color(0xFFEFE9E8)),
-                  borderRadius: BorderRadius.circular(4),
+    final unidad = supply.unidadMedida.isEmpty ? '' : ' ${supply.unidadMedida}';
+    return Semantics(
+      container: true,
+      label:
+          'Stock actual ${_formatAmount(supply.stockActual)}$unidad, '
+          'mínimo ${_formatAmount(supply.stockMinimo)}$unidad',
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          return SizedBox(
+            height: 12,
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: context.pal.campo(Color(0xFFEFE9E8)),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
-              ),
-              Container(
-                width: width * fill,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: level.colorEn(context.pal),
-                  borderRadius: BorderRadius.circular(4),
+                Container(
+                  width: width * fill,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: level.colorEn(context.pal),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
-              ),
-              Positioned(
-                left: (width * minMark - 1).clamp(0.0, width - 2),
-                child: Container(
-                  width: 2,
-                  height: 12,
-                  color: context.pal.texto(PurchasesScreen.ink),
+                Positioned(
+                  left: (width * minMark - 1).clamp(0.0, width - 2),
+                  child: const _MinimumMark(),
                 ),
-              ),
-            ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Raya vertical del stock mínimo (en la barra y en su leyenda).
+class _MinimumMark extends StatelessWidget {
+  const _MinimumMark();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 2,
+    height: 12,
+    color: context.pal.texto(PurchasesScreen.ink),
+  );
+}
+
+/// Explica la barra de existencias: la raya es el stock mínimo y el color
+/// del relleno, el nivel frente a ese mínimo.
+class _StockBarLegend extends StatelessWidget {
+  const _StockBarLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.pal;
+    Widget swatch(Color color) => Container(
+      width: 14,
+      height: 8,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+    Widget item(Widget marca, String texto) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        marca,
+        const SizedBox(width: 5),
+        Text(
+          texto,
+          style: GoogleFonts.poppins(
+            color: pal.secundario(PurchasesScreen.muted),
+            fontSize: 11.5,
           ),
-        );
-      },
+        ),
+      ],
+    );
+    return Wrap(
+      spacing: 12,
+      runSpacing: 4,
+      children: [
+        item(const _MinimumMark(), 'Stock mínimo'),
+        item(swatch(_SupplyLevel.ok.colorEn(pal)), 'Sobre el mínimo'),
+        item(swatch(_SupplyLevel.low.colorEn(pal)), 'Bajo el mínimo'),
+        item(swatch(pal.campo(Color(0xFFEFE9E8))), 'Agotado'),
+      ],
     );
   }
 }
@@ -687,6 +748,8 @@ class _SupplyDetailScreenState extends State<_SupplyDetailScreen> {
                       ],
                       const SizedBox(height: 16),
                       _StockBar(supply: s, level: level),
+                      const SizedBox(height: 8),
+                      const _StockBarLegend(),
                       const SizedBox(height: 4),
                       _supplyDetailRow('Código', s.codigo, mono: true),
                       _supplyDetailRow('Nombre', s.nombre),

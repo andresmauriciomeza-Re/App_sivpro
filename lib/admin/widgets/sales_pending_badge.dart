@@ -11,9 +11,13 @@ class SalesPendingBadge extends StatelessWidget {
     super.key,
     required this.count,
     this.invertido = false,
+    this.tope = 99,
   });
 
   final int count;
+
+  /// Mayor número que se muestra; arriba de él, "tope+".
+  final int tope;
 
   /// Sobre la píldora roja del ítem activo: fondo blanco y número rojo.
   final bool invertido;
@@ -35,7 +39,7 @@ class SalesPendingBadge extends StatelessWidget {
         ),
       ),
       child: Text(
-        count > 99 ? '99+' : '$count',
+        count > tope ? '$tope+' : '$count',
         style: GoogleFonts.poppins(
           color: invertido ? const Color(0xFFC62828) : Colors.white,
           fontSize: 11,
