@@ -84,10 +84,45 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
     }
   }
 
+  Future<void> _eliminar(Notificacion notificacion) async {
+    final mensajes = ScaffoldMessenger.of(context);
+    await _repositorio.eliminar(notificacion.id);
+    mensajes
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('Notificación eliminada')));
+  }
+
+  Future<void> _eliminarTodas() async {
+    final rojo = context.pal.rojoBoton(PurchasesScreen.red);
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar notificaciones'),
+        content: const Text('¿Quieres eliminar todas las notificaciones?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: rojo,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmado == true) await _repositorio.eliminarTodas();
+  }
+
   @override
   Widget build(BuildContext context) {
     final pal = context.pal;
     final lista = _lista;
+    final hayNotificaciones = lista?.isNotEmpty ?? false;
     final sinLeer = lista?.any((n) => !n.leida) ?? false;
     final ahora = ahoraBogota();
     return Scaffold(
@@ -112,35 +147,39 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            'Notificaciones',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.montserrat(
-                              color: pal.texto(PurchasesScreen.ink),
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Notificaciones',
+                              maxLines: 1,
+                              style: GoogleFonts.montserrat(
+                                color: pal.texto(PurchasesScreen.ink),
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Flexible(
-                          child: TextButton(
-                            onPressed: sinLeer
-                                ? _repositorio.marcarTodasLeidas
-                                : null,
-                            style: TextButton.styleFrom(
-                              foregroundColor: pal.rojo(PurchasesScreen.red),
-                            ),
-                            child: Text(
-                              'Marcar todas como leídas',
-                              textAlign: TextAlign.right,
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                        IconButton(
+                          tooltip: 'Marcar todas como leídas',
+                          constraints: _zonaTactil,
+                          color: pal.rojo(PurchasesScreen.red),
+                          icon: const Icon(Icons.done_all, size: 28),
+                          onPressed: sinLeer
+                              ? _repositorio.marcarTodasLeidas
+                              : null,
+                        ),
+                        IconButton(
+                          tooltip: 'Eliminar todas las notificaciones',
+                          constraints: _zonaTactil,
+                          color: pal.rojo(PurchasesScreen.red),
+                          icon: const Icon(
+                            Icons.delete_sweep_outlined,
+                            size: 28,
                           ),
+                          onPressed: hayNotificaciones ? _eliminarTodas : null,
                         ),
                       ],
                     ),
@@ -182,9 +221,11 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                             color: pal.borde(const Color(0xFFE1D8D6)),
                           ),
                         _FilaNotificacion(
+                          key: ValueKey(n.id),
                           notificacion: n,
                           ahora: ahora,
                           alTocar: () => _abrir(n),
+                          alEliminar: () => _eliminar(n),
                         ),
                       ],
                   ],
@@ -199,16 +240,21 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
   }
 }
 
+const BoxConstraints _zonaTactil = BoxConstraints(minWidth: 48, minHeight: 48);
+
 class _FilaNotificacion extends StatelessWidget {
   const _FilaNotificacion({
+    super.key,
     required this.notificacion,
     required this.ahora,
     required this.alTocar,
+    required this.alEliminar,
   });
 
   final Notificacion notificacion;
   final DateTime ahora;
   final VoidCallback alTocar;
+  final VoidCallback alEliminar;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +263,7 @@ class _FilaNotificacion extends StatelessWidget {
     final icono = n.destino == DestinoNotificacion.ventas
         ? Icons.receipt_long_outlined
         : Icons.inventory_2_outlined;
-    return InkWell(
+    final tarjeta = InkWell(
       onTap: alTocar,
       child: Opacity(
         opacity: n.leida ? 0.6 : 1,
@@ -293,6 +339,18 @@ class _FilaNotificacion extends StatelessWidget {
           ),
         ),
       ),
+    );
+    return Row(
+      children: [
+        Expanded(child: tarjeta),
+        IconButton(
+          tooltip: 'Eliminar notificación',
+          constraints: _zonaTactil,
+          color: pal.secundario(PurchasesScreen.muted),
+          icon: const Icon(Icons.delete_outline, size: 26),
+          onPressed: alEliminar,
+        ),
+      ],
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/auth_service.dart';
 import '../../auth/permisos.dart';
 import '../../network/api_exception.dart';
+import '../../shared/app_header.dart';
 import '../../shared/initials.dart';
 import '../../shared/pending_sales_service.dart';
 import '../../theme/app_colors.dart';
@@ -11,7 +12,6 @@ import '../services/insumos_repository.dart';
 import '../../shared/formato.dart';
 import '../services/ventas_repository.dart';
 import '../widgets/production_summary_card.dart';
-import '../widgets/campana_notificaciones.dart';
 import '../widgets/summary_cards_grid.dart';
 import 'purchases_screen.dart';
 import '../../theme/paleta_app.dart';
@@ -222,54 +222,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: context.pal.borde(AppColors.headerDivider)),
-        ),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 18),
-          Expanded(
-            child: Text(
-              'La Sirena Pizza',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.montserrat(
-                color: context.pal.texto(ink),
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          const CampanaNotificaciones(diametro: 36),
-          const SizedBox(width: 8),
-          Container(
-            width: 36,
-            height: 36,
-            margin: const EdgeInsets.only(right: 18),
-            decoration: BoxDecoration(
-              color: context.pal.rojoBoton(red),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              currentUserInitials(),
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildHeader() =>
+      AppHeader(title: 'La Sirena Pizza', initials: currentUserInitials());
 
   // ------------------------------------------------------------ resumen
 

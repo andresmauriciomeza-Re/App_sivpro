@@ -317,55 +317,11 @@ class _ClientManagementScreenState extends State<_ClientManagementScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      height: 74,
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      decoration: BoxDecoration(
-        color: context.pal.tarjeta(AppColors.page),
-        border: Border(
-          bottom: BorderSide(color: context.pal.borde(AppColors.headerDivider)),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.arrow_back,
-              color: context.pal.texto(Colors.black),
-              size: 27,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          const SizedBox(width: 28),
-          Text(
-            'La Sirena Pizza',
-            style: GoogleFonts.montserrat(
-              color: context.pal.texto(Colors.black),
-              fontSize: 24,
-            ),
-          ),
-          const Spacer(),
-          Container(
-            width: 44,
-            height: 44,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: context.pal.rojoBoton(red),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              currentUserInitials(),
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppHeader(
+      title: 'La Sirena Pizza',
+      onBack: () => Navigator.of(context).pop(),
+      initials: currentUserInitials(),
+      mostrarCampana: false,
     );
   }
 }

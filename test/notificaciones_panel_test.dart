@@ -13,6 +13,8 @@ import 'package:sivpro_app/admin/services/ventas_repository.dart';
 import 'package:sivpro_app/admin/widgets/campana_notificaciones.dart';
 import 'package:sivpro_app/auth/auth_service.dart';
 import 'package:sivpro_app/client/screens/home_screen.dart';
+import 'package:sivpro_app/shared/app_header.dart';
+import 'package:sivpro_app/shared/medidas_encabezado.dart';
 import 'package:sivpro_app/shared/pending_sales_service.dart';
 import 'package:sivpro_app/theme/app_theme.dart';
 
@@ -259,6 +261,53 @@ void main() {
     });
   });
 
+  group('eliminadas', () {
+    final insumos = [
+      _insumo(1),
+      _insumo(2, actual: '3'),
+      _insumo(3, actual: '0'),
+    ];
+
+    test('no reaparecen mientras el dato no cambie, ni al volver a iniciar '
+        'sesión', () async {
+      await entrar('Empleado', _ventasEInsumos);
+      await _local.desdeVentas([_venta(1), _venta(2)]);
+      await _local.desdeInsumos(insumos);
+      expect(await _lista(), hasLength(2)); // los dos resúmenes
+      await _local.eliminar('resumen:insumos');
+      expect(_local.conteoNoLeidas.value, 1);
+      await _local.eliminarTodas();
+      expect(_local.conteoNoLeidas.value, 0);
+
+      await _local.desdeVentas([_venta(1), _venta(2)]);
+      await _local.desdeInsumos(insumos);
+      await _local.refrescar();
+      expect(await _lista(), isEmpty);
+
+      await AuthService.instance.logout();
+      await entrar('Empleado', _ventasEInsumos);
+      await _local.desdeVentas([_venta(1), _venta(2)]);
+      await _local.desdeInsumos(insumos);
+      expect(await _lista(), isEmpty);
+    });
+
+    test('un dato nuevo sí genera una notificación nueva', () async {
+      await entrar('Empleado', _ventasEInsumos);
+      await _local.desdeVentas([_venta(1)]);
+      await _local.desdeInsumos(insumos);
+      await _local.eliminarTodas();
+
+      await _local.desdeVentas([_venta(1), _venta(2)]);
+      // El insumo 1 baja al mínimo; los demás siguen igual.
+      await _local.desdeInsumos([_insumo(1, actual: '4'), ...insumos.skip(1)]);
+      expect((await _lista()).map((n) => n.id), {'venta:2', 'insumo:1:bajo'});
+
+      await _local.eliminar('insumo:1:bajo');
+      await _local.desdeInsumos([_insumo(1, actual: '4'), ...insumos.skip(1)]);
+      expect((await _lista()).map((n) => n.id), {'venta:2'});
+    });
+  });
+
   test('fecha relativa corta', () {
     final ahora = DateTime(2026, 11, 24, 15);
     expect(fechaRelativa(ahora, ahora), 'Ahora');
@@ -383,11 +432,9 @@ void main() {
       expect(find.byType(NotificacionesScreen), findsOneWidget);
       expect(find.text('No tienes notificaciones.'), findsOneWidget);
       expect(find.byType(CampanaNotificaciones), findsNothing);
-      final marcar = find.widgetWithText(
-        TextButton,
-        'Marcar todas como leídas',
-      );
-      expect(tester.widget<TextButton>(marcar).onPressed, isNull);
+      expect(find.text('Marcar todas como leídas'), findsNothing);
+      final marcar = find.widgetWithIcon(IconButton, Icons.done_all);
+      expect(tester.widget<IconButton>(marcar).onPressed, isNull);
 
       await _local.desdeVentas(const []);
       NotificacionesLocal.reloj = () => DateTime(2026, 11, 20, 9);
@@ -411,7 +458,156 @@ void main() {
       await tester.pumpAndSettle();
       expect(_local.conteoNoLeidas.value, 0);
       expect(_sinLeer, findsNothing);
+      expect(tester.widget<IconButton>(marcar).onPressed, isNull);
+      expect(find.text('Nueva venta por verificar'), findsNWidgets(2));
     });
+
+    final basuraTodas = find.widgetWithIcon(
+      IconButton,
+      Icons.delete_sweep_outlined,
+    );
+    final basuraUna = find.widgetWithIcon(IconButton, Icons.delete_outline);
+
+    testWidgets('eliminar una: sin diálogo, avisa, baja el contador y no abre '
+        'el destino', (tester) async {
+      await entrar('Empleado', _ventasEInsumos);
+      await _local.desdeVentas(const []);
+      await _local.desdeVentas([_venta(1), _venta(2)]);
+      await montar(tester, const NotificacionesScreen());
+      expect(basuraUna, findsNWidgets(2));
+
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const ValueKey('venta:1')),
+          matching: basuraUna,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('Notificación eliminada'), findsOneWidget);
+      expect(find.text('VEN-001 · Cliente 1'), findsNothing);
+      expect(find.text('VEN-002 · Cliente 2'), findsOneWidget);
+      expect(find.byType(NotificacionesScreen), findsOneWidget);
+      expect(find.byType(SalesScreen), findsNothing);
+      expect(_local.conteoNoLeidas.value, 1);
+    });
+
+    testWidgets('eliminar todas: cancelar no borra, confirmar sí', (
+      tester,
+    ) async {
+      await entrar('Empleado', _ventasEInsumos);
+      await _local.desdeVentas(const []);
+      await montar(tester, const NotificacionesScreen());
+      expect(tester.widget<IconButton>(basuraTodas).onPressed, isNull);
+
+      await _local.desdeVentas([_venta(1), _venta(2)]);
+      await tester.pumpAndSettle();
+      await tester.tap(basuraTodas);
+      await tester.pumpAndSettle();
+      expect(find.text('Eliminar notificaciones'), findsOneWidget);
+      expect(
+        find.text('¿Quieres eliminar todas las notificaciones?'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(await _lista(), hasLength(2));
+      expect(_local.conteoNoLeidas.value, 2);
+
+      await tester.tap(basuraTodas);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Eliminar'));
+      await tester.pumpAndSettle();
+      expect(await _lista(), isEmpty);
+      expect(_local.conteoNoLeidas.value, 0);
+      expect(find.text('No tienes notificaciones.'), findsOneWidget);
+      expect(tester.widget<IconButton>(basuraTodas).onPressed, isNull);
+      expect(
+        tester
+            .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.done_all))
+            .onPressed,
+        isNull,
+      );
+    });
+
+    for (final oscuro in [false, true]) {
+      testWidgets('íconos de 48 dp con tooltip, a 360 dp en '
+          '${oscuro ? 'oscuro' : 'claro'}', (tester) async {
+        await entrar('Empleado', _ventasEInsumos);
+        await _local.desdeVentas(const []);
+        await _local.desdeVentas([_venta(1)]);
+        await montar(
+          tester,
+          const NotificacionesScreen(),
+          tema: oscuro ? AppTheme.oscuro : AppTheme.claro,
+          ancho: 360,
+        );
+        expect(tester.takeException(), isNull);
+        for (final tooltip in [
+          'Regresar',
+          'Marcar todas como leídas',
+          'Eliminar todas las notificaciones',
+          'Eliminar notificación',
+        ]) {
+          final boton = find.ancestor(
+            of: find.byTooltip(tooltip),
+            matching: find.byType(IconButton),
+          );
+          final tamano = tester.getSize(boton);
+          expect(tamano.width, greaterThanOrEqualTo(48), reason: tooltip);
+          expect(tamano.height, greaterThanOrEqualTo(48), reason: tooltip);
+        }
+      });
+    }
+
+    for (final ancho in [320.0, 360.0]) {
+      for (final oscuro in [false, true]) {
+        testWidgets('encabezado a ${ancho.toInt()} dp en '
+            '${oscuro ? 'oscuro' : 'claro'}: mismas medidas con y sin flecha, '
+            'sin solaparse', (tester) async {
+          await entrar('Empleado', _ventasEInsumos);
+          // Inicio (sin flecha) e Insumos (con flecha).
+          for (final pantalla in [adminHomeScreen(), insumosScreen()]) {
+            await montar(
+              tester,
+              pantalla,
+              tema: oscuro ? AppTheme.oscuro : AppTheme.claro,
+              ancho: ancho,
+            );
+            expect(tester.takeException(), isNull);
+            final encabezado = find.byType(AppHeader);
+            expect(tester.getSize(encabezado).height, MedidasEncabezado.alto);
+            final titulo = find.text('La Sirena Pizza');
+            expect(
+              tester.widget<Text>(titulo).style!.fontSize,
+              MedidasEncabezado.letraTitulo,
+            );
+            final campana = find.byType(CampanaNotificaciones);
+            // El rectángulo visible del título, ya reducido si hizo falta.
+            final caja = tester.getRect(
+              find.ancestor(of: titulo, matching: find.byType(FittedBox)),
+            );
+            expect(
+              tester.getRect(titulo).right,
+              lessThanOrEqualTo(tester.getRect(campana).left),
+            );
+            expect(caja.right, lessThan(tester.getRect(campana).left));
+            final avatar = find.ancestor(
+              of: find.descendant(of: encabezado, matching: find.text('AP')),
+              matching: find.byType(Container),
+            );
+            expect(
+              tester.getSize(avatar.first),
+              const Size.square(MedidasEncabezado.avatar),
+            );
+            expect(
+              tester.widget<CampanaNotificaciones>(campana).diametro,
+              MedidasEncabezado.campana,
+            );
+          }
+        });
+      }
+    }
 
     testWidgets('tocar: marca leída y va a Ventas con permiso', (tester) async {
       await entrar('Empleado', _ventasEInsumos);

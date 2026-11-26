@@ -111,124 +111,6 @@ class SalesScreen extends StatelessWidget {
       const ModuleBottomNav(selected: 3);
 }
 
-class _SalesHeaderBar extends StatelessWidget {
-  const _SalesHeaderBar({
-    required this.title,
-    required this.initials,
-    this.onBack,
-  });
-
-  final String title;
-
-  final String initials;
-
-  final VoidCallback? onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 74,
-
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-
-      decoration: BoxDecoration(
-        color: context.pal.tarjeta(PurchasesScreen.page),
-
-        border: Border(
-          bottom: BorderSide(color: context.pal.borde(Color(0xFFEBCBC8))),
-        ),
-      ),
-
-      child: Stack(
-        children: [
-          if (onBack != null)
-            Positioned(
-              left: 0,
-
-              top: 0,
-
-              bottom: 0,
-
-              child: GestureDetector(
-                onTap: onBack,
-
-                behavior: HitTestBehavior.opaque,
-
-                child: Icon(
-                  Icons.arrow_back,
-
-                  color: context.pal.texto(Colors.black),
-
-                  size: 27,
-                ),
-              ),
-            ),
-
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 64),
-
-              child: Text(
-                title,
-
-                maxLines: 1,
-
-                overflow: TextOverflow.ellipsis,
-
-                textAlign: TextAlign.center,
-
-                style: GoogleFonts.montserrat(
-                  color: context.pal.texto(Colors.black),
-
-                  fontSize: 24,
-
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            right: 0,
-
-            top: 0,
-
-            bottom: 0,
-
-            child: Center(
-              child: Container(
-                width: 44,
-
-                height: 44,
-
-                alignment: Alignment.center,
-
-                decoration: BoxDecoration(
-                  color: context.pal.rojoBoton(PurchasesScreen.red),
-
-                  shape: BoxShape.circle,
-                ),
-
-                child: Text(
-                  initials,
-
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-
-                    fontSize: 16,
-
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// Colores (fondo, borde y texto) del badge de cada estado de venta.
 ({Color background, Color border, Color foreground}) _ventaEstadoColors(
   BuildContext context,
@@ -393,10 +275,11 @@ class _SalesManagementScreenState extends State<_SalesManagementScreen> {
         bottom: false,
         child: Column(
           children: [
-            _SalesHeaderBar(
+            AppHeader(
               title: 'La Sirena Pizza',
               onBack: () => Navigator.of(context).pop(),
               initials: currentUserInitials(),
+              mostrarCampana: false,
             ),
             Expanded(
               child: RefreshIndicator(
@@ -965,10 +848,11 @@ class _SaleDetailScreenState extends State<_SaleDetailScreen> {
         bottom: false,
         child: Column(
           children: [
-            _SalesHeaderBar(
+            AppHeader(
               title: 'La Sirena Pizza',
               onBack: () => Navigator.of(context).pop(),
               initials: currentUserInitials(),
+              mostrarCampana: false,
             ),
             if (_loading) const LinearProgressIndicator(minHeight: 2),
             Expanded(

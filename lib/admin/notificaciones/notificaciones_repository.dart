@@ -26,6 +26,11 @@ abstract class NotificacionesRepository extends ChangeNotifier {
 
   Future<void> marcarTodasLeidas();
 
+  /// Quita una notificación; no vuelve mientras el dato no cambie.
+  Future<void> eliminar(String id);
+
+  Future<void> eliminarTodas();
+
   Future<void> refrescar();
 }
 
@@ -328,6 +333,29 @@ class NotificacionesLocal extends NotificacionesRepository {
     await _cargando;
     if (_lista.every((n) => n.leida)) return;
     _lista = [for (final n in _lista) n.copyWith(leida: true)];
+    _publicar();
+    await _guardar();
+  }
+
+  // Al eliminar solo se toca la lista: la línea base (ventas vistas y estado
+  // de cada insumo) se conserva, así que lo eliminado no se vuelve a crear.
+  @override
+  Future<void> eliminar(String id) async {
+    await _cargando;
+    if (!_lista.any((n) => n.id == id)) return;
+    _lista = [
+      for (final n in _lista)
+        if (n.id != id) n,
+    ];
+    _publicar();
+    await _guardar();
+  }
+
+  @override
+  Future<void> eliminarTodas() async {
+    await _cargando;
+    if (_lista.isEmpty) return;
+    _lista = const [];
     _publicar();
     await _guardar();
   }
