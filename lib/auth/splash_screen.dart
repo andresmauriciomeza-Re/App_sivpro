@@ -1,8 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui' show FrameTiming;
-import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
-import 'package:flutter/scheduler.dart' show SchedulerBinding, TimingsCallback;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +9,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import '../admin/screens/purchases_screen.dart' show adminHomeScreen;
 import '../client/screens/home_screen.dart';
 import '../network/api_exception.dart';
+import '../shared/gama_dispositivo.dart';
 import '../shared/low_stock_notification_service.dart';
 import 'auth_service.dart';
 import '../theme/tema_panel.dart';
@@ -21,15 +19,15 @@ import '../theme/tema_panel.dart';
 /// - [alta]: animación completa (polvo, inclinación con acelerómetro,
 ///   ondas al tocar, pulso del botón y arrastre elástico del logo).
 /// - [media]: animación completa sin acelerómetro ni polvo.
-/// - [baja]: misma composición final con una animación mínima (el logo sube
-///   y aparecen el texto y el botón en ~400 ms), sin efectos.
+/// - [baja]: animación propia y más corta, sin recortes, sombras ni
+///   opacidades encadenadas.
 /// - [estatica]: sin animación (accesibilidad: "quitar animaciones").
-/// La imagen final, los colores y la composición son iguales en todos.
+///
+/// En todos los casos la animación termina antes de salir del splash.
 enum NivelSplash { alta, media, baja, estatica }
 
-/// Nivel inicial con señales disponibles sin dependencias: preferencia de
-/// accesibilidad y resolución física. Durante la animación el nivel puede
-/// bajar a [NivelSplash.baja] si los frames tardan demasiado.
+/// Nivel según accesibilidad y resolución física. Un equipo de gama baja
+/// (ver [GamaDispositivo]) usa además [NivelSplash.baja].
 NivelSplash nivelInicialSplash({
   required bool sinAnimaciones,
   required Size tamano,
@@ -225,11 +223,17 @@ class _SplashScreenState extends State<SplashScreen>
   static const double _tLogoInEnd = 0.85;
   static const double _tLogoUpEnd = 0.93;
 
-  /// Tiempo mínimo del splash: corto, corre en paralelo con la sesión.
-  static const Duration _esperaMinima = Duration(milliseconds: 600);
+  static const Duration _duracionCompleta = Duration(milliseconds: 2500);
+  static const Duration _duracionBaja = Duration(milliseconds: 1800);
 
-  /// Un frame que tarda más que esto se considera pesado.
-  static const int _msFramePesado = 40;
+  /// Pausa para que se vea la composición terminada antes de salir.
+  static const Duration _reposo = Duration(milliseconds: 300);
+
+  /// Se completa cuando la animación llega al final.
+  final Completer<void> _finAnimacion = Completer<void>();
+
+  /// La animación terminó y la sesión aún no responde: "Conectando…".
+  bool _esperandoServidor = false;
 
   late final AnimationController _controller;
   late final Animation<double> _dotOpacity;
@@ -267,11 +271,11 @@ class _SplashScreenState extends State<SplashScreen>
 
   NivelSplash _nivel = NivelSplash.media;
   bool _iniciado = false;
-  TimingsCallback? _timingsCallback;
-  int _framesMedidos = 0;
-  int _framesPesados = 0;
 
   bool _restaurando = false;
+
+  /// El servidor ya contestó (aunque falte terminar la animación).
+  bool _respondio = false;
   bool _errorDialogoAbierto = false;
   bool _navegando = false;
 
@@ -282,10 +286,8 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 4800),
-    );
+    _controller = AnimationController(vsync: this, duration: _duracionCompleta);
+    _controller.addStatusListener(_alCambiarAnimacion);
 
     _dotOpacity = CurvedAnimation(
       parent: _controller,
@@ -363,10 +365,41 @@ class _SplashScreenState extends State<SplashScreen>
       densidad: media.devicePixelRatio,
     );
 
-    if (_nivel == NivelSplash.estatica) {
-      // Composición final sin animación.
-      _controller.value = 1.0;
+    _precargarYEmpezar(media);
+  }
+
+  void _alCambiarAnimacion(AnimationStatus estado) {
+    if (estado != AnimationStatus.completed || _finAnimacion.isCompleted) {
+      return;
     }
+    _finAnimacion.complete();
+    // La sesión sigue pendiente: se avisa sin cortar nada.
+    if (!_respondio && mounted) setState(() => _esperandoServidor = true);
+  }
+
+  /// Decide el nivel, precarga las dos imágenes (al tamaño en que se
+  /// muestran) y arranca. Mientras tanto sigue puesto el splash nativo, que
+  /// es igual al primer cuadro (blanco). Siempre lo retira, aunque esta
+  /// pantalla ya se haya cerrado: si no, el primer cuadro quedaría congelado.
+  Future<void> _precargarYEmpezar(MediaQueryData media) async {
+    await GamaDispositivo.cargar();
+    if (mounted && _nivel != NivelSplash.estatica && GamaDispositivo.baja) {
+      _nivel = NivelSplash.baja;
+    }
+    if (mounted) {
+      final layout = calcularLayoutSplash(media.size, media.padding);
+      try {
+        await Future.wait([
+          precacheImage(_imagenFondo(media), context),
+          precacheImage(_imagenLogo(layout.logoSize, media), context),
+        ]).timeout(const Duration(seconds: 3));
+      } catch (_) {
+        // Si la precarga falla o excede el tiempo, el splash se muestra igual.
+      }
+    }
+    FlutterNativeSplash.remove();
+    if (!mounted) return;
+
     if (_nivel == NivelSplash.alta) {
       _dustController = AnimationController(
         vsync: this,
@@ -374,36 +407,14 @@ class _SplashScreenState extends State<SplashScreen>
       );
       if (widget.usarSensores) _escucharAcelerometro();
     }
-    // Medición real de frames para bajar de nivel si el equipo no da abasto
-    // (no en debug: ahí los frames son lentos por diseño).
-    if (_conEfectos && !kDebugMode) {
-      _timingsCallback = _medirFrames;
-      SchedulerBinding.instance.addTimingsCallback(_timingsCallback!);
-    }
-
-    _precargarYEmpezar(media);
-  }
-
-  /// Precarga las dos imágenes (al tamaño en que se muestran) antes de
-  /// animar. Siempre retira el splash nativo, aunque esta pantalla ya se
-  /// haya cerrado: si no, el primer frame quedaría congelado.
-  Future<void> _precargarYEmpezar(MediaQueryData media) async {
-    final layout = calcularLayoutSplash(media.size, media.padding);
-    try {
-      await Future.wait([
-        precacheImage(_imagenFondo(media), context),
-        precacheImage(_imagenLogo(layout.logoSize, media), context),
-      ]).timeout(const Duration(seconds: 3));
-    } catch (_) {
-      // Si la precarga falla o excede el tiempo, el splash se muestra igual.
-    }
-    FlutterNativeSplash.remove();
-    if (!mounted) return;
+    setState(() {});
     switch (_nivel) {
       case NivelSplash.estatica:
-        break;
+        // Composición final sin animación.
+        _controller.value = 1.0;
       case NivelSplash.baja:
-        _animacionMinima();
+        _controller.duration = _duracionBaja;
+        _controller.forward();
       case NivelSplash.alta:
       case NivelSplash.media:
         _controller.forward();
@@ -412,7 +423,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   ImageProvider _imagenFondo(MediaQueryData media) => ResizeImage(
     const AssetImage(_assetFondo),
-    width: min(media.size.width * media.devicePixelRatio, 1440.0).round(),
+    width: min(
+      media.size.width * media.devicePixelRatio,
+      _nivel == NivelSplash.baja ? 720.0 : 1440.0,
+    ).round(),
   );
 
   ImageProvider _imagenLogo(double logoSize, MediaQueryData media) =>
@@ -420,17 +434,6 @@ class _SplashScreenState extends State<SplashScreen>
         const AssetImage(_assetLogo),
         width: (logoSize * media.devicePixelRatio).round(),
       );
-
-  /// Nivel bajo: parte con el fondo revelado y el logo en el centro, y en
-  /// ~400 ms sube el logo y aparecen el texto y el botón.
-  void _animacionMinima() {
-    if (_controller.value < _tLogoInEnd) _controller.value = _tLogoInEnd;
-    _controller.animateTo(
-      1.0,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOut,
-    );
-  }
 
   void _escucharAcelerometro() {
     _accelSub =
@@ -448,67 +451,48 @@ class _SplashScreenState extends State<SplashScreen>
         }, onError: (_) {});
   }
 
-  /// Gama baja automática: si 3 frames superan [_msFramePesado] ms en los
-  /// primeros ~120 frames, se pasa a la animación mínima sin efectos.
-  void _medirFrames(List<FrameTiming> timings) {
-    for (final timing in timings) {
-      _framesMedidos++;
-      if (timing.totalSpan.inMilliseconds > _msFramePesado) _framesPesados++;
-    }
-    if (_framesPesados >= 3) {
-      _quitarMedicion();
-      if (mounted) _bajarANivelBajo();
-    } else if (_framesMedidos >= 120) {
-      _quitarMedicion();
-    }
-  }
-
-  void _quitarMedicion() {
-    final callback = _timingsCallback;
-    if (callback == null) return;
-    SchedulerBinding.instance.removeTimingsCallback(callback);
-    _timingsCallback = null;
-  }
-
-  void _bajarANivelBajo() {
-    _accelSub?.cancel();
-    _accelSub = null;
-    _tilt.value = Offset.zero;
-    _pulseController?.dispose();
-    _pulseController = null;
-    _pulseScale = null;
-    _dustController?.stop();
-    setState(() => _nivel = NivelSplash.baja);
-    if (!_controller.isCompleted) _animacionMinima();
-  }
-
+  /// Restaura la sesión en paralelo con la animación y sale cuando han
+  /// terminado las dos cosas.
   Future<void> _restaurarSesion() async {
     if (_restaurando || _navegando) return;
     _restaurando = true;
+    _respondio = false;
+    // Al reintentar la animación ya terminó.
+    if (_finAnimacion.isCompleted) setState(() => _esperandoServidor = true);
+
+    var restaurada = false;
+    String? error;
     try {
       final restaurar =
           widget.restaurarSesion ?? AuthService.instance.restoreSession;
-      final restauracion = restaurar();
-      await Future<void>.delayed(_esperaMinima);
-      final restaurada = await restauracion;
-      _restaurando = false;
-      if (!mounted) return;
-      _navegando = true;
-      if (restaurada) {
-        _irAlPanel();
-      } else {
-        _goToLogin();
-      }
-    } on ApiException catch (error) {
-      _restaurando = false;
-      if (!mounted) return;
-      await _mostrarErrorRestauracion(error.message);
+      restaurada = await restaurar();
+    } on ApiException catch (e) {
+      error = e.message;
     } catch (_) {
       // Error inesperado (no de red ni del backend): el splash no se queda
       // detenido; ofrece reintentar o ir al login.
-      _restaurando = false;
-      if (!mounted) return;
-      await _mostrarErrorRestauracion('No se pudo completar la operación.');
+      error = 'No se pudo completar la operación.';
+    }
+
+    _respondio = true;
+    // Al reintentar ya se mostraba "Conectando…": se quita al contestar.
+    if (mounted && _esperandoServidor) {
+      setState(() => _esperandoServidor = false);
+    }
+    await _finAnimacion.future;
+    await Future<void>.delayed(_reposo);
+    _restaurando = false;
+    if (!mounted || _navegando) return;
+
+    if (error != null) {
+      await _mostrarErrorRestauracion(error);
+      return;
+    }
+    if (restaurada) {
+      _navegando = true;
+      _irAlPanel();
+    } else {
+      _goToLogin();
     }
   }
 
@@ -561,6 +545,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _goToLogin() {
+    // Con la sesión todavía en curso no se sale (se perdería la respuesta).
+    if (_restaurando || _navegando) return;
+    _navegando = true;
     LowStockNotificationService.instance.descartarPendiente();
     HapticFeedback.lightImpact();
     Navigator.of(
@@ -570,7 +557,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _quitarMedicion();
     FlutterNativeSplash.remove();
     _controller.dispose();
     _pulseController?.dispose();
@@ -668,7 +654,93 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Gama baja: fondo que aparece, logo que crece y sube, y texto y botón que
+  /// entran desde abajo. Solo transformaciones y una única opacidad.
+  Widget _buildBaja(MediaQueryData media) {
+    final size = media.size;
+    final layout = calcularLayoutSplash(size, media.padding);
+    final logoSize = layout.logoSize;
+    final centro = (size.height - logoSize) / 2;
+    Animation<double> tramo(double desde, double hasta, [Curve? curva]) =>
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(desde, hasta, curve: curva ?? Curves.easeOut),
+        );
+    final subida = tramo(0.6, 0.8, Curves.easeInOut);
+    final entrada = tramo(0.72, 1.0);
+
+    Widget desdeAbajo(Widget hijo, double veces) => SlideTransition(
+      position: Tween(
+        begin: Offset(0, veces),
+        end: Offset.zero,
+      ).animate(entrada),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) =>
+            IgnorePointer(ignoring: _controller.value < 0.98, child: child),
+        child: hijo,
+      ),
+    );
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: FadeTransition(
+              opacity: tramo(0.0, 0.25),
+              child: RepaintBoundary(
+                child: Image(image: _imagenFondo(media), fit: BoxFit.cover),
+              ),
+            ),
+          ),
+          AnimatedBuilder(
+            animation: subida,
+            builder: (context, child) => Positioned(
+              top: centro + (layout.logoTopFinal - centro) * subida.value,
+              left: 0,
+              right: 0,
+              child: child!,
+            ),
+            child: Center(
+              child: ScaleTransition(
+                scale: tramo(0.2, 0.6, Curves.easeOutBack),
+                child: RepaintBoundary(
+                  child: SizedBox(
+                    width: logoSize,
+                    height: logoSize,
+                    child: Image(
+                      image: _imagenLogo(logoSize, media),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: layout.textTop,
+            left: 32,
+            right: 32,
+            // Varias veces su alto: empieza fuera de la pantalla.
+            child: desdeAbajo(_textos(false), 10),
+          ),
+          Positioned(
+            bottom: layout.buttonBottom,
+            left: 32,
+            right: 32,
+            child: desdeAbajo(
+              Center(child: _boton(layout.buttonWidth, sombra: false)),
+              4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSplash(MediaQueryData media) {
+    if (_nivel == NivelSplash.baja) return _buildBaja(media);
     final size = media.size;
     final layout = calcularLayoutSplash(size, media.padding);
     final logoSize = layout.logoSize;
@@ -940,27 +1012,36 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _boton(double buttonWidth) {
+  /// "Comenzar", o "Conectando…" si la animación terminó y el servidor aún no
+  /// responde (Render puede estar despertando).
+  Widget _boton(double buttonWidth, {bool sombra = true}) {
+    final conectando = _esperandoServidor;
     final boton = Container(
       width: buttonWidth,
       height: 58,
       decoration: BoxDecoration(
         color: const Color(0xFFF5EDE4),
         borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: sombra
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
       ),
       child: ElevatedButton(
-        onPressed: _goToLogin,
+        onPressed: conectando ? null : _goToLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           foregroundColor: const Color(0xFFB5161B),
+          disabledBackgroundColor: Colors.transparent,
+          disabledForegroundColor: const Color(0xFFB5161B),
+          // Sin efectos, el cambio a "Conectando…" es directo.
+          animationDuration: _conEfectos ? null : Duration.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(32),
           ),
@@ -970,15 +1051,32 @@ class _SplashScreenState extends State<SplashScreen>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Giro solo en gama media y alta; si no, ícono fijo.
+              if (conectando) ...[
+                if (_conEfectos)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Color(0xFFB5161B),
+                    ),
+                  )
+                else
+                  const Icon(Icons.hourglass_empty_rounded, size: 20),
+                const SizedBox(width: 10),
+              ],
               Text(
-                'Comenzar',
+                conectando ? 'Conectando…' : 'Comenzar',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(width: 18),
-              const Icon(Icons.arrow_forward_rounded, size: 25),
+              if (!conectando) ...[
+                const SizedBox(width: 18),
+                const Icon(Icons.arrow_forward_rounded, size: 25),
+              ],
             ],
           ),
         ),

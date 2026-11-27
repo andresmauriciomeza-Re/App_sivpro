@@ -27,7 +27,7 @@ class TarjetaModoOscuro extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.pal;
     final esquinas = BorderRadius.circular(radio);
-    return Semantics(
+    final tarjeta = Semantics(
       label: 'Cambiar modo oscuro',
       toggled: oscuro,
       button: true,
@@ -105,5 +105,6 @@ class TarjetaModoOscuro extends StatelessWidget {
         ),
       ),
     );
+    return RepaintBoundary(child: tarjeta);
   }
 }
