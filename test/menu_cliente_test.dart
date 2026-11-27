@@ -123,7 +123,7 @@ Finder _mas(String texto) => find
     )
     .last;
 
-/// Botón "Agregar …" / "Quitar …" de una tarjeta del carrusel de adiciones,
+/// Botón "Agregar …" / "Quitar …" de una bebida de las adiciones,
 /// por su etiqueta de accesibilidad.
 Finder _boton(String etiqueta) => find.byWidgetPredicate(
   (w) => w is Semantics && w.properties.label == etiqueta,
@@ -416,14 +416,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(ProductDetailScreen), findsOneWidget);
       expect(find.text('Mediana'), findsOneWidget);
-      // Las adiciones son las bebidas reales, en el carrusel horizontal.
+      // Las adiciones son las bebidas reales, en lista vertical.
       expect(find.text('Gaseosa Coca-Cola'), findsOneWidget);
       expect(find.text('Coca Cola'), findsNothing);
       expect(
         find.byWidgetPredicate(
           (w) => w is ListView && w.scrollDirection == Axis.horizontal,
         ),
-        findsOneWidget,
+        findsNothing,
       );
       // Total y botón en la barra fija de la pantalla.
       expect(
@@ -556,9 +556,11 @@ void main() {
     });
   });
 
-  group('detalle: carrusel de adiciones y barra fija', () {
-    Finder carrusel() => find.byWidgetPredicate(
-      (w) => w is ListView && w.scrollDirection == Axis.horizontal,
+  group('detalle: lista de adiciones y barra fija', () {
+    Finder filas() => find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('bebida-'),
     );
 
     Future<void> abrirEnCelular(
@@ -593,15 +595,18 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('el carrusel es horizontal y no crece con 4 ni con 30 '
-        'bebidas', (tester) async {
-      await abrirEnCelular(tester, 'Lasaña Mixta', bebidas: 4);
-      expect(carrusel(), findsOneWidget);
-      final altoCon4 = tester.getSize(carrusel()).height;
-
+    testWidgets('con 30 bebidas solo se listan 4, una debajo de otra', (
+      tester,
+    ) async {
       await abrirEnCelular(tester, 'Lasaña Mixta', bebidas: 30);
-      expect(tester.getSize(carrusel()).height, altoCon4);
-      expect(find.text('Adiciones (Bebidas)'), findsOneWidget);
+      expect(filas(), findsNWidgets(4));
+      expect(find.text('Ver más bebidas'), findsOneWidget);
+      expect(find.text('Gaseosa 5'), findsNothing);
+      final cajas = [for (var i = 0; i < 4; i++) tester.getRect(filas().at(i))];
+      for (var i = 1; i < 4; i++) {
+        expect(cajas[i].left, cajas[0].left);
+        expect(cajas[i].top, greaterThanOrEqualTo(cajas[i - 1].bottom));
+      }
     });
 
     testWidgets('con 30 bebidas el total y el botón se ven sin desplazar', (
@@ -624,42 +629,10 @@ void main() {
       }
     });
 
-    testWidgets('a 360 dp se ven 2 tarjetas completas y asoma la tercera', (
-      tester,
-    ) async {
-      await abrirEnCelular(tester, 'Lasaña Mixta', bebidas: 30);
-      final tarjetas = [
-        for (var i = 1; i <= 3; i++)
-          tester.getRect(
-            find
-                .ancestor(
-                  of: find.text('Gaseosa $i'),
-                  matching: find.byType(Container),
-                )
-                .first,
-          ),
-      ];
-      expect(tarjetas[0].left, 20); // mismo margen que el contenido
-      expect(tarjetas[0].width, 120);
-      expect(tarjetas[1].right, lessThanOrEqualTo(360));
-      expect(tarjetas[2].left, lessThan(360));
-      expect(tarjetas[2].right, greaterThan(360));
-    });
-
-    testWidgets('sumar y restar en una tarjeta cambia el total; las no '
+    testWidgets('sumar y restar en una fila cambia el total; las no '
         'disponibles no suman', (tester) async {
       await abrirEnCelular(tester, 'Lasaña Mixta');
-      // Se sube el contenido (la barra fija tapa lo de abajo) y se tocan las
-      // tarjetas sin desplazar el carrusel.
-      await tester.drag(
-        find.byType(SingleChildScrollView),
-        const Offset(0, -600),
-      );
-      await tester.pumpAndSettle();
-      Future<void> tocar(String etiqueta) async {
-        await tester.tap(_boton(etiqueta));
-        await tester.pump();
-      }
+      Future<void> tocar(String etiqueta) => _tocar(tester, _boton(etiqueta));
 
       expect(find.text('\$21.000'), findsWidgets);
       await tocar('Agregar Gaseosa Coca-Cola');
@@ -732,7 +705,7 @@ void main() {
             Theme.of(tester.element(find.byType(Scaffold))).brightness,
             oscuro ? Brightness.dark : Brightness.light,
           );
-          expect(carrusel(), findsOneWidget);
+          expect(filas(), findsWidgets);
           expect(tester.takeException(), isNull);
         });
       }

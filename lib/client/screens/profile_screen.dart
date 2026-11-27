@@ -499,6 +499,8 @@ class _PerfilState extends State<_Perfil> {
         color: context.pal.texto(Colors.black87),
       ),
       decoration: InputDecoration(
+        // Sin el contador "31/60": el límite de maxLength se mantiene.
+        counterText: '',
         filled: true,
         fillColor: context.pal.campo(const Color(0xFFF2F2F2)),
         contentPadding: const EdgeInsets.symmetric(
