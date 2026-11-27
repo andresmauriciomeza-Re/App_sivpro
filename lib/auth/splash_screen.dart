@@ -12,6 +12,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import '../admin/screens/purchases_screen.dart' show adminHomeScreen;
 import '../client/screens/home_screen.dart';
 import '../network/api_exception.dart';
+import '../shared/low_stock_notification_service.dart';
 import 'auth_service.dart';
 import '../theme/tema_panel.dart';
 
@@ -555,9 +556,12 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.of(
       context,
     ).pushReplacement(MaterialPageRoute(builder: (_) => pagina));
+    // Si la app se abrió tocando un aviso del panel.
+    LowStockNotificationService.instance.abrirPendiente();
   }
 
   void _goToLogin() {
+    LowStockNotificationService.instance.descartarPendiente();
     HapticFeedback.lightImpact();
     Navigator.of(
       context,

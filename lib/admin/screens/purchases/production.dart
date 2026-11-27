@@ -362,6 +362,7 @@ class _ProductionOrdersScreenState extends State<_ProductionOrdersScreen> {
             onDarBaja: () => _guarded(() => _askDarBaja(order)),
             onEdit: () => _guarded(() => _editOrder(order)),
             onDetail: () => _openDetail(order),
+            soloIconos: true,
           ),
         ],
       ),
@@ -1085,6 +1086,7 @@ class _OrderActions extends StatelessWidget {
     required this.onDarBaja,
     required this.onEdit,
     this.onDetail,
+    this.soloIconos = false,
   });
 
   final OrdenProduccion order;
@@ -1094,6 +1096,35 @@ class _OrderActions extends StatelessWidget {
   final VoidCallback onDarBaja;
   final VoidCallback onEdit;
   final VoidCallback? onDetail;
+
+  /// En las tarjetas de la lista las acciones se muestran solo con su ícono,
+  /// juntas en una fila.
+  final bool soloIconos;
+
+  /// Botón de acción: con texto, o solo el ícono con su nombre en el tooltip
+  /// y en la etiqueta de accesibilidad.
+  Widget _accion(IconData icono, String nombre, VoidCallback? alTocar) {
+    if (!soloIconos) {
+      return OutlinedButton.icon(
+        onPressed: busy ? null : alTocar,
+        icon: Icon(icono),
+        label: Text(nombre),
+      );
+    }
+    return Tooltip(
+      message: nombre,
+      child: OutlinedButton(
+        onPressed: busy ? null : alTocar,
+        style: OutlinedButton.styleFrom(
+          fixedSize: const Size.square(48),
+          minimumSize: const Size.square(48),
+          padding: EdgeInsets.zero,
+          shape: const CircleBorder(),
+        ),
+        child: Icon(icono, size: 22, semanticLabel: nombre),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1108,40 +1139,25 @@ class _OrderActions extends StatelessWidget {
         canEdit &&
         (pendiente || (order.tipo == 'Pedido' && enProceso && _isAdminRole()));
 
+    final acciones = [
+      if (canEdit && pendiente) _accion(Icons.play_arrow, 'Iniciar', onStart),
+      if (canEdit && enProceso) _accion(Icons.check, 'Completar', onComplete),
+      if (canEdit && (pendiente || enProceso))
+        _accion(Icons.block, 'Dar de baja', onDarBaja),
+      if (puedeEditar) _accion(Icons.edit_outlined, 'Editar', onEdit),
+      if (onDetail != null)
+        _accion(Icons.visibility_outlined, 'Detalle', onDetail),
+    ];
+
     return Wrap(
-      spacing: 8,
+      spacing: soloIconos ? 12 : 8,
       runSpacing: 8,
       children: [
-        if (canEdit && pendiente)
-          OutlinedButton.icon(
-            onPressed: busy ? null : onStart,
-            icon: const Icon(Icons.play_arrow),
-            label: const Text('Iniciar'),
-          ),
-        if (canEdit && enProceso)
-          OutlinedButton.icon(
-            onPressed: busy ? null : onComplete,
-            icon: const Icon(Icons.check),
-            label: const Text('Completar'),
-          ),
-        if (canEdit && (pendiente || enProceso))
-          OutlinedButton.icon(
-            onPressed: busy ? null : onDarBaja,
-            icon: const Icon(Icons.block),
-            label: const Text('Dar de baja'),
-          ),
-        if (puedeEditar)
-          OutlinedButton.icon(
-            onPressed: busy ? null : onEdit,
-            icon: const Icon(Icons.edit_outlined),
-            label: const Text('Editar'),
-          ),
-        if (onDetail != null)
-          OutlinedButton.icon(
-            onPressed: busy ? null : onDetail,
-            icon: const Icon(Icons.visibility_outlined),
-            label: const Text('Detalle'),
-          ),
+        // Los íconos son un solo bloque: nunca se parten en dos filas.
+        if (soloIconos)
+          Row(mainAxisSize: MainAxisSize.min, spacing: 12, children: acciones)
+        else
+          ...acciones,
         if (busy)
           const Padding(
             padding: EdgeInsets.all(10),
