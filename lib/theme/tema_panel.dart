@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import '../auth/auth_service.dart';
+import '../shared/gama_dispositivo.dart';
 import '../shared/modo_oscuro_controller.dart';
 import 'app_theme.dart';
 import 'paleta_app.dart';
@@ -130,9 +131,11 @@ class _TemaClienteState extends State<TemaCliente> {
           pantallaClienteMigrada: true,
         );
         _marcarOscuro(oscuro);
-        final contenido = Theme(
+        final contenido = AnimatedTheme(
           key: _clave,
           data: oscuro ? AppTheme.oscuro : AppTheme.claro,
+          duration: GamaDispositivo.duracionTema,
+          curve: Curves.easeInOut,
           child: widget.child,
         );
         return oscuro

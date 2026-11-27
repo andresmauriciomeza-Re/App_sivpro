@@ -11,6 +11,10 @@ abstract final class AppTheme {
   /// Modo oscuro: solo se usa en el panel del Administrador.
   static final ThemeData oscuro = _construirOscuro();
 
+  /// Construye ya los dos temas (con sus fuentes), una sola vez, para que el
+  /// primer cambio de modo no tenga que hacerlo.
+  static List<ThemeData> precargar() => [claro, oscuro];
+
   static ThemeData _construir(ThemeData base) {
     final tituloTextTheme = GoogleFonts.montserratTextTheme(base.textTheme);
     final textoTextTheme = GoogleFonts.poppinsTextTheme(base.textTheme);

@@ -162,10 +162,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _fieldsCard(),
                     const SizedBox(height: 12),
                     ValueListenableBuilder<bool>(
-                      valueListenable: ModoOscuroController.instance.oscuro,
+                      valueListenable: ModoOscuroController.instance.interruptor,
                       builder: (context, oscuro, _) => TarjetaModoOscuro(
                         oscuro: oscuro,
-                        onChanged: ModoOscuroController.instance.cambiar,
+                        onChanged: ModoOscuroController.instance.alternar,
                       ),
                     ),
                     const SizedBox(height: 14),

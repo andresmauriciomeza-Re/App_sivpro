@@ -336,10 +336,10 @@ class _PerfilState extends State<_Perfil> {
               ),
               const SizedBox(height: 8),
               ValueListenableBuilder<bool>(
-                valueListenable: ModoOscuroController.instance.oscuro,
+                valueListenable: ModoOscuroController.instance.interruptor,
                 builder: (context, oscuro, _) => TarjetaModoOscuro(
                   oscuro: oscuro,
-                  onChanged: ModoOscuroController.instance.cambiar,
+                  onChanged: ModoOscuroController.instance.alternar,
                   radio: 16,
                   bordeEnClaro: false,
                 ),

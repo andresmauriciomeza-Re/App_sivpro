@@ -309,7 +309,8 @@ void main() {
           ),
         ),
       );
-      for (var i = 0; i < 12; i++) {
+      // El splash completa su animación antes de navegar.
+      for (var i = 0; i < 24; i++) {
         await tester.pump(const Duration(milliseconds: 500));
       }
       expect(find.byType(NotificacionesScreen), findsOneWidget);

@@ -9,7 +9,16 @@ class ModoOscuroController {
 
   static const String clave = 'modo_oscuro';
 
+  /// Lo que usa el tema.
   final ValueNotifier<bool> oscuro = ValueNotifier<bool>(false);
+
+  /// Lo que muestra el interruptor: cambia al instante, antes que el tema.
+  final ValueNotifier<bool> interruptor = ValueNotifier<bool>(false);
+
+  /// Margen para que el interruptor se mueva antes de repintar la app.
+  static const Duration retardoTema = Duration(milliseconds: 150);
+
+  int _turno = 0;
 
   Future<void>? _carga;
 
@@ -18,17 +27,37 @@ class ModoOscuroController {
   Future<void> cargar() => _carga ??= _leer();
 
   Future<void> _leer() async {
+    var guardado = false;
     try {
       final prefs = await SharedPreferences.getInstance();
-      oscuro.value = prefs.getBool(clave) ?? false;
+      guardado = prefs.getBool(clave) ?? false;
     } catch (_) {
-      oscuro.value = false;
+      // Sin almacenamiento: modo claro.
     }
+    interruptor.value = guardado;
+    oscuro.value = guardado;
   }
 
-  /// Cambia el modo y lo guarda para la próxima vez que se abra la app.
-  Future<void> cambiar(bool valor) async {
+  /// Desde el interruptor: se mueve ya, se guarda en segundo plano y el tema
+  /// cambia justo después. Si se vuelve a tocar, manda el último toque.
+  Future<void> alternar(bool valor) async {
+    final turno = ++_turno;
+    interruptor.value = valor;
+    final guardado = _guardar(valor);
+    await Future<void>.delayed(retardoTema);
+    if (turno == _turno) oscuro.value = valor;
+    await guardado;
+  }
+
+  /// Cambio inmediato de interruptor y tema, y lo guarda.
+  Future<void> cambiar(bool valor) {
+    _turno++;
+    interruptor.value = valor;
     oscuro.value = valor;
+    return _guardar(valor);
+  }
+
+  Future<void> _guardar(bool valor) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(clave, valor);

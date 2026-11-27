@@ -7,6 +7,7 @@ import 'admin/notificaciones/notificaciones_repository.dart';
 import 'auth/splash_screen.dart';
 import 'client/services/limpieza_sesion_cliente.dart';
 import 'shared/client_notification_service.dart';
+import 'shared/gama_dispositivo.dart';
 import 'shared/low_stock_notification_service.dart';
 import 'shared/modo_oscuro_controller.dart';
 import 'shared/pending_sales_service.dart';
@@ -23,6 +24,8 @@ Future<void> main() async {
   ClientNotificationService.instance.start();
   NotificacionesLocal.instance.start();
   ModoOscuroController.instance.cargar();
+  GamaDispositivo.cargar();
+  AppTheme.precargar();
   registrarLimpiezaCliente();
   runApp(const SivproApp());
 }
@@ -77,6 +80,13 @@ class _SivproAppState extends State<SivproApp> {
         title: 'La Sirena',
         debugShowCheckedModeBanner: false,
         theme: _oscuro ? AppTheme.oscuro : AppTheme.claro,
+        // Corta y suave; en gama baja, cambio directo.
+        themeAnimationStyle: GamaDispositivo.baja
+            ? AnimationStyle.noAnimation
+            : AnimationStyle(
+                duration: GamaDispositivo.duracionTema,
+                curve: Curves.easeInOut,
+              ),
         navigatorKey: SessionManager.instance.navigatorKey,
         scaffoldMessengerKey: SessionManager.instance.messengerKey,
         builder: (context, child) {

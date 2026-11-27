@@ -48,7 +48,7 @@ Future<void> _pintar(
       ),
     ),
   );
-  // Precarga (con tope de 3 s) + animación completa (4,8 s).
+  // Precarga (con tope de 3 s) + animación completa (2,5 s como mucho).
   await tester.pump(const Duration(seconds: 4));
   await tester.pump(const Duration(seconds: 5));
   await tester.pump(const Duration(milliseconds: 100));
@@ -75,7 +75,7 @@ void main() {
           final texto = tester.getRect(
             find.text('Tradición  ·  Calidad  ·  Pasión'),
           );
-          final boton = tester.getRect(find.text('Comenzar'));
+          final boton = tester.getRect(find.text('Conectando…'));
           final titulo = tester.getRect(
             find.text('Sabores que enamoran\ndesde 1994'),
           );
@@ -92,14 +92,14 @@ void main() {
     }
   }
 
-  testWidgets('gama baja (320x568 a 1.5x): animación mínima sin efectos', (
+  testWidgets('gama baja (320x568 a 1.5x): animación simple sin efectos', (
     tester,
   ) async {
     await _pintar(tester, tamano: const Size(320, 568), densidad: 1.5);
     expect(tester.takeException(), isNull);
     // Sin pulso ni otros efectos: al terminar no quedan frames pendientes.
     expect(tester.binding.transientCallbackCount, 0);
-    expect(find.text('Comenzar'), findsOneWidget);
+    expect(find.text('Conectando…'), findsOneWidget);
   });
 
   testWidgets('con "quitar animaciones" no queda ninguna animación', (
@@ -115,7 +115,7 @@ void main() {
     expect(tester.binding.transientCallbackCount, 0);
     expect(tester.binding.hasScheduledFrame, isFalse);
     // La composición final se ve de inmediato.
-    expect(find.text('Comenzar'), findsOneWidget);
+    expect(find.text('Conectando…'), findsOneWidget);
   });
 
   test('nivel inicial según accesibilidad y resolución', () {
