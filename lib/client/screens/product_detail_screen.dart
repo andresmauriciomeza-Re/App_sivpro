@@ -7,7 +7,10 @@ import '../../theme/tema_panel.dart';
 import '../models/producto_catalogo.dart';
 import '../services/cart_service.dart';
 import '../services/catalogo_repository.dart';
+import '../services/tipos_bebida.dart';
+import '../widgets/adiciones.dart';
 import '../widgets/imagen_producto.dart';
+import 'drinks_screen.dart';
 import '../../shared/mensaje_app.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -36,8 +39,8 @@ class _DetalleState extends State<_Detalle> {
   late int _tamanoSeleccionado;
   int _cantidad = 1;
 
-  /// Cantidad de cada bebida (adición), por id real del producto.
-  final Map<String, int> _adicionesCantidad = {};
+  /// Cantidad de cada bebida (adición); se comparte con "Bebidas".
+  final AdicionesElegidas _elegidas = AdicionesElegidas();
   List<ProductoCatalogo> _bebidas = const [];
   bool _cargandoBebidas = false;
   String? _errorBebidas;
@@ -48,10 +51,19 @@ class _DetalleState extends State<_Detalle> {
   void initState() {
     super.initState();
     _tamanoSeleccionado = _tamanoInicial();
+    _elegidas.addListener(_alElegirBebida);
     if (_producto.conAdiciones) {
       _cargandoBebidas = true;
       _cargarBebidas();
     }
+  }
+
+  void _alElegirBebida() => setState(() {});
+
+  @override
+  void dispose() {
+    _elegidas.dispose();
+    super.dispose();
   }
 
   /// Como hoy, con dos tamaños se propone el segundo (Grande), salvo que
@@ -90,8 +102,6 @@ class _DetalleState extends State<_Detalle> {
     _cargarBebidas();
   }
 
-  String _clave(ProductoCatalogo bebida) => '${bebida.id ?? bebida.nombre}';
-
   TamanoProducto? get _tamano =>
       _producto.tamanos.isEmpty ? null : _producto.tamanos[_tamanoSeleccionado];
 
@@ -109,7 +119,7 @@ class _DetalleState extends State<_Detalle> {
   int get _total {
     var total = _precio * _cantidad;
     for (final bebida in _bebidas) {
-      total += bebida.precioBase * (_adicionesCantidad[_clave(bebida)] ?? 0);
+      total += bebida.precioBase * _elegidas.de(bebida);
     }
     return total;
   }
@@ -167,11 +177,11 @@ class _DetalleState extends State<_Detalle> {
   void _agregarAlCarrito() {
     final adicionesSeleccionadas = [
       for (final bebida in _bebidas)
-        if ((_adicionesCantidad[_clave(bebida)] ?? 0) > 0)
+        if (_elegidas.de(bebida) > 0)
           CartAddition(
             nombre: bebida.nombre,
             precio: bebida.precioBase,
-            cantidad: _adicionesCantidad[_clave(bebida)] ?? 0,
+            cantidad: _elegidas.de(bebida),
             idProducto: bebida.id,
           ),
     ];
@@ -361,7 +371,7 @@ class _DetalleState extends State<_Detalle> {
                             color: pal.texto(Colors.black87),
                           ),
                         ),
-                        _Stepper(
+                        ContadorCantidad(
                           value: _cantidad,
                           minValue: 1,
                           maxValue: maximo,
@@ -515,62 +525,88 @@ class _DetalleState extends State<_Detalle> {
           ),
         )
       else
-        _buildCarrusel(),
+        ..._buildListaBebidas(),
       const SizedBox(height: 20),
     ];
   }
 
-  static const double _anchoTarjeta = 120;
+  /// Las cuatro destacadas, una debajo de otra, y el acceso a todas.
+  List<Widget> _buildListaBebidas() {
+    final pal = context.pal;
+    final destacadas = bebidasDestacadas(_bebidas);
+    return [
+      for (final bebida in destacadas)
+        Padding(
+          key: ValueKey('bebida-${bebida.id ?? bebida.nombre}'),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+          child: _buildBebida(bebida),
+        ),
+      if (_bebidas.length > destacadas.length)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: TextButton(
+            onPressed: _verMasBebidas,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              foregroundColor: pal.rojo(splashRojo),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    'Ver más bebidas',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(Icons.arrow_forward, size: 20),
+              ],
+            ),
+          ),
+        ),
+    ];
+  }
 
-  /// Carrusel horizontal de altura fija (no crece con más bebidas); solo se
-  /// agranda con la letra del sistema para que nada se corte.
-  Widget _buildCarrusel() {
-    final escala = MediaQuery.textScalerOf(context).scale(1);
-    return SizedBox(
-      height: 136 + 64 * escala,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: _bebidas.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 12),
-        itemBuilder: (context, i) => _buildBebida(_bebidas[i]),
+  void _verMasBebidas() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BebidasScreen(
+          bebidas: _bebidas,
+          elegidas: _elegidas,
+          nombreProducto: _producto.nombre,
+        ),
       ),
     );
   }
 
   Widget _buildBebida(ProductoCatalogo bebida) {
     final pal = context.pal;
-    final estado = bebida.estado;
-    final pedible = estado == EstadoMenu.disponible;
-    final stock = bebida.stock;
-    final cantidad = _adicionesCantidad[_clave(bebida)] ?? 0;
-    final precio = switch (estado) {
-      EstadoMenu.disponible => formatCop(bebida.precioBase),
-      EstadoMenu.agotado => 'Agotado',
-      EstadoMenu.noDisponible => 'No disponible',
-    };
-    final tarjeta = Container(
-      width: _anchoTarjeta,
-      // 5 + 1 de borde por lado: caben − (40), contador (28) y + (40).
-      padding: const EdgeInsets.fromLTRB(5, 8, 5, 4),
+    final precio = precioDeBebida(bebida);
+    final fila = Container(
+      padding: const EdgeInsets.fromLTRB(8, 8, 4, 8),
       decoration: BoxDecoration(
         color: pal.tarjeta(Colors.white),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: pal.borde(Colors.black12)),
       ),
-      child: Column(
+      child: Row(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             // Botellas altas y angostas: se ven completas.
             child: ImagenProducto(
               producto: bebida,
-              width: 64,
-              height: 64,
+              width: 52,
+              height: 52,
               fit: BoxFit.contain,
               respaldo: (context) => Container(
-                width: 64,
-                height: 64,
+                width: 52,
+                height: 52,
                 color: pal.campo(Colors.grey.shade200),
                 child: Icon(
                   Icons.local_drink,
@@ -580,15 +616,15 @@ class _DetalleState extends State<_Detalle> {
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   bebida.nombre,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -596,44 +632,26 @@ class _DetalleState extends State<_Detalle> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    precio,
-                    maxLines: 1,
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      color: pal.atenuado(Colors.black45),
-                    ),
+                Text(
+                  precio,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: pal.secundario(Colors.black54),
                   ),
                 ),
               ],
             ),
           ),
-          _Stepper(
-            value: cantidad,
-            minValue: 0,
-            maxValue: stock,
-            habilitado: pedible,
-            tactil: 40,
-            etiquetaQuitar: 'Quitar ${bebida.nombre}',
-            etiquetaAgregar: 'Agregar ${bebida.nombre}',
-            alLimite: stock == null
-                ? null
-                : () => _avisar(
-                    'Máximo disponible: $stock. No hay más unidades de '
-                    '${bebida.nombre}',
-                  ),
-            onChanged: (v) =>
-                setState(() => _adicionesCantidad[_clave(bebida)] = v),
-          ),
+          ContadorBebida(bebida: bebida, elegidas: _elegidas),
         ],
       ),
     );
     return Semantics(
       container: true,
-      label: '${bebida.nombre}, $precio, cantidad $cantidad',
-      child: pedible ? tarjeta : Opacity(opacity: 0.5, child: tarjeta),
+      label: '${bebida.nombre}, $precio, cantidad ${_elegidas.de(bebida)}',
+      child: bebida.estado == EstadoMenu.disponible
+          ? fila
+          : Opacity(opacity: 0.5, child: fila),
     );
   }
 }
@@ -744,194 +762,5 @@ class _SizeOption extends StatelessWidget {
       ),
     );
     return habilitado ? opcion : Opacity(opacity: 0.6, child: opcion);
-  }
-}
-
-class _Stepper extends StatefulWidget {
-  const _Stepper({
-    required this.value,
-    required this.minValue,
-    required this.onChanged,
-    this.maxValue,
-    this.habilitado = true,
-    this.alLimite,
-    this.tactil = 26,
-    this.etiquetaQuitar,
-    this.etiquetaAgregar,
-  });
-
-  final int value;
-  final int minValue;
-  final ValueChanged<int> onChanged;
-
-  /// Stock disponible; null = sin límite.
-  final int? maxValue;
-  final bool habilitado;
-
-  /// Aviso al intentar pasar de [maxValue].
-  final VoidCallback? alLimite;
-
-  /// Lado de la zona táctil de − y + (el círculo visible mide 26).
-  final double tactil;
-  final String? etiquetaQuitar;
-  final String? etiquetaAgregar;
-
-  static const Color splashRojo = Color(0xE6C32828);
-
-  @override
-  State<_Stepper> createState() => _StepperState();
-}
-
-class _StepperState extends State<_Stepper> {
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: '${widget.value}');
-    _focusNode = FocusNode()..addListener(_onFocusChange);
-  }
-
-  @override
-  void didUpdateWidget(_Stepper oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.value != oldWidget.value && !_focusNode.hasFocus) {
-      _controller.text = '${widget.value}';
-    }
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onFocusChange() {
-    if (!_focusNode.hasFocus) _sincronizar();
-  }
-
-  bool get _enMaximo {
-    final maximo = widget.maxValue;
-    return maximo != null && widget.value >= maximo;
-  }
-
-  void _sincronizar() {
-    final int? parsed = int.tryParse(_controller.text.trim());
-    final bool valido = parsed != null && parsed >= widget.minValue;
-    if (!valido || parsed == widget.value) {
-      _controller.text = '${widget.value}';
-      return;
-    }
-    final maximo = widget.maxValue;
-    if (maximo != null && parsed > maximo) {
-      widget.alLimite?.call();
-      _controller.text = '$maximo';
-      if (maximo != widget.value) widget.onChanged(maximo);
-      return;
-    }
-    widget.onChanged(parsed);
-  }
-
-  void _onSubmitted(String value) {
-    _sincronizar();
-    _focusNode.unfocus();
-  }
-
-  void _sumar() {
-    if (_enMaximo) {
-      widget.alLimite?.call();
-      return;
-    }
-    widget.onChanged(widget.value + 1);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _stepButton(
-          icon: Icons.remove,
-          etiqueta: widget.etiquetaQuitar,
-          onTap: widget.habilitado && widget.value > widget.minValue
-              ? () => widget.onChanged(widget.value - 1)
-              : null,
-        ),
-        SizedBox(
-          width: 28,
-          child: TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            enabled: widget.habilitado,
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-            ),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-            onSubmitted: _onSubmitted,
-          ),
-        ),
-        _stepButton(
-          icon: Icons.add,
-          etiqueta: widget.etiquetaAgregar,
-          onTap: widget.habilitado ? _sumar : null,
-          apagado: _enMaximo,
-        ),
-      ],
-    );
-  }
-
-  /// [apagado]: se ve deshabilitado pero al tocarlo avisa el límite.
-  Widget _stepButton({
-    required IconData icon,
-    String? etiqueta,
-    VoidCallback? onTap,
-    bool apagado = false,
-  }) {
-    final pal = context.pal;
-    final inactivo = onTap == null || apagado;
-    final boton = InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: SizedBox(
-        width: widget.tactil,
-        height: widget.tactil,
-        child: Center(
-          child: Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: inactivo
-                  ? pal.campo(Colors.black12)
-                  : pal.rojoSuave(_Stepper.splashRojo.withValues(alpha: 0.15)),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 15,
-              color: inactivo
-                  ? pal.atenuado(Colors.black38)
-                  : pal.rojo(_Stepper.splashRojo),
-            ),
-          ),
-        ),
-      ),
-    );
-    if (etiqueta == null) return boton;
-    return Semantics(
-      button: true,
-      enabled: onTap != null,
-      label: etiqueta,
-      excludeSemantics: true,
-      child: boton,
-    );
   }
 }
